@@ -1,0 +1,14 @@
+{
+  "name": "simplymanaged",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "web:dev": "npm --prefix ./client/ run dev",
+    "server:dev": "npm --prefix ./server/ run start:dev",
+    "update-db:dev": "npm --prefix ./server/ run update-db:dev"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
