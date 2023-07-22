@@ -2,6 +2,8 @@ name: Create db deploy request
 on:
   pull_request:
     types: [opened]
+    paths:
+      - 'server/prisma/**.prisma'
     
 jobs:
   create_deploy_request:
