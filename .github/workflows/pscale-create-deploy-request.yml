@@ -1,0 +1,24 @@
+name: Create db deploy request
+on:
+  pull_request:
+    types: [opened]
+    
+jobs:
+  create_deploy_request:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      - name: Create deploy request
+        uses: planetscale/create-deploy-request-action@v2
+        id: create_deploy_request
+        with:
+          org_name: sim-uow
+          database_name: simplymanaged
+          branch_name: dev
+        env:
+          PLANETSCALE_SERVICE_TOKEN_ID: ${{ secrets.PLANETSCALE_SERVICE_TOKEN_ID }}
+          PLANETSCALE_SERVICE_TOKEN: ${{ secrets.PLANETSCALE_SERVICE_TOKEN }}
+      - name: Get the deploy request number
+        run: |
+          echo "Deploy request number: ${{ steps.create_deploy_request.outputs.number }}"
