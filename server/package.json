@@ -6,8 +6,8 @@
   "scripts": {
     "start:dev": "NODE_ENV=development nodemon src/index.ts",
     "start": "NODE_ENV=production ts-node src/index.ts",
-    "update-db:dev": "npx prisma db push",
-    "update-db:prod": "npx prisma migrate deploy"
+    "update-db": "npx prisma db push",
+    "get-latest-schema": "npx prisma db pull"
   },
   "dependencies": {
     "@prisma/client": "5.0.0",
