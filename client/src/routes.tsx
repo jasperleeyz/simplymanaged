@@ -8,9 +8,10 @@ import PageNotFound from "./shared/error/page-not-found";
 
 const AppRoutes = () => {
   return (
-    <div>
+    <div className="m-3" style={{ minHeight: '600px'}}>
       <ErrorBoundaryRoutes>
         <Route index element={<Home />} />
+
         <Route path="/module-one" element={<ModuleOneRoutes />} />
         <Route path="/module-two" element={<ModuleTwoRoutes />} />
 
