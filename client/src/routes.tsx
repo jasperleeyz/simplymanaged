@@ -12,8 +12,8 @@ const AppRoutes = () => {
       <ErrorBoundaryRoutes>
         <Route index element={<Home />} />
 
-        <Route path="/schedule" element={<ScheduleRoutes />} />
-        <Route path="/requests" element={<ModuleTwoRoutes />} />
+        <Route path="/schedule/*" element={<ScheduleRoutes />} />
+        <Route path="/requests/*" element={<ModuleTwoRoutes />} />
 
         <Route path="*" element={<PageNotFound />} />
       </ErrorBoundaryRoutes>
