@@ -4,3 +4,12 @@
   /* padding: 2rem; */
   /* text-align: center; */
 }
+
+p.header {
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+}
+
+#user-details > p {
+  margin-bottom: 0.25rem;
+}

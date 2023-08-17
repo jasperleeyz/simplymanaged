@@ -65,8 +65,8 @@ const Calendar = () => {
 
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
-      <div id="mgr-schedule-main" className="mx-3">
-        <div className="w-full my-6 md:flex md:flex-wrap">
+      <div id="mgr-schedule-main">
+        <div className="w-full mb-6 md:flex md:flex-wrap">
           {view === "week" && (
             <div>
               <Label htmlFor="cal-date-range" value="Date" />

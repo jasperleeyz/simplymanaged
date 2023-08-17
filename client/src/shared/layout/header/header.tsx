@@ -61,7 +61,7 @@ const Header = () => {
                 {globalState?.user?.email}
               </span>
             </Dropdown.Header>
-            <Dropdown.Item>Settings</Dropdown.Item>
+            <Dropdown.Item className="font-normal" as={Link} to="/my-profile">My profile</Dropdown.Item>
             <Dropdown.Divider />
             <Dropdown.Item>Sign out</Dropdown.Item>
           </Dropdown>

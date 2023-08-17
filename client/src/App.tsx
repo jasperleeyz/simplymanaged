@@ -4,24 +4,22 @@ import ErrorBoundary from "./shared/error/error-boundary";
 import AppRoutes from "./routes";
 import Footer from "./shared/layout/footer/footer";
 import Header from "./shared/layout/header/header";
-import GlobalStateProvider from './configs/global-state-provider';
+import GlobalStateProvider from "./configs/global-state-provider";
 
 function App() {
   return (
     <>
-    <GlobalStateProvider>
-      <BrowserRouter basename="/">
-        <ErrorBoundary>
-          <Header />
-        </ErrorBoundary>
-        <div /*className="h-screen"*/>
+      <GlobalStateProvider>
+        <BrowserRouter basename="/">
+          <ErrorBoundary>
+            <Header />
+          </ErrorBoundary>
           <ErrorBoundary>
             <AppRoutes />
           </ErrorBoundary>
-        </div>
-        <Footer />
-      </BrowserRouter>
-    </GlobalStateProvider>
+          <Footer />
+        </BrowserRouter>
+      </GlobalStateProvider>
     </>
   );
 }

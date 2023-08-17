@@ -5,18 +5,22 @@ import Home from "./modules/home/home";
 import ScheduleRoutes from "./modules/schedule";
 import ModuleTwoRoutes from "./modules/module-two";
 import PageNotFound from "./shared/error/page-not-found";
+import ProfileRoutes from "./modules/profile";
 
 const AppRoutes = () => {
   return (
-    <div className="md:mx-auto max-w-6xl" style={{ minHeight: '600px'}}>
-      <ErrorBoundaryRoutes>
-        <Route index element={<Home />} />
+    <div className="md:mx-auto max-w-6xl my-6" style={{ minHeight: "600px" }}>
+      <div className="mx-3">
+        <ErrorBoundaryRoutes>
+          <Route index element={<Home />} />
+          <Route path="/my-profile/*" element={<ProfileRoutes />} />
 
-        <Route path="/schedule/*" element={<ScheduleRoutes />} />
-        <Route path="/requests/*" element={<ModuleTwoRoutes />} />
+          <Route path="/schedule/*" element={<ScheduleRoutes />} />
+          <Route path="/requests/*" element={<ModuleTwoRoutes />} />
 
-        <Route path="*" element={<PageNotFound />} />
-      </ErrorBoundaryRoutes>
+          <Route path="*" element={<PageNotFound />} />
+        </ErrorBoundaryRoutes>
+      </div>
     </div>
   );
 };
