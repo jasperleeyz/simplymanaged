@@ -1,8 +1,8 @@
 import { Button } from "flowbite-react";
 import React from "react";
-import { PathRouteProps } from "react-router-dom";
+import { RouteProps } from "react-router-dom";
 
-interface IProps extends PathRouteProps {
+type IProps = {
   date?: number;
   schedule?: any;
 }
@@ -18,7 +18,12 @@ const CalendarDateBox = ({ date = 1, schedule = null }: IProps) => {
           <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button>
         </div>
       )}
-      {/* <div>hello</div> */}
+      {schedule && (
+        <div className="relative">
+        {/* <p className="absolute whitespace-normal">No schedule for the day</p>
+        <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
+      </div>
+    )}
     </div>
   );
 };

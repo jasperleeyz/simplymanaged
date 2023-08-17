@@ -35,14 +35,33 @@ const Calendar = () => {
     start: new Date().getDate(),
     end: new Date().getDate() + 7,
   });
-  const [location, setLocation] = React.useState("Toa Payoh");
-  const [month, setMonth] = React.useState(() => new Date().getMonth() + 1);
-  const [view, setView] = React.useState("month");
+  const [location, setLocation] = React.useState(() => {
+    const l = history.state['scheduleLocation'];
+    if(!l) return locationList[0];
+    return l;
+  });
+  const [month, setMonth] = React.useState(() => {
+    const m = history.state['scheduleMonth'];
+    if(!m) return new Date().getMonth();
+    return m;
+  });
+  const [view, setView] = React.useState(() => {
+    const v = history.state['scheduleView'];
+    if(!v) return 'month';
+    return v;
+  });
 
   // TODO: retrigger schedule retrieval when control values changed by user
   React.useEffect(() => {
     // api call to retrieve schedule
-  }, [dateRange, location]);
+    
+    // store new values to history state
+    history.replaceState({
+      scheduleMonth: month,
+      scheduleView: view,
+      scheduleLocation: location,
+    }, '');
+  }, [dateRange, location, month, view]);
 
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
@@ -55,7 +74,7 @@ const Calendar = () => {
                 id="cal-date-range"
                 type="date"
                 sizing="sm"
-                value={dateRange.start}
+                // value={dateRange.start}
                 // onChange={(e) =>
                 //   setDateRange({ start: e.target.value, end: dateRange.end })
                 // }
@@ -107,7 +126,7 @@ const Calendar = () => {
             </Button.Group>
           </div>
         </div>
-        {view === "month" && <CalendarMonthView />}
+        {view === "month" && <CalendarMonthView month={month} />}
         {view === "week" && <CalendarWeekView />}
       </div>
     </Flowbite>
