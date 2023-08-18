@@ -1,5 +1,6 @@
 import React from "react";
 import IUser from "../shared/model/user.model";
+import { ROLES } from "./constants";
 
 
 type GlobalState = {
@@ -26,7 +27,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       name: "JOHN DOE", 
       email: "JOHNDOE@SIMPLYMANAGED.COM", 
       phoneNo: 99999999,
-      role: "MANAGER",
+      role: ROLES.SCHEDULER,
       position: "STORE MANAGER",
       employmentType: "FULL-TIME"
     },

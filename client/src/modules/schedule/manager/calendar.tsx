@@ -9,9 +9,11 @@ import {
   TextInput,
 } from "flowbite-react";
 import React from "react";
-import { MONTHS } from "../../../configs/constants";
+import { MONTHS, PATHS } from "../../../configs/constants";
 import CalendarMonthView from "../../../shared/layout/schedule/calendar-month-view";
 import CalendarWeekView from "../../../shared/layout/schedule/calendar-week-view";
+import { HiCalendar } from "react-icons/hi";
+import { useNavigate } from "react-router-dom";
 
 const customCalendarStyle: CustomFlowbiteTheme = {
   buttonGroup: {
@@ -25,6 +27,8 @@ const customCalendarStyle: CustomFlowbiteTheme = {
 };
 
 const Calendar = () => {
+  const navigate = useNavigate();
+
   // TODO: to call retrieve schedule api here
   const locationList = ["Toa Payoh", "Ang Mo Kio"];
   const scheduleList = [];
@@ -36,31 +40,34 @@ const Calendar = () => {
     end: new Date().getDate() + 7,
   });
   const [location, setLocation] = React.useState(() => {
-    const l = history.state['scheduleLocation'];
-    if(!l) return locationList[0];
+    const l = history.state["scheduleLocation"];
+    if (!l) return locationList[0];
     return l;
   });
   const [month, setMonth] = React.useState(() => {
-    const m = history.state['scheduleMonth'];
-    if(!m) return new Date().getMonth();
+    const m = history.state["scheduleMonth"];
+    if (!m) return new Date().getMonth();
     return m;
   });
   const [view, setView] = React.useState(() => {
-    const v = history.state['scheduleView'];
-    if(!v) return 'month';
+    const v = history.state["scheduleView"];
+    if (!v) return "month";
     return v;
   });
 
   // TODO: retrigger schedule retrieval when control values changed by user
   React.useEffect(() => {
     // api call to retrieve schedule
-    
+
     // store new values to history state
-    history.replaceState({
-      scheduleMonth: month,
-      scheduleView: view,
-      scheduleLocation: location,
-    }, '');
+    history.replaceState(
+      {
+        scheduleMonth: month,
+        scheduleView: view,
+        scheduleLocation: location,
+      },
+      ""
+    );
   }, [dateRange, location, month, view]);
 
   return (
@@ -91,12 +98,14 @@ const Calendar = () => {
                 onChange={(e) => setMonth(parseInt(e.target.value))}
               >
                 {MONTHS.map((l, idx) => (
-                  <option key={idx} value={l.value}>{l.label}</option>
+                  <option key={idx} value={l.value}>
+                    {l.label}
+                  </option>
                 ))}
               </Select>
             </div>
           )}
-          <div className="md:ms-24">
+          <div className="mt-3 md:mt-0 md:ms-24">
             <Label htmlFor="location" value="Location" />
             <Select
               id="location"
@@ -105,11 +114,22 @@ const Calendar = () => {
               onChange={(e) => setLocation(e.target.value)}
             >
               {locationList.map((l, idx) => (
-                <option key={idx} value={l}>{l}</option>
+                <option key={idx} value={l}>
+                  {l}
+                </option>
               ))}
             </Select>
           </div>
-          <div className="ms-auto md:flex md:flex-wrap content-end">
+          <div className="ms-auto mt-3">
+            <Button
+              size="sm"
+              onClick={() => navigate(`./${PATHS.CREATE_SCHEDULE}`)}
+            >
+              <HiCalendar className="my-auto mr-2" />
+              <p>Create Schedule</p>
+            </Button>
+          </div>
+          {/* <div className="ms-auto md:flex md:flex-wrap content-end">
             <Button.Group>
               <Button
                 color={view === "week" ? "dark" : ""}
@@ -124,7 +144,7 @@ const Calendar = () => {
                 Month
               </Button>
             </Button.Group>
-          </div>
+          </div> */}
         </div>
         {view === "month" && <CalendarMonthView month={month} />}
         {view === "week" && <CalendarWeekView />}

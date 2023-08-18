@@ -13,6 +13,17 @@ export const MONTHS = [
     { value: 11, label: 'December' }
 ]
 
-export const ROLES_MANAGER = 'M';
-export const ROLES_EMPLOYEE = 'E';
-export const ROLES_SYSADMIN = 'A';
+export const ROLES = {
+    SCHEDULER: 'S',
+    EMPLOYEE: 'E',
+    SYSADMIN: 'A'
+}
+
+export const PATHS = {
+    SCHEDULE: 'schedule',
+    CREATE_SCHEDULE: 'create-schedule',
+
+    MY_PROFILE: 'my-profile',
+
+    REQUESTS: 'requests',
+}

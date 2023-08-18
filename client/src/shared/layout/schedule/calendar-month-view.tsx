@@ -1,10 +1,8 @@
 "use client";
 
 import { CustomFlowbiteTheme, Table } from "flowbite-react";
-import React from "react";
 import CalendarDateBox from "./calendar-date-box";
 import moment from "moment";
-import { RouteProps } from "react-router-dom";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -63,7 +61,7 @@ const CalendarMonthView = ({
                 {week.days.map((day, didx) => {
                   return (
                     <Table.Cell key={didx}>
-                      {day.month() === month ? <CalendarDateBox date={day.date()} /> : null}
+                      {day.month() === month ? <CalendarDateBox date={day} /> : null}
                     </Table.Cell>
                   );
                 })}

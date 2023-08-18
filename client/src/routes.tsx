@@ -3,9 +3,10 @@ import ErrorBoundaryRoutes from "./shared/error/error-boundary-routes";
 import { Route } from "react-router-dom";
 import Home from "./modules/home/home";
 import ScheduleRoutes from "./modules/schedule";
-import ModuleTwoRoutes from "./modules/module-two";
+import RequestRoutes from "./modules/request";
 import PageNotFound from "./shared/error/page-not-found";
 import ProfileRoutes from "./modules/profile";
+import { PATHS } from "./configs/constants";
 
 const AppRoutes = () => {
   return (
@@ -13,10 +14,10 @@ const AppRoutes = () => {
       <div className="mx-3">
         <ErrorBoundaryRoutes>
           <Route index element={<Home />} />
-          <Route path="/my-profile/*" element={<ProfileRoutes />} />
+          <Route path={`/${PATHS.MY_PROFILE}/*`} element={<ProfileRoutes />} />
 
-          <Route path="/schedule/*" element={<ScheduleRoutes />} />
-          <Route path="/requests/*" element={<ModuleTwoRoutes />} />
+          <Route path={`/${PATHS.SCHEDULE}/*`} element={<ScheduleRoutes />} />
+          <Route path={`/${PATHS.REQUESTS}/*`} element={<RequestRoutes />} />
 
           <Route path="*" element={<PageNotFound />} />
         </ErrorBoundaryRoutes>

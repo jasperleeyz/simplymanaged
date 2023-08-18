@@ -7,9 +7,11 @@ import {
   Flowbite,
   Navbar,
 } from "flowbite-react";
-import React, { useEffect } from "react";
+import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
+import { PATHS } from "../../../configs/constants";
+import { capitalizeString } from "../../../configs/utils";
 
 const customHeaderTheme: CustomFlowbiteTheme = {
   navbar: {
@@ -23,7 +25,7 @@ const customHeaderTheme: CustomFlowbiteTheme = {
     },
     link: {
       active: {
-        on: "bg-blue-700 text-white dark:text-white md:bg-transparent md:text-blue-700",
+        // on: "bg-blue-700 text-white dark:text-white md:bg-transparent md:text-blue-700",
       },
     },
   },
@@ -56,12 +58,12 @@ const Header = () => {
             }
           >
             <Dropdown.Header>
-              <span className="block text-sm">{globalState?.user?.name}</span>
+              <span className="block text-sm">{capitalizeString(globalState?.user?.name)}</span>
               <span className="block truncate text-sm font-medium">
-                {globalState?.user?.email}
+                {globalState?.user?.email.toLowerCase()}
               </span>
             </Dropdown.Header>
-            <Dropdown.Item className="font-normal" as={Link} to="/my-profile">My profile</Dropdown.Item>
+            <Dropdown.Item className="font-normal" as={Link} to={`/${PATHS.MY_PROFILE}`}>My profile</Dropdown.Item>
             <Dropdown.Divider />
             <Dropdown.Item>Sign out</Dropdown.Item>
           </Dropdown>
@@ -72,33 +74,33 @@ const Header = () => {
             <p>Dashboard</p>
           </Navbar.Link>
           <Navbar.Link
-            active={location.pathname.startsWith("/schedule")}
-            to="/schedule"
+            active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
+            to={`/${PATHS.SCHEDULE}`}
             as={Link}
           >
             Schedule
           </Navbar.Link>
-          <Navbar.Link
+          {/* <Navbar.Link
             active={location.pathname.startsWith("/people")}
             to="/people"
             as={Link}
           >
             People
-          </Navbar.Link>
+          </Navbar.Link> */}
           <Navbar.Link
-            active={location.pathname.startsWith("/requests")}
-            to="/requests"
+            active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
+            to={`/${PATHS.REQUESTS}`}
             as={Link}
           >
             Requests
           </Navbar.Link>
-          <Navbar.Link
+          {/* <Navbar.Link
             active={location.pathname.startsWith("/reports")}
             to="/reports"
             as={Link}
           >
             Reports
-          </Navbar.Link>
+          </Navbar.Link> */}
         </Navbar.Collapse>
       </Navbar>
     </Flowbite>
