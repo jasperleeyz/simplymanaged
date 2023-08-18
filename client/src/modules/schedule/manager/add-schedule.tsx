@@ -4,6 +4,7 @@ import { Button, Label, TextInput } from "flowbite-react";
 import { HiUserGroup } from "react-icons/hi";
 import React from "react";
 import moment from "moment";
+import { GlobalStateContext } from "../../../configs/global-state-provider";
 
 type ScheduleDetails = {
   date?: Date;
@@ -13,6 +14,9 @@ type ScheduleDetails = {
 const AddSchedule = () => {
   const location = useLocation();
   const date: Date = location.state?.date;
+
+  // TODO: can retrieve schedule templates from global state to populate dropdownlist
+  const globalState = React.useContext(GlobalStateContext).globalState;
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<ScheduleDetails>({
