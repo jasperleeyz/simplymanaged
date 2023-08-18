@@ -21,7 +21,15 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [globalState, setGlobalState] = React.useState<GlobalState>({
-    user: {id: 0, name: "John Doe", email: "johndoe@simplymanaged.com", role: "MANAGER"},
+    user: {
+      id: 1, 
+      name: "JOHN DOE", 
+      email: "JOHNDOE@SIMPLYMANAGED.COM", 
+      phoneNo: 99999999,
+      role: "MANAGER",
+      position: "STORE MANAGER",
+      employmentType: "FULL-TIME"
+    },
     isAuthenticated: false,
   });
 

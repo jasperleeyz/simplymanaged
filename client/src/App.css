@@ -10,6 +10,8 @@ p.header {
   font-size: 1.5rem;
 }
 
-#user-details > p {
+#user-details > p,
+#employment-section > p,
+#preference-section > p {
   margin-bottom: 0.25rem;
 }

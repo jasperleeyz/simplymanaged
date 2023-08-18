@@ -2,6 +2,7 @@ import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { FooterDivider } from "flowbite-react/lib/esm/components/Footer/FooterDivider";
 import { Avatar, Label, TextInput } from "flowbite-react";
+import { capitalizeString } from "../../configs/utils";
 
 const ProfilePage = () => {
   const globalState = React.useContext(GlobalStateContext).globalState;
@@ -24,11 +25,11 @@ const ProfilePage = () => {
         </div>
         <div id="user-details" className="w-full md:w-3/5">
           <Label htmlFor="user-name" value="Name" />
-          <p id="user-name">{globalState?.user?.name}</p>
+          <p id="user-name">{capitalizeString(globalState?.user?.name)}</p>
           <Label htmlFor="user-email" value="Email" />
-          <p id="user-email">{globalState?.user?.email}</p>
+          <p id="user-email">{globalState?.user?.email.toLowerCase()}</p>
           <Label htmlFor="user-phone-no" value="Phone No." />
-          <p id="user-phone-no">{globalState?.user?.name}</p>
+          <p id="user-phone-no">{globalState?.user?.phoneNo}</p>
           {/* <Label htmlFor="user-" value="Name" />
           <p id="user-name">{globalState?.user?.name}</p>
           <Label htmlFor="user-name" value="Name" />
@@ -36,9 +37,19 @@ const ProfilePage = () => {
         </div>
       </div>
       <hr className="w-full my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
+      <p className="header">Employment Details</p>
+      <div id="employment-section">
+        <Label htmlFor="employment-id" value="Employee ID" />
+        <p id="employment-id">{globalState?.user?.id}</p>
+        <Label htmlFor="employment-type" value="Employment Type" />
+        <p id="employment-type">{capitalizeString(globalState?.user?.employmentType)}</p>
+        <Label htmlFor="employment-position" value="Position" />
+        <p id="employment-position">{capitalizeString(globalState?.user?.position)}</p>
+      </div>
+      <hr className="w-full my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
       <p className="header">Preferences</p>
       <div id="preferences-section">
-          <p>...</p>
+        <p>...</p>
       </div>
     </div>
   );
