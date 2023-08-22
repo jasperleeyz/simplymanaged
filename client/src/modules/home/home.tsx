@@ -2,12 +2,13 @@ import { Avatar, Button, Card } from "flowbite-react";
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { capitalizeString } from "../../configs/utils";
+import UpcomingShiftComponent from "./upcoming-shift-component";
 
 const Home = () => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
 
   // TODO: retrieve shifts for the week
-  const shiftsForTheWeek = [{date: new Date(), shift: 'AM', duration: 4, location: 'Toa Payoh'}];
+  const scheduleForTheWeek = [{date: new Date(), shift: 'AM', duration: 4, location: 'Toa Payoh'}];
 
   // TODO: retrieve request pending approval
   const pendingRequests = [];
@@ -28,10 +29,12 @@ const Home = () => {
         <p className="header">Dashboard</p>
         <div className="mt-6 md:min-h-max md:flex">
           <div className="w-1/2 mr-5">
-            <p className="sub-header">Upcoming Shifts</p>
+            <p className="sub-header">Upcoming Schedules</p>
             <Card className="w-11/12">
-              {shiftsForTheWeek.length > 0 ? (
-                <></>
+              {scheduleForTheWeek.length > 0 ? (
+                scheduleForTheWeek.map((shift, idx) => (
+                  <UpcomingShiftComponent key={idx} schedule={shift}/>
+                ))
               ) : (
                 <>
                   <p>No upcoming shifts found</p>
