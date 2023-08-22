@@ -16,7 +16,7 @@ const ProfilePage = () => {
       <div id="profile-section" className="md:flex">
         <div className="w-full mb-6 md:m-auto md:w-2/5">
           <Avatar
-            img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+            img={globalState?.user?.profileImage}
             size="xl"
             rounded
             alt="Profile image"

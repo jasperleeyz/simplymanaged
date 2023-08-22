@@ -51,7 +51,7 @@ const Header = () => {
             label={
               <Avatar
                 alt="User settings"
-                img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
+                img={globalState?.user?.profileImage}
                 rounded
                 className="mr-3"
               />

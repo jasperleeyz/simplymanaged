@@ -4,8 +4,9 @@ import { ROLES } from "./constants";
 
 
 type GlobalState = {
-  user: IUser | null;
+  user?: IUser;
   isAuthenticated: boolean;
+  workShifts?: any[];
 };
 
 interface GlobalStateContextProps {
@@ -29,9 +30,11 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       phoneNo: 99999999,
       role: ROLES.SCHEDULER,
       position: "STORE MANAGER",
-      employmentType: "FULL-TIME"
+      employmentType: "FULL-TIME",
+      profileImage: "https://flowbite.com/docs/images/people/profile-picture-5.jpg"
     },
     isAuthenticated: false,
+    workShifts: ["AM", "PM"],
   });
 
   const value = React.useMemo(
