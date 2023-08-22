@@ -73,6 +73,7 @@ const Calendar = () => {
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
       <div id="mgr-schedule-main">
+        <p className="header">Schedule</p>
         <div className="w-full mb-6 md:flex md:flex-wrap">
           {view === "week" && (
             <div>
