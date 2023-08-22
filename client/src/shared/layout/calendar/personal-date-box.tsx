@@ -1,15 +1,12 @@
-import { Button } from "flowbite-react";
 import moment from "moment";
-import React from "react";
-import { RouteProps, useNavigate } from "react-router-dom";
-import { PATHS } from "../../../configs/constants";
+import { useNavigate } from "react-router-dom";
 
 type IProps = {
   date?: moment.Moment;
   schedule?: any;
 };
 
-const CalendarDateBox = ({
+const PersonalDateBox = ({
   date = moment(new Date()),
   schedule = null,
 }: IProps) => {
@@ -22,16 +19,6 @@ const CalendarDateBox = ({
       {!schedule && (
         <div className="relative">
           <p className="absolute whitespace-normal">No schedule for the day</p>
-          <Button
-            size="sm"
-            className="absolute hidden group-hover:block"
-            color="info"
-            onClick={() => {
-              navigate(`./${PATHS.CREATE_SCHEDULE}`, { state: { date: date.toDate() } });
-            }}
-          >
-            Add schedule
-          </Button>
         </div>
       )}
       {schedule && (
@@ -44,4 +31,4 @@ const CalendarDateBox = ({
   );
 };
 
-export default CalendarDateBox;
+export default PersonalDateBox;

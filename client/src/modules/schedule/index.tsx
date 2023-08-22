@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import Calendar from "./manager/calendar";
+import Calendar from "./calendar";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import React from "react";
 import AddSchedule from "./manager/add-schedule";

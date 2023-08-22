@@ -1,8 +1,9 @@
 "use client";
 
 import { CustomFlowbiteTheme, Table } from "flowbite-react";
-import CalendarDateBox from "./calendar-date-box";
+import PersonalDateBox from "./personal-date-box";
 import moment from "moment";
+import ScheduleDateBox from "./schedule-date-box";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -16,6 +17,7 @@ const customTableTheme: CustomFlowbiteTheme["table"] = {
 type IProps = {
   month: number;
   year?: number;
+  isPersonal: boolean;
 };
 
 type CalObject = {
@@ -25,6 +27,7 @@ type CalObject = {
 const CalendarMonthView = ({
   month,
   year = new Date().getFullYear(),
+  isPersonal,
 }: IProps) => {
   const cal = [] as CalObject[];
 
@@ -61,7 +64,7 @@ const CalendarMonthView = ({
                 {week.days.map((day, didx) => {
                   return (
                     <Table.Cell key={didx}>
-                      {day.month() === month ? <CalendarDateBox date={day} /> : null}
+                      {day.month() === month ? (!isPersonal ? <ScheduleDateBox date={day} /> : <PersonalDateBox date={day} />) : null}
                     </Table.Cell>
                   );
                 })}
