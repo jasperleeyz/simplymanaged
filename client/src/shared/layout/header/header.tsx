@@ -39,7 +39,7 @@ const Header = () => {
     <Flowbite theme={{ theme: customHeaderTheme }}>
       <Navbar fluid rounded className="border-b">
         <Navbar.Brand href="https://flowbite-react.com">
-          <img alt="SiM Logo" className="mr-3 h-6 sm:h-9" src="/favicon.svg" />
+          <img alt="SiM Logo" className="mr-3 h-12 sm:h-14" src="/logo.png" />
           {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
           SimplyManaged
         </span> */}
