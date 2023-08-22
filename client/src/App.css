@@ -11,6 +11,11 @@ p.header {
   font-weight: 600;
 }
 
+p.sub-header {
+  margin-bottom: 2rem;
+  font-weight: 600;
+}
+
 #user-details > p,
 #employment-section > p,
 #preference-section > p {
