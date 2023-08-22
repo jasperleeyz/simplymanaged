@@ -8,15 +8,14 @@ import React from "react";
 import { GlobalStateContext } from "./configs/global-state-provider";
 
 function App() {
-  const {globalState, setGlobalState} = React.useContext(GlobalStateContext);
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const isAuthenticated = globalState?.isAuthenticated;
-
 
   React.useEffect(() => {
     // TODO: check authenticationStatus
     // if authenticated, then retrieve necessary details from backend
     // and populate into global state (eg. list of schedule templates)
-  }, [])
+  }, []);
 
   return (
     <>
@@ -27,7 +26,7 @@ function App() {
         <ErrorBoundary>
           <AppRoutes />
         </ErrorBoundary>
-        <Footer />
+        {/* <Footer /> */}
       </BrowserRouter>
     </>
   );
