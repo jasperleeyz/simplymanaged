@@ -6,6 +6,7 @@ interface IUser {
     role: string;
     position: string;
     employmentType: string;
+    profileImage?: string;
 }
 
 export default IUser;
