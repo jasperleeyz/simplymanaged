@@ -3,6 +3,7 @@ import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { capitalizeString } from "../../configs/utils";
 import UpcomingShiftComponent from "./upcoming-shift-component";
+import { HiClock } from "react-icons/hi";
 
 const Home = () => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
@@ -22,7 +23,8 @@ const Home = () => {
         </p>
         <p>{capitalizeString(user?.position)}</p>
         <Button className="mx-auto mt-5" size="sm">
-          Clock-in
+          <HiClock className='my-auto mr-2'/>
+          <p>Clock-in</p>
         </Button>
       </div>
       <div className="md:w-4/5 md:border-l-2 md:px-5">
