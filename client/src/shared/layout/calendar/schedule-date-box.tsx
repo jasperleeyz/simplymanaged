@@ -1,7 +1,10 @@
-import { Button } from "flowbite-react";
+'use client';
+
+import { Button, Dropdown } from "flowbite-react";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../../configs/constants";
+import { HiDotsHorizontal } from "react-icons/hi";
 
 type IProps = {
   date?: moment.Moment;
@@ -16,7 +19,24 @@ const ScheduleDateBox = ({
 
   return (
     <div className="w-[110px] h-[110px] max-w-sm max-h-sm group">
-      <p>{date.date()}</p>
+      <div className="flex items-center justify-between">
+        <p>{date.date()}</p>
+        {schedule && (
+          <div className="rounded-full">
+            <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline >
+              <Dropdown.Item
+                onClick={() => {
+                  navigate(`./${PATHS.CREATE_SCHEDULE}`, {
+                    state: { date: date.toDate() },
+                  });
+                }}
+              >
+                Edit
+              </Dropdown.Item>
+            </Dropdown>
+          </div>
+        )}
+      </div>
       <br />
       {!schedule && (
         <div className="relative">
@@ -26,7 +46,9 @@ const ScheduleDateBox = ({
             className="absolute hidden group-hover:block"
             color="info"
             onClick={() => {
-              navigate(`./${PATHS.CREATE_SCHEDULE}`, { state: { date: date.toDate() } });
+              navigate(`./${PATHS.CREATE_SCHEDULE}`, {
+                state: { date: date.toDate() },
+              });
             }}
           >
             Add schedule
@@ -37,6 +59,9 @@ const ScheduleDateBox = ({
         <div className="relative">
           {/* <p className="absolute whitespace-normal">No schedule for the day</p>
         <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
+          <div className="bg-green-300 rounded p-1">
+            <p>Schedule available</p>
+          </div>
         </div>
       )}
     </div>

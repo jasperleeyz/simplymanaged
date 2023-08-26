@@ -1,6 +1,6 @@
 "use client";
 
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import BackButton from "../../../shared/layout/buttons/back-button";
 import {
   Button,
@@ -15,23 +15,17 @@ import React from "react";
 import moment from "moment";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import IUser from "../../../shared/model/user.model";
+import { EmployeeSchedule, ScheduleDetails } from "../../../shared/model/schedule.model";
+import { PATHS } from "../../../configs/constants";
 
-interface EmployeeSchedule extends IUser {
-  shift?: string;
-}
-
-type ScheduleDetails = {
-  date?: Date;
-  scheduleTemplate?: string;
-  employeesSelected: EmployeeSchedule[];
-};
 
 const AddSchedule = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const date: Date = location.state?.date;
 
   // TODO: can retrieve schedule templates from global state to populate dropdownlist
-  const globalState = React.useContext(GlobalStateContext).globalState;
+  const {globalState, setGlobalState } = React.useContext(GlobalStateContext);
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<ScheduleDetails>({
@@ -48,7 +42,7 @@ const AddSchedule = () => {
       id: 2,
       name: "JOHN WICK",
       email: "JOHNWICK@SIMPLYMANAGED.COM",
-      phoneNo: 88888888,
+      phoneNo: "88888888",
       role: "E",
       position: "MANAGER",
       employmentType: "FULL-TIME",
@@ -57,7 +51,7 @@ const AddSchedule = () => {
       id: 3,
       name: "DEADPOOL",
       email: "DEADPOOL@SIMPLYMANAGED.COM",
-      phoneNo: 77777777,
+      phoneNo: "77777777",
       role: "E",
       position: "BARISTA",
       employmentType: "PART-TIME",
@@ -66,7 +60,7 @@ const AddSchedule = () => {
       id: 4,
       name: "HARRY POTTER",
       email: "HARRYPOTTER@SIMPLYMANAGED.COM",
-      phoneNo: 66666666,
+      phoneNo: "66666666",
       role: "E",
       position: "SERVER",
       employmentType: "PART-TIME",
@@ -103,7 +97,21 @@ const AddSchedule = () => {
     return scheduleDetailsState.employeesSelected.find((emp) => emp.id === employee.id) !== undefined;
   }
 
-  console.log(scheduleDetailsState);
+//  TODO: to invoke API to create schedule
+  const createSchedule = () => {
+    setGlobalState(prev => ({
+        ...prev,
+        // TODO: add schedule to global state
+        schedule: [...prev.schedule, scheduleDetailsState]
+    }));
+
+    // TODO: to change alert to toast
+    alert('Schedule created successfully');
+
+    navigate(`/${PATHS.SCHEDULE}`, {replace: true});
+  }
+
+
   return (
     <div>
       <p className="header">Create Schedule</p>
@@ -222,7 +230,7 @@ const AddSchedule = () => {
           </div>
         </div>
         <div className='mt-12 flex justify-end'>
-            <Button size='sm'>Submit</Button>
+            <Button onClick={()=> createSchedule()} size='sm'>Submit</Button>
         </div>
       </form>
       <Modal show={showModal} onClose={() => setShowModal(false)}>

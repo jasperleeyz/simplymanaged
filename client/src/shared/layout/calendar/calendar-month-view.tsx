@@ -4,6 +4,8 @@ import { CustomFlowbiteTheme, Table } from "flowbite-react";
 import PersonalDateBox from "./personal-date-box";
 import moment from "moment";
 import ScheduleDateBox from "./schedule-date-box";
+import React from "react";
+import { GlobalStateContext } from "../../../configs/global-state-provider";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -45,6 +47,15 @@ const CalendarMonthView = ({
     });
   }
 
+  const scheduleList =
+    React.useContext(GlobalStateContext).globalState?.schedule;
+
+  const scheduleForMonth = scheduleList?.filter(
+    (schedule) =>
+      schedule.date?.getMonth() === month &&
+      schedule.date?.getFullYear() === year
+  );
+
   return (
     <div id="cal-month" className="overflow-x-auto">
       <Table theme={customTableTheme}>
@@ -62,9 +73,33 @@ const CalendarMonthView = ({
             return (
               <Table.Row key={idx}>
                 {week.days.map((day, didx) => {
+                  const scheduleForDay = scheduleForMonth?.filter(
+                    (schedule) => schedule.date?.getDate() === day.date()
+                  );
+
                   return (
                     <Table.Cell key={didx}>
-                      {day.month() === month ? (!isPersonal ? <ScheduleDateBox date={day} /> : <PersonalDateBox date={day} />) : null}
+                      {day.month() === month ? (
+                        !isPersonal ? (
+                          <ScheduleDateBox
+                            date={day}
+                            schedule={
+                              scheduleForDay?.length === 1
+                                ? scheduleForDay[0]
+                                : null
+                            }
+                          />
+                        ) : (
+                          <PersonalDateBox
+                            date={day}
+                            schedule={
+                              scheduleForDay?.length === 1
+                                ? scheduleForDay[0]
+                                : null
+                            }
+                          />
+                        )
+                      ) : null}
                     </Table.Cell>
                   );
                 })}

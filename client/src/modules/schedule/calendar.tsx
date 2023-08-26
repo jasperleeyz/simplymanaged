@@ -14,6 +14,7 @@ import CalendarMonthView from "../../shared/layout/calendar/calendar-month-view"
 import CalendarWeekView from "../../shared/layout/calendar/calendar-week-view";
 import { HiCalendar } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
+import { GlobalStateContext } from "../../configs/global-state-provider";
 
 const customCalendarStyle: CustomFlowbiteTheme = {
   buttonGroup: {
@@ -32,7 +33,8 @@ const Calendar = () => {
   // TODO: to call retrieve schedule api here
   const locationList = ["Toa Payoh", "Ang Mo Kio"];
   const isPersonalList = []; // only load if is scheduler/manager role
-  const scheduleList = [];
+  // const scheduleList = [];
+  const scheduleList = React.useContext(GlobalStateContext).globalState?.schedule;
 
   // TODO: update with default values
   const [schedule, setSchedule] = React.useState([]);
