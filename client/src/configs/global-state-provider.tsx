@@ -1,12 +1,14 @@
 import React from "react";
 import IUser from "../shared/model/user.model";
 import { ROLES } from "./constants";
+import { ScheduleDetails } from "../shared/model/schedule.model";
 
 
 type GlobalState = {
   user?: IUser;
   isAuthenticated: boolean;
   workShifts?: any[];
+  schedule: ScheduleDetails[];
 };
 
 interface GlobalStateContextProps {
@@ -27,14 +29,15 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       id: 1, 
       name: "JOHN DOE", 
       email: "JOHNDOE@SIMPLYMANAGED.COM", 
-      phoneNo: 99999999,
+      phoneNo: "99999999",
       role: ROLES.SCHEDULER,
       position: "STORE MANAGER",
       employmentType: "FULL-TIME",
       profileImage: "https://flowbite.com/docs/images/people/profile-picture-5.jpg"
     },
     isAuthenticated: false,
-    workShifts: ["AM", "PM"],
+    workShifts: ["AM", "PM", "FULL"],
+    schedule: [],
   });
 
   const value = React.useMemo(

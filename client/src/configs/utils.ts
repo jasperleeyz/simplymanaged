@@ -8,3 +8,7 @@ export const capitalizeString = (str) => {
     })
     .join(" ");
 };
+
+export const isNumber = (value) => {
+  return !isNaN(value);
+}

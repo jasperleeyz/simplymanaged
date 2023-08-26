@@ -2,7 +2,7 @@ interface IUser {
     id: number;
     name: string;
     email: string;
-    phoneNo: number;
+    phoneNo: string;
     role: string;
     position: string;
     employmentType: string;

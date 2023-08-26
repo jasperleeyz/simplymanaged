@@ -21,3 +21,7 @@ p.sub-header {
 #preference-section > p {
   margin-bottom: 0.25rem;
 }
+
+.error-message {
+  color: red;
+}
