@@ -15,9 +15,11 @@ import React from "react";
 import moment from "moment";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import IUser from "../../../shared/model/user.model";
-import { EmployeeSchedule, ScheduleDetails } from "../../../shared/model/schedule.model";
+import {
+  EmployeeSchedule,
+  ScheduleDetails,
+} from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
-
 
 const AddSchedule = () => {
   const location = useLocation();
@@ -25,13 +27,25 @@ const AddSchedule = () => {
   const date: Date = location.state?.date;
 
   // TODO: can retrieve schedule templates from global state to populate dropdownlist
-  const {globalState, setGlobalState } = React.useContext(GlobalStateContext);
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
 
   const [scheduleDetailsState, setScheduleDetailsState] =
-    React.useState<ScheduleDetails>({
-      date: date || new Date(),
-      employeesSelected: [],
+    React.useState<ScheduleDetails>(() => {
+      if (location.state?.schedule) {
+        return location.state.schedule;
+      } else {
+        return {
+          date: date || new Date(),
+          employeesSelected: [],
+        };
+      }
     });
+
+  const [errorMessage, setErrorMessage] = React.useState(() => {
+    return {
+      date: "",
+    };
+  });
 
   const [showModal, setShowModal] = React.useState(false);
 
@@ -94,23 +108,26 @@ const AddSchedule = () => {
   };
 
   const isEmpSelected = (employee: IUser) => {
-    return scheduleDetailsState.employeesSelected.find((emp) => emp.id === employee.id) !== undefined;
-  }
+    return (
+      scheduleDetailsState.employeesSelected.find(
+        (emp) => emp.id === employee.id
+      ) !== undefined
+    );
+  };
 
-//  TODO: to invoke API to create schedule
+  //  TODO: to invoke API to create schedule
   const createSchedule = () => {
-    setGlobalState(prev => ({
-        ...prev,
-        // TODO: add schedule to global state
-        schedule: [...prev.schedule, scheduleDetailsState]
+    setGlobalState((prev) => ({
+      ...prev,
+      // TODO: add schedule to global state
+      schedule: [...prev.schedule, scheduleDetailsState],
     }));
 
     // TODO: to change alert to toast
-    alert('Schedule created successfully');
+    alert("Schedule created successfully");
 
-    navigate(`/${PATHS.SCHEDULE}`, {replace: true});
-  }
-
+    navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+  };
 
   return (
     <div>
@@ -154,13 +171,28 @@ const AddSchedule = () => {
           <TextInput
             id="schedule-date"
             type="date"
+            min={moment(new Date()).format("yyyy-MM-DD")}
             value={moment(scheduleDetailsState.date).format("yyyy-MM-DD")}
-            onChange={(e) =>
+            helperText={
+              <span className="error-message">{errorMessage.date}</span>
+            }
+            onChange={(e) => {
+              if (moment(e.target.value).isBefore(moment(new Date()))) {
+                setErrorMessage((prev) => ({
+                  ...prev,
+                  date: "Date cannot be before today",
+                }));
+              } else {
+                setErrorMessage((prev) => ({
+                  ...prev,
+                  date: "",
+                }));
+              }
               setScheduleDetailsState((prev) => ({
                 ...prev,
                 date: new Date(e.target.value),
-              }))
-            }
+              }));
+            }}
           />
         </div>
         {/* Select Employees */}
@@ -229,8 +261,10 @@ const AddSchedule = () => {
             })}
           </div>
         </div>
-        <div className='mt-12 flex justify-end'>
-            <Button onClick={()=> createSchedule()} size='sm'>Submit</Button>
+        <div className="mt-12 flex justify-end">
+          <Button onClick={() => createSchedule()} size="sm">
+            Submit
+          </Button>
         </div>
       </form>
       <Modal show={showModal} onClose={() => setShowModal(false)}>

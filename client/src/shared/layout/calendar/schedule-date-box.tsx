@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { Button, Dropdown } from "flowbite-react";
 import moment from "moment";
@@ -23,16 +23,27 @@ const ScheduleDateBox = ({
         <p>{date.date()}</p>
         {schedule && (
           <div className="rounded-full">
-            <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline >
+            <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
               <Dropdown.Item
                 onClick={() => {
-                  navigate(`./${PATHS.CREATE_SCHEDULE}`, {
-                    state: { date: date.toDate() },
+                  navigate(`./${PATHS.VIEW_SCHEDULE}`, {
+                    state: { schedule },
                   });
                 }}
               >
-                Edit
+                View
               </Dropdown.Item>
+              {date.isAfter(moment(new Date())) && (
+                <Dropdown.Item
+                  onClick={() => {
+                    navigate(`./${PATHS.EDIT_SCHEDULE}`, {
+                      state: { schedule },
+                    });
+                  }}
+                >
+                  Edit
+                </Dropdown.Item>
+              )}
             </Dropdown>
           </div>
         )}
@@ -41,18 +52,20 @@ const ScheduleDateBox = ({
       {!schedule && (
         <div className="relative">
           <p className="absolute whitespace-normal">No schedule available</p>
-          <Button
-            size="sm"
-            className="absolute hidden group-hover:block"
-            color="info"
-            onClick={() => {
-              navigate(`./${PATHS.CREATE_SCHEDULE}`, {
-                state: { date: date.toDate() },
-              });
-            }}
-          >
-            Add schedule
-          </Button>
+          {date.isAfter(moment(new Date())) && (
+            <Button
+              size="sm"
+              className="absolute hidden group-hover:block"
+              color="info"
+              onClick={() => {
+                navigate(`./${PATHS.CREATE_SCHEDULE}`, {
+                  state: { date: date.toDate() },
+                });
+              }}
+            >
+              Add schedule
+            </Button>
+          )}
         </div>
       )}
       {schedule && (
