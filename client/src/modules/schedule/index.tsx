@@ -15,6 +15,7 @@ const ScheduleRoutes = () => {
         element={globalState?.user?.role === ROLES.SCHEDULER ? <Calendar /> : null}
       />
       <Route path={`/${PATHS.CREATE_SCHEDULE}`} element={<AddSchedule />} />
+      <Route path={`/${PATHS.EDIT_SCHEDULE}`} element={<AddSchedule />} />
     </Routes>
   );
 };

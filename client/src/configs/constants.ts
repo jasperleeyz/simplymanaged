@@ -22,6 +22,8 @@ export const ROLES = {
 export const PATHS = {
     SCHEDULE: 'schedule',
     CREATE_SCHEDULE: 'create-schedule',
+    EDIT_SCHEDULE: 'edit-schedule',
+    VIEW_SCHEDULE: 'view-schedule',
 
     MY_PROFILE: 'my-profile',
     EDIT_PROFILE: 'edit',
