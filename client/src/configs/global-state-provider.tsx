@@ -35,12 +35,13 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       profileImage:
         "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
     },
-    isAuthenticated: false,
+    isAuthenticated: true,
     workShifts: ["AM", "PM", "FULL"],
     schedule: [
       {
         scheduleTemplate: "",
         date: new Date(),
+        location: "Toa Payoh",
         employeesSelected: [
           {
             id: 2,
@@ -52,11 +53,22 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
             employmentType: "FULL-TIME",
             shift: "PM",
           },
+          {
+            id: 1,
+            name: "JOHN DOE",
+            email: "JOHNDOE@SIMPLYMANAGED.COM",
+            phoneNo: "99999999",
+            role: ROLES.SCHEDULER,
+            position: "STORE MANAGER",
+            employmentType: "FULL-TIME",
+            shift: "AM",
+          },
         ],
       },
       {
         scheduleTemplate: "",
         date: new Date("2023-09-30"),
+        location: "Toa Payoh",
         employeesSelected: [
           {
             id: 2,
@@ -89,6 +101,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       {
         scheduleTemplate: "",
         date: new Date("2023-10-01"),
+        location: "Toa Payoh",
         employeesSelected: [
           {
             id: 2,
