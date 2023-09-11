@@ -1,9 +1,12 @@
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
+import { ScheduleDetails } from "../../model/schedule.model";
+import React from "react";
+import { GlobalStateContext } from "../../../configs/global-state-provider";
 
 type IProps = {
   date?: moment.Moment;
-  schedule?: any;
+  schedule?: ScheduleDetails | null;
 };
 
 const PersonalDateBox = ({
@@ -11,20 +14,30 @@ const PersonalDateBox = ({
   schedule = null,
 }: IProps) => {
   const navigate = useNavigate();
+  const user = React.useContext(GlobalStateContext).globalState?.user;
+
+  const userInSchedule = schedule?.employeesSelected.find((emp) => {
+      if (emp.id === user?.id) return emp;
+      return null;
+    });
 
   return (
     <div className="w-[110px] h-[110px] max-w-sm max-h-sm group">
       <p>{date.date()}</p>
       <br />
-      {!schedule && (
+      {!userInSchedule && (
         <div className="relative">
           <p className="absolute whitespace-normal">No schedule for the day</p>
         </div>
       )}
-      {schedule && (
+      {userInSchedule && (
         <div className="relative">
           {/* <p className="absolute whitespace-normal">No schedule for the day</p>
         <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
+          <div className="bg-green-300 rounded p-1">
+            <p>{schedule?.location}</p>
+            <p>{userInSchedule?.shift + " Shift"}</p>
+          </div>
         </div>
       )}
     </div>

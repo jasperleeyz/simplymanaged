@@ -4,18 +4,31 @@ import { GlobalStateContext } from "../../configs/global-state-provider";
 import React from "react";
 import AddSchedule from "./manager/add-schedule";
 import { PATHS, ROLES } from "../../configs/constants";
+import PrivateRoute from "../../shared/auth/private-route";
 
 const ScheduleRoutes = () => {
   const globalState = React.useContext(GlobalStateContext).globalState;
 
   return (
     <Routes>
+      <Route path="/" element={<Calendar />} />
       <Route
-        path="/"
-        element={globalState?.user?.role === ROLES.SCHEDULER ? <Calendar /> : null}
+        path={`/${PATHS.CREATE_SCHEDULE}`}
+        element={
+          <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER]}>
+            <AddSchedule />
+          </PrivateRoute>
+        }
       />
-      <Route path={`/${PATHS.CREATE_SCHEDULE}`} element={<AddSchedule />} />
-      <Route path={`/${PATHS.EDIT_SCHEDULE}`} element={<AddSchedule />} />
+      <Route
+        path={`/${PATHS.EDIT_SCHEDULE}`}
+        element={
+          <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER]}>
+            <AddSchedule />
+          </PrivateRoute>
+        }
+      />
+      <Route path={`/${PATHS.VIEW_SCHEDULE}`} element={<Calendar />} />
     </Routes>
   );
 };

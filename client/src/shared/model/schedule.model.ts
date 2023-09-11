@@ -6,6 +6,7 @@ export interface EmployeeSchedule extends IUser {
 
 export interface ScheduleDetails {
   date?: Date;
+  location?: string;
   scheduleTemplate?: string;
   employeesSelected: EmployeeSchedule[];
 }

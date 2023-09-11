@@ -20,6 +20,7 @@ type IProps = {
   month: number;
   year?: number;
   isPersonal: boolean;
+  location: string;
 };
 
 type CalObject = {
@@ -30,6 +31,7 @@ const CalendarMonthView = ({
   month,
   year = new Date().getFullYear(),
   isPersonal,
+  location
 }: IProps) => {
   const cal = [] as CalObject[];
 
@@ -53,7 +55,8 @@ const CalendarMonthView = ({
   const scheduleForMonth = scheduleList?.filter(
     (schedule) =>
       schedule.date?.getMonth() === month &&
-      schedule.date?.getFullYear() === year
+      schedule.date?.getFullYear() === year &&
+      schedule.location === location
   );
 
   return (

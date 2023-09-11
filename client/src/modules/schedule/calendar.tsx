@@ -9,7 +9,7 @@ import {
   TextInput,
 } from "flowbite-react";
 import React from "react";
-import { MONTHS, PATHS } from "../../configs/constants";
+import { MONTHS, PATHS, ROLES } from "../../configs/constants";
 import CalendarMonthView from "../../shared/layout/calendar/calendar-month-view";
 import CalendarWeekView from "../../shared/layout/calendar/calendar-week-view";
 import { HiCalendar } from "react-icons/hi";
@@ -29,12 +29,12 @@ const customCalendarStyle: CustomFlowbiteTheme = {
 
 const Calendar = () => {
   const navigate = useNavigate();
+  const user = React.useContext(GlobalStateContext).globalState?.user;
 
   // TODO: to call retrieve schedule api here
   const locationList = ["Toa Payoh", "Ang Mo Kio"];
-  const isPersonalList = []; // only load if is scheduler/manager role
-  // const scheduleList = [];
-  const scheduleList = React.useContext(GlobalStateContext).globalState?.schedule;
+  const scheduleList =
+    React.useContext(GlobalStateContext).globalState?.schedule;
 
   // TODO: update with default values
   const [schedule, setSchedule] = React.useState([]);
@@ -58,6 +58,7 @@ const Calendar = () => {
     return v;
   });
   const [isPersonal, setIsPersonal] = React.useState(() => {
+    if (user?.role === ROLES.EMPLOYEE) return true;
     const ip = history.state["isPersonal"];
     if (!ip) return false;
     return ip;
@@ -130,21 +131,23 @@ const Calendar = () => {
               ))}
             </Select>
           </div>
-          <div className="ms-auto mt-3 flex">
-            <Button size="sm" onClick={() => setIsPersonal((prev) => !prev)}>
-              {!isPersonal ? "View Personal Schedule" : "View All Schedules"}
-            </Button>
-            {!isPersonal && (
-              <Button
-                size="sm"
-                onClick={() => navigate(`./${PATHS.CREATE_SCHEDULE}`)}
-                className="ml-3"
-              >
-                <HiCalendar className="my-auto mr-2" />
-                <p>Create Schedule</p>
+          {user?.role === ROLES.SCHEDULER && (
+            <div className="ms-auto mt-3 flex">
+              <Button size="sm" onClick={() => setIsPersonal((prev) => !prev)}>
+                {!isPersonal ? "View Personal Schedule" : "View All Schedules"}
               </Button>
-            )}
-          </div>
+              {!isPersonal && (
+                <Button
+                  size="sm"
+                  onClick={() => navigate(`./${PATHS.CREATE_SCHEDULE}`)}
+                  className="ml-3"
+                >
+                  <HiCalendar className="my-auto mr-2" />
+                  <p>Create Schedule</p>
+                </Button>
+              )}
+            </div>
+          )}
           {/* <div className="ms-auto md:flex md:flex-wrap content-end">
             <Button.Group>
               <Button
@@ -162,8 +165,14 @@ const Calendar = () => {
             </Button.Group>
           </div> */}
         </div>
-        {view === "month" && <CalendarMonthView month={month} isPersonal={isPersonal} />}
-        {view === "week" && <CalendarWeekView />}
+        {view === "month" && (
+          <CalendarMonthView
+            month={month}
+            isPersonal={isPersonal}
+            location={location}
+          />
+        )}
+        {/* {view === "week" && <CalendarWeekView />} */}
       </div>
     </Flowbite>
   );

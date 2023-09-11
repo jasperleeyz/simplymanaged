@@ -3,17 +3,17 @@ import { useLocation, Navigate, PathRouteProps } from 'react-router-dom';
 
 // import { useAppSelector } from 'app/config/store';
 import ErrorBoundary from '../error/error-boundary'
+import { GlobalStateContext } from '../../configs/global-state-provider';
 
 interface IOwnProps extends PathRouteProps {
-  hasAnyAuthorities?: string[];
+  hasAnyRoles?: string[];
   children: React.ReactNode;
 }
 
-export const PrivateRoute = ({ children, hasAnyAuthorities = [], ...rest }: IOwnProps) => {
-  // const isAuthenticated = useAppSelector(state => state.authentication.isAuthenticated);
-  // const sessionHasBeenFetched = useAppSelector(state => state.authentication.sessionHasBeenFetched);
-  // const account = useAppSelector(state => state.authentication.account);
-  // const isAuthorized = hasAnyAuthority(account.authorities, hasAnyAuthorities);
+export const PrivateRoute = ({ children, hasAnyRoles = [], ...rest }: IOwnProps) => {
+  const user = React.useContext(GlobalStateContext).globalState?.user;
+  const isAuthenticated = React.useContext(GlobalStateContext).globalState?.isAuthenticated;
+  const isAuthorized = hasAnyRole(user?.role, hasAnyRoles);
   const location = useLocation();
 
   if (!children) {
@@ -24,17 +24,17 @@ export const PrivateRoute = ({ children, hasAnyAuthorities = [], ...rest }: IOwn
   //   return <div></div>;
   // }
 
-  // if (isAuthenticated) {
-  //   if (isAuthorized) {
-  //     return <ErrorBoundary>{children}</ErrorBoundary>;
-  //   }
+  if (isAuthenticated) {
+    if (isAuthorized) {
+      return <ErrorBoundary>{children}</ErrorBoundary>;
+    }
 
-  //   return (
-  //     <div className="insufficient-authority">
-  //       <div className="alert alert-danger">You are not authorized to access this page.</div>
-  //     </div>
-  //   );
-  // }
+    return (
+      <div className="insufficient-authority">
+        <div className="alert alert-danger">You are not authorized to access this page.</div>
+      </div>
+    );
+  }
 
   return (
     <Navigate
@@ -48,12 +48,12 @@ export const PrivateRoute = ({ children, hasAnyAuthorities = [], ...rest }: IOwn
   );
 };
 
-export const hasAnyAuthority = (authorities: string[], hasAnyAuthorities: string[]) => {
-  if (authorities && authorities.length !== 0) {
-    if (hasAnyAuthorities.length === 0) {
+export const hasAnyRole = (role: string | undefined, hasAnyRoles: string[]) => {
+  if (role) {
+    if (hasAnyRoles.length === 0) {
       return true;
     }
-    return hasAnyAuthorities.some(auth => authorities.includes(auth));
+    return hasAnyRoles.some(r => role === r);
   }
   return false;
 };
