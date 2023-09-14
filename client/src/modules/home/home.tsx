@@ -4,15 +4,21 @@ import { GlobalStateContext } from "../../configs/global-state-provider";
 import { capitalizeString } from "../../configs/utils";
 import UpcomingShiftComponent from "./upcoming-shift-component";
 import { HiClock } from "react-icons/hi";
+import PendingRequestComponent from "./pending-request-component";
 
 const Home = () => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
 
   // TODO: retrieve shifts for the week
-  const scheduleForTheWeek = [{date: new Date(), shift: 'AM', duration: 4, location: 'Toa Payoh'}];
+  const scheduleForTheWeek = [
+    { date: new Date(), shift: "AM", duration: 4, location: "Toa Payoh" },
+  ];
 
   // TODO: retrieve request pending approval
-  const pendingRequests = [];
+  const pendingRequests = globalState?.requests.filter(
+    (req) => req.status === "pending"
+  );
 
   return (
     <div className="w-full md:flex">
@@ -23,7 +29,7 @@ const Home = () => {
         </p>
         <p>{capitalizeString(user?.position)}</p>
         <Button className="mx-auto mt-5" size="sm">
-          <HiClock className='my-auto mr-2'/>
+          <HiClock className="my-auto mr-2" />
           <p>Clock-in</p>
         </Button>
       </div>
@@ -33,9 +39,9 @@ const Home = () => {
           <div className="md:w-1/2 md:mr-5">
             <p className="sub-header">Upcoming Schedules</p>
             <Card className="md:w-11/12">
-              {scheduleForTheWeek.length > 0 ? (
+              {scheduleForTheWeek && scheduleForTheWeek.length > 0 ? (
                 scheduleForTheWeek.map((shift, idx) => (
-                  <UpcomingShiftComponent key={idx} schedule={shift}/>
+                  <UpcomingShiftComponent key={idx} schedule={shift} />
                 ))
               ) : (
                 <>
@@ -46,10 +52,10 @@ const Home = () => {
             </Card>
           </div>
           <div className="mt-5 md:mt-0 md:w-1/2">
-            <p className="sub-header">Needs Approval</p>
+            <p className="sub-header">Requests Pending Approval</p>
             <Card className="md:w-11/12">
-              {pendingRequests.length > 0 ? (
-                <></>
+              {pendingRequests && pendingRequests.length > 0 ? (
+                <PendingRequestComponent requests={pendingRequests} />
               ) : (
                 <p>No pending requests found</p>
               )}
