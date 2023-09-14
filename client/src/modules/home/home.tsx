@@ -28,11 +28,11 @@ const Home = () => {
         </Button>
       </div>
       <div className="md:w-4/5 md:border-l-2 md:px-5">
-        <p className="header">Dashboard</p>
+        <p className="header hidden md:block">Dashboard</p>
         <div className="mt-6 md:min-h-max md:flex">
-          <div className="w-1/2 mr-5">
+          <div className="md:w-1/2 md:mr-5">
             <p className="sub-header">Upcoming Schedules</p>
-            <Card className="w-11/12">
+            <Card className="md:w-11/12">
               {scheduleForTheWeek.length > 0 ? (
                 scheduleForTheWeek.map((shift, idx) => (
                   <UpcomingShiftComponent key={idx} schedule={shift}/>
@@ -45,9 +45,9 @@ const Home = () => {
               )}
             </Card>
           </div>
-          <div className="w-1/2">
+          <div className="mt-5 md:mt-0 md:w-1/2">
             <p className="sub-header">Needs Approval</p>
-            <Card className="w-11/12">
+            <Card className="md:w-11/12">
               {pendingRequests.length > 0 ? (
                 <></>
               ) : (
