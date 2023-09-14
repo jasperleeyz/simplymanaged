@@ -2,12 +2,14 @@ import React from "react";
 import IUser from "../shared/model/user.model";
 import { ROLES } from "./constants";
 import { ScheduleDetails } from "../shared/model/schedule.model";
+import { Request } from "../shared/model/request.model";
 
 type GlobalState = {
   user?: IUser;
   isAuthenticated: boolean;
   workShifts?: any[];
   schedule: ScheduleDetails[];
+  requests: Request[];
 };
 
 interface GlobalStateContextProps {
@@ -126,6 +128,56 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
         ],
       },
     ],
+    requests: [
+      {
+        id: 1,
+        type: "shift",
+        status: "pending",
+        createdDate: new Date(),
+        createdBy: "John Smith",
+        updatedDate: new Date(),
+        updatedBy: "John Smith",
+        shiftRequest: {
+          requestId: 1,
+          shift: "PM",
+          shiftDate: new Date(),
+        },
+      },
+      {
+        id: 2,
+        type: "leave",
+        status: "pending",
+        createdDate: new Date(),
+        createdBy: "John Smith",
+        updatedDate: new Date(),
+        updatedBy: "John Smith",
+        leaveRequest: {
+          requestId: 2,
+          leaveType: "Annual",
+          leaveDateFrom: new Date(2023, 11, 1, 8, 30, 0, 0),
+          leaveDateTo: new Date(2023, 11, 7, 18, 0, 0, 0),
+          isHalfDay: false,
+        },
+      },
+      // {
+      //   id: 3,
+      //   type: "swap",
+      //   status: "pending",
+      //   createdDate: new Date(),
+      //   createdBy: "John Smith",
+      //   updatedDate: new Date(),
+      //   updatedBy: "John Smith",
+      //   shiftSwapRequest: {
+      //     requestId: 3,
+      //     requestorShift: "AM",
+      //     requestorShiftDate: new Date(2023, 10, 5),
+      //     requestedShift: "AM",
+      //     requestedShiftDate: new Date(2023, 10, 1),
+      //     requestedShiftEmployee: "John Wick",
+      //     swapReason: "Unable to work on actual day",
+      //   },
+      // },
+    ]
   });
 
   const value = React.useMemo(

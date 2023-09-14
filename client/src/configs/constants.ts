@@ -29,4 +29,10 @@ export const PATHS = {
     EDIT_PROFILE: 'edit',
 
     REQUESTS: 'requests',
+    VIEW_REQUEST: 'view-request',
+}
+
+export const DATE = {
+    LANGUAGE: 'en-SG',
+    DDMMYYYY_HHMM_A_OPTION: {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true} as Intl.DateTimeFormatOptions,
 }
