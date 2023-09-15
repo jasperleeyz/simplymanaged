@@ -5,7 +5,7 @@ import React from "react";
 import AddSchedule from "./manager/add-schedule";
 import { PATHS, ROLES } from "../../configs/constants";
 import PrivateRoute from "../../shared/auth/private-route";
-import ViewSchedule from "./manager/view-schedule";
+//import ViewSchedule from "./manager/view-schedule";
 
 const ScheduleRoutes = () => {
   const globalState = React.useContext(GlobalStateContext).globalState;
