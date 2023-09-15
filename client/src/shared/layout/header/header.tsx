@@ -12,6 +12,7 @@ import { Link, useLocation } from "react-router-dom";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import { PATHS } from "../../../configs/constants";
 import { capitalizeString } from "../../../configs/utils";
+import { ROLES } from "../../../configs/constants";
 
 const customHeaderTheme: CustomFlowbiteTheme = {
   navbar: {
@@ -73,13 +74,24 @@ const Header = () => {
           <Navbar.Link active={location.pathname === "/"} to="/" as={Link}>
             <p>Dashboard</p>
           </Navbar.Link>
-          <Navbar.Link
+          {/*SYSADMIN HEADER*/}
+          {globalState?.user?.role == ROLES.SYSADMIN && (<Navbar.Link
+            active={location.pathname.startsWith("/" + PATHS.EMPLOYEE)}
+            to={`/${PATHS.EMPLOYEE}`}
+            as={Link}
+          >
+            People
+          </Navbar.Link>
+          )}
+          {/*SCHEDULER HEADER*/}
+          {globalState?.user?.role == ROLES.SCHEDULER && (<Navbar.Link
             active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
             to={`/${PATHS.SCHEDULE}`}
             as={Link}
           >
             Schedule
           </Navbar.Link>
+          )}
           {/* <Navbar.Link
             active={location.pathname.startsWith("/people")}
             to="/people"
@@ -87,13 +99,14 @@ const Header = () => {
           >
             People
           </Navbar.Link> */}
-          <Navbar.Link
+          {globalState?.user?.role == ROLES.SCHEDULER && (<Navbar.Link
             active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
             to={`/${PATHS.REQUESTS}`}
             as={Link}
           >
             Requests
           </Navbar.Link>
+          )}
           {/* <Navbar.Link
             active={location.pathname.startsWith("/reports")}
             to="/reports"
@@ -101,6 +114,23 @@ const Header = () => {
           >
             Reports
           </Navbar.Link> */}
+          {/*EMPLOYEE*/}
+          {globalState?.user?.role == ROLES.EMPLOYEE && (<Navbar.Link
+            active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
+            to={`/${PATHS.SCHEDULE}`}
+            as={Link}
+          >
+            Schedule
+          </Navbar.Link>
+          )}
+          {globalState?.user?.role == ROLES.EMPLOYEE && (<Navbar.Link
+            active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
+            to={`/${PATHS.REQUESTS}`}
+            as={Link}
+          >
+            Requests
+          </Navbar.Link>
+          )}
         </Navbar.Collapse>
       </Navbar>
     </Flowbite>

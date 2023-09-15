@@ -30,9 +30,13 @@ export const PATHS = {
 
     REQUESTS: 'requests',
     VIEW_REQUEST: 'view-request',
+
+    EMPLOYEE: 'employee',
+    ADD_EMPLOYEE: 'add',
 }
 
 export const DATE = {
     LANGUAGE: 'en-SG',
     DDMMYYYY_HHMM_A_OPTION: {day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true} as Intl.DateTimeFormatOptions,
+
 }

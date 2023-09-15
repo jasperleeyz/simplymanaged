@@ -10,6 +10,7 @@ type GlobalState = {
   workShifts?: any[];
   schedule: ScheduleDetails[];
   requests: Request[];
+  employee: IUser[];
 };
 
 interface GlobalStateContextProps {
@@ -31,7 +32,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       name: "JOHN DOE",
       email: "JOHNDOE@SIMPLYMANAGED.COM",
       phoneNo: "99999999",
-      role: ROLES.SCHEDULER,
+      role: ROLES.SYSADMIN,
       position: "STORE MANAGER",
       employmentType: "FULL-TIME",
       profileImage:
@@ -159,6 +160,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
           isHalfDay: false,
         },
       },
+    ],
       // {
       //   id: 3,
       //   type: "swap",
@@ -177,6 +179,114 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       //     swapReason: "Unable to work on actual day",
       //   },
       // },
+    employee:[
+      {
+        id: 2,
+        name: "JOHN WICK",
+        email: "JOHNWICK@SIMPLYMANAGED.COM",
+        phoneNo: "88888888",
+        role: "E",
+        position: "MANAGER",
+        employmentType: "FULL-TIME",
+      },
+      {
+        id: 3,
+        name: "DEADPOOL",
+        email: "DEADPOOL@SIMPLYMANAGED.COM",
+        phoneNo: "77777777",
+        role: "E",
+        position: "BARISTA",
+        employmentType: "PART-TIME",
+      },
+      {
+        id: 4,
+        name: "HARRY POTTER",
+        email: "HARRYPOTTER@SIMPLYMANAGED.COM",
+        phoneNo: "66666666",
+        role: "E",
+        position: "SERVER",
+        employmentType: "PART-TIME",
+      },
+      {
+        id: 5,
+        name: "JOHN WICK10",
+        email: "JOHNWICK10@SIMPLYMANAGED.COM",
+        phoneNo: "88888888",
+        role: "E",
+        position: "MANAGER",
+        employmentType: "FULL-TIME",
+      },
+      {
+        id: 6,
+        name: "DEADPOOL10",
+        email: "DEADPOOL10@SIMPLYMANAGED.COM",
+        phoneNo: "77777777",
+        role: "E",
+        position: "BARISTA",
+        employmentType: "PART-TIME",
+      },
+      {
+        id: 7,
+        name: "HARRY POTTER10",
+        email: "HARRYPOTTER10@SIMPLYMANAGED.COM",
+        phoneNo: "66666666",
+        role: "E",
+        position: "SERVER",
+        employmentType: "PART-TIME",
+      },{
+        id: 8,
+        name: "JOHN WICK20",
+        email: "JOHNWICK20@SIMPLYMANAGED.COM",
+        phoneNo: "88888888",
+        role: "E",
+        position: "MANAGER",
+        employmentType: "FULL-TIME",
+      },
+      {
+        id: 9,
+        name: "DEADPOOL20",
+        email: "DEADPOOL20@SIMPLYMANAGED.COM",
+        phoneNo: "77777777",
+        role: "E",
+        position: "BARISTA",
+        employmentType: "PART-TIME",
+      },
+      {
+        id: 10,
+        name: "HARRY POTTER20",
+        email: "HARRYPOTTER20@SIMPLYMANAGED.COM",
+        phoneNo: "66666666",
+        role: "E",
+        position: "SERVER",
+        employmentType: "PART-TIME",
+      },
+      {
+        id: 11,
+        name: "JOHN WICK30",
+        email: "JOHNWICK@SIMPLYMANAGED.COM",
+        phoneNo: "88888888",
+        role: "E",
+        position: "MANAGER",
+        employmentType: "FULL-TIME",
+      },
+      {
+        id: 12,
+        name: "DEADPOOL30",
+        email: "DEADPOOL@SIMPLYMANAGED.COM",
+        phoneNo: "77777777",
+        role: "E",
+        position: "BARISTA",
+        employmentType: "PART-TIME",
+      },
+      {
+        id: 13,
+        name: "HARRY POTTER30",
+        email: "HARRYPOTTER@SIMPLYMANAGED.COM",
+        phoneNo: "66666666",
+        role: "E",
+        position: "SERVER",
+        employmentType: "PART-TIME",
+      }
     ]
   });
 
