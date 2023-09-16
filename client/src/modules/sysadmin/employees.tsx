@@ -1,45 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import { GlobalStateContext } from "../../configs/global-state-provider";
-import { Avatar, Checkbox, Button, Label, TextInput, Table, Pagination, Toast, Select} from "flowbite-react";
-import { capitalizeString, isNumber } from "../../configs/utils";
-import { HiCheck, HiPencil, HiSave } from "react-icons/hi";
-import { useLocation, useNavigate } from "react-router-dom";
-import { PATHS } from "../../configs/constants";
-import IUser from "../../shared/model/user.model";
+import React, { useState, useEffect } from 'react'
+import { GlobalStateContext } from "../../configs/global-state-provider"
+import { Avatar, Checkbox, Button, Label, TextInput, Table, Pagination, Toast, Select} from "flowbite-react"
+import { capitalizeString, isNumber } from "../../configs/utils"
+import { HiCheck, HiX, HiPencil, HiSave } from "react-icons/hi"
+import { useLocation, useNavigate } from "react-router-dom"
+import { PATHS } from "../../configs/constants"
+import IUser from "../../shared/model/user.model"
+import { ROLES } from "../../configs/constants"
 
 const EmployeesPage = () => {
 
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  const navigate = useNavigate();
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext)
+  const navigate = useNavigate()
+  
+  //Toast 
+  const [addEmployeeToast, setAddEmployeeToast] = useState(false);
+  const [failEmployeeToast, setFailEmployeeToast] = useState(false);
+  const employeePropsToast = { addEmployeeToast, setAddEmployeeToast, failEmployeeToast, setFailEmployeeToast };
 
   //People Page Variable
   // TODO: to retrieve employees from API // should return only employees that are
   // available or meet the schedule criteria
-  const [employees, setEmployees] = useState<IUser[]>(globalState?.employee || []);
+  const [employees, setEmployees] = useState<IUser[]>(globalState?.employee || [])
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredEmployees, setFilteredEmployees] = useState<IUser[]>([]);
+  const [searchTerm, setSearchTerm] = useState("")
+  const [filteredEmployees, setFilteredEmployees] = useState<IUser[]>([])
 
   useEffect(() => {
     // When the searchTerm changes, update the filteredEmployees state.
     const filtered = employees.filter((emp) =>
       emp.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-    setFilteredEmployees(filtered);
-    setCurrentPage(1);
-  }, [searchTerm, employees]);
+    )
+    setFilteredEmployees(filtered)
+    setCurrentPage(1)
+  }, [searchTerm, employees])
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const onPageChange = (page: number) => setCurrentPage(page);
+  const [currentPage, setCurrentPage] = useState(1)
+  const onPageChange = (page: number) => setCurrentPage(page)
 
   // Calculate the indices for the employees to display based on currentPage and employeesPerPage
-  const employeesPerPage = 10;
-  const startIndex = (currentPage - 1) * employeesPerPage;
-  const endIndex = startIndex + employeesPerPage;
-  const employeesToDisplay = filteredEmployees.slice(startIndex, endIndex);
+  const employeesPerPage = 10
+  const startIndex = (currentPage - 1) * employeesPerPage
+  const endIndex = startIndex + employeesPerPage
+  const employeesToDisplay = filteredEmployees.slice(startIndex, endIndex)
 
-  const addEmployeePage = useLocation().pathname.endsWith("add");
-  const editEmployeePage = useLocation().pathname.endsWith("edit");
+  const addEmployeePage = useLocation().pathname.endsWith("add")
+  const editEmployeePage = useLocation().pathname.endsWith("edit")
 
 
 
@@ -52,46 +58,61 @@ const EmployeesPage = () => {
 
   //Add Employee Page Variable
 
-  const [firstName, setFirstName] = useState('');
+  const [firstName, setFirstName] = useState('')
 
   const handleFirstNameChange = (event) => {
-    setFirstName(event.target.value);
-  };
+    setFirstName(event.target.value)
+  }
 
-  const [lastName, setLastName] = useState('');
+  const [lastName, setLastName] = useState('')
 
   const handleLastNameChange = (event) => {
-    setLastName(event.target.value);
-  };
+    setLastName(event.target.value)
+  }
 
-  const [phone, setPhone] = useState('');
+  const [phone, setPhone] = useState('')
 
   const handlePhoneChange = (event) => {
-    setPhone(event.target.value);
-  };
+    setPhone(event.target.value)
+  }
 
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState('')
 
   const handleEmailChange = (event) => {
-    setEmail(event.target.value);
-  };
+    setEmail(event.target.value)
+  }
 
-  const [selectedButton, setSelectedButton] = useState(null);
+  const [role, setRole] = useState('')
+
+  const handleRoleChange = (event) => {
+    setRole(event.target.value)
+  }
+
+  const [selectedButton, setSelectedButton] = useState(null)
 
   const handleButtonClick = (buttonName) => {
     // Perform the action associated with the button here
-    console.log(`Button "${buttonName}" was clicked.`);
     // Set the selected button
-    setSelectedButton(buttonName);
-  };
+    setSelectedButton(buttonName)
+    
+    let role = '' // Initialize role variable
+
+    if (buttonName === 'Employee') {
+      role = ROLES.EMPLOYEE // Assuming 'R' is for Employee
+    } else if (buttonName === 'Manager') {
+      role = ROLES.SCHEDULER 
+    } else if (buttonName === 'System Admin') {
+      role = ROLES.SYSADMIN 
+    }
+    setRole(role)
+  }
 
   const getButtonStyle = (buttonName) => {
     return {
       backgroundColor: selectedButton === buttonName ? 'gray' : 'white',
       color: selectedButton === buttonName ? 'white' : 'black',
-      // Add other styles as needed
-    };
-  };
+    }
+  }
 
   const addEmployeeFunc = () => {
 
@@ -100,51 +121,75 @@ const EmployeesPage = () => {
       name: firstName + ' ' + lastName,
       email: email,
       phoneNo: phone,
-      role: 'Employee',
+      role: role,
       position: 'Position',
       employmentType: 'Full Time',
-    };
+    }
     
-    const updatedEmployees = [...employees];
+    const updatedEmployees = [...employees]
 
-    updatedEmployees.push(newEmployee);
+    updatedEmployees.push(newEmployee)
 
-    setEmployees(updatedEmployees);
+    setEmployees(updatedEmployees)
 
     setGlobalState((prev) => ({
       ...prev,
       employee: updatedEmployees,
-    }));
+    }))
+    employeePropsToast.setAddEmployeeToast(!employeePropsToast.addEmployeeToast)
   }
 
   const handleSaveAndReload = () => {
 
     addEmployeeFunc()
-
-    console.log(employees.length)
-
-    // Reload the page
     setFirstName('')
     setLastName('')
     setPhone('')
     setEmail('')
+    setRole('')
 
-    
-  };
+  }
 
 
 
   //Edit Employee Page Variable
 
-  const [editEmployee, setEditEmployee] = useState<IUser>();
+  const [editEmployee, setEditEmployee] = useState<IUser>()
 
   const [errorMessage, setErrorMessage] = React.useState(() => {
     return {
       name: "",
       email: "",
       phoneNo: "",
-    };
-  });
+    }
+  })
+
+
+
+  const removeEmployeeFunc = () => {
+    if (!editEmployee) {
+      console.error('No employee selected for removal.')
+      return
+    }
+  
+    // Create a shallow copy of the current employees array excluding the employee to be removed
+    const updatedEmployees = employees.filter((employee) => employee.id !== editEmployee.id)
+  
+    // Update the state with the new array
+    setEmployees(updatedEmployees)
+  
+    // If needed, update the global state with the updated employees array
+    setGlobalState((prev) => ({
+      ...prev,
+      employee: updatedEmployees,
+    }))
+  }
+
+
+
+
+
+
 
 
   // TODO: get user profile (details, preferences) here
@@ -155,17 +200,17 @@ const EmployeesPage = () => {
     setGlobalState((prev) => ({
       ...prev,
       user: editEmployee,
-    }));
+    }))
 
     // then navigate to profile page
-    navigate(`/${PATHS.MY_PROFILE}`, { replace: true });
-  };
+    navigate(`/${PATHS.MY_PROFILE}`, { replace: true })
+  }
 
   return (
     <div>
       {addEmployeePage ? (
       <div id="add-employee-page">
-        <p className="header">Add an employee</p>
+      <p className="header">Add an employee</p>
         <div id="user-details" className="w-full md:w-3/5">
           <div className="flex">
             <div className="flex-1 pr-2">
@@ -178,6 +223,7 @@ const EmployeesPage = () => {
                 value = {firstName}
                 style={{ width: '100%' }}
                 onChange={handleFirstNameChange}
+                autoComplete="off"
               />
             </div>
             <div className="flex-1 pl-2">
@@ -190,6 +236,7 @@ const EmployeesPage = () => {
                 value = {lastName}
                 style={{ width: '100%' }}
                 onChange={handleLastNameChange}
+                autoComplete="off"
               />
             </div>
           </div>
@@ -205,6 +252,7 @@ const EmployeesPage = () => {
                   value = {phone}
                   style={{ width: '100%' }}
                   onChange={handlePhoneChange}
+                  autoComplete="off"
                 />
               </div>
               <div className="flex-1 pl-2">
@@ -216,6 +264,7 @@ const EmployeesPage = () => {
                 value = {email}
                 style={{ width: '100%' }}
                 onChange={handleEmailChange}
+                autoComplete="off"
               />
               </div>
             </div>
@@ -248,21 +297,28 @@ const EmployeesPage = () => {
               </Button>
             </Button.Group>
             </div>
-          <div className="mt-4"> {/* Add margin-top for spacing */}
+          
+          {/*
+          <div className="mt-4"> {//Add margin-top for spacing }
             <Label htmlFor="role" value="Role" />
           </div>
-          <div className="mt-2"> {/* Add margin-top for spacing */}
+          <div className="mt-2"> {//Add margin-top for spacing }
             <TextInput
                 placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 style={{ width: '30%' }}
+                autoComplete="off"
             />
           </div>
+          }*/}
           <div className="mt-4 flex" > {/* Add margin-top for spacing */}
             <div className="pr-2">
               <Button color="gray"
-                onClick={() => navigate(`/${PATHS.EMPLOYEES}`)}>
+                onClick={() => {
+                  navigate(`/${PATHS.EMPLOYEES}`);
+                  addEmployeeFunc();
+                }}>
                 Save and finish
               </Button>
             </div>
@@ -288,6 +344,7 @@ const EmployeesPage = () => {
                 value = {firstName}
                 style={{ width: '50%' }}
                 onChange={handleFirstNameChange}
+                autoComplete="off"
               />
           <div className="mt-2"> {/* Add margin-top for spacing */}
             <Label htmlFor="email" value="Email" />
@@ -299,6 +356,7 @@ const EmployeesPage = () => {
                 value = {email}
                 style={{ width: '50%' }}
                 onChange={handleEmailChange}
+                autoComplete="off"
               />
           </div>
           <div className="mt-2"> {/* Add margin-top for spacing */}
@@ -308,9 +366,10 @@ const EmployeesPage = () => {
                 placeholder={editEmployee?.phoneNo}
                 sizing="md"
                 required
-                value = {email}
+                value = {phone}
                 style={{ width: '50%' }}
-                onChange={handleEmailChange}
+                onChange={handlePhoneChange}
+                autoComplete="off"
               />
           </div>
           <div className="mt-2"> {/* Add margin-top for spacing */}
@@ -338,15 +397,17 @@ const EmployeesPage = () => {
                 placeholder="Phone"
                 sizing="md"
                 required
-                value = {email}
+                value = {''}
                 style={{ width: '50%' }}
-                onChange={handleEmailChange}
+                //onChange={handleEmailChange}
+                autoComplete="off"
               />
           </div>
           <div className="mt-4 flex" > {/* Add margin-top for spacing */}
             <div className="pr-2">
-              <Button color="gray"
-                onClick={() => navigate(`/${PATHS.EMPLOYEES}`)}>
+              <Button  color="gray"
+              disabled={!firstName && !lastName && !email && !phone}
+              onClick={() => navigate(`/${PATHS.EMPLOYEES}`)}>
                 Apply
               </Button>
             </div>
@@ -358,7 +419,7 @@ const EmployeesPage = () => {
             </div>
             <div className="pl-2">
               <Button color="gray"
-                onClick={() => handleSaveAndReload()}>
+                onClick={() => removeEmployeeFunc()}>
                 Delete
               </Button>
             </div>
@@ -372,6 +433,7 @@ const EmployeesPage = () => {
               placeholder="Search..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
           />
           <Button
             size="sm"
@@ -403,10 +465,10 @@ const EmployeesPage = () => {
                 <Table.Row key={idx} className="bg-white dark:border-gray-700 dark:bg-gray-800">
                   <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                     {emp.name}
-                  </Table.Cell>
+                    </Table.Cell>
                   <Table.Cell>{emp.email}</Table.Cell>
                   <Table.Cell>{emp.phoneNo}</Table.Cell>
-                  <Table.Cell>{emp.position}</Table.Cell>
+                  <Table.Cell>{emp.role}</Table.Cell>
                   <Table.Cell>{emp.employmentType}</Table.Cell>
                   <Table.Cell>
                     <Button
@@ -426,7 +488,11 @@ const EmployeesPage = () => {
           </Table>
         </div>
         <div className="text-center mt-4">
-          Showing {startIndex + 1} to {Math.min(endIndex, filteredEmployees.length)} of {filteredEmployees.length} Entries
+          {filteredEmployees.length === 0 ? (
+            `Showing ${startIndex}  to ${Math.min(endIndex, filteredEmployees.length)} of ${filteredEmployees.length} Entries`
+          ) : (
+            `Showing ${startIndex + 1}  to ${Math.min(endIndex, filteredEmployees.length)} of ${filteredEmployees.length} Entries`
+          )}
         </div>
         <div className="flex items-center justify-center text-center">
           <Pagination
@@ -439,8 +505,33 @@ const EmployeesPage = () => {
         </div>
       </div>
       )}
-    </div>
-  );
-};
 
-export default EmployeesPage;
+      
+    <div>
+      {addEmployeeToast && (
+      <Toast style={{ position: 'absolute', top: '100px', right: '10px', width: '17%'}}>
+        <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
+          <HiCheck className="h-5 w-5" />
+        </div>
+        <Label className="ml-3 text-sm font-normal" value="Added employee successfully." />
+        <Toast.Toggle onDismiss={() => employeePropsToast.setAddEmployeeToast(false)} />
+      </Toast>
+      )
+      }
+      {/*
+      <Toast style={{ position: 'absolute', top: '100px', right: '10px' }}>
+        <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
+          <HiX className="h-5 w-5" />
+        </div>
+        <div className="ml-3 text-sm font-normal">
+          Added employee successfully.
+        </div>
+        <Toast.Toggle />
+      </Toast>
+          */}
+      </div>
+    </div>
+  )
+}
+
+export default EmployeesPage
