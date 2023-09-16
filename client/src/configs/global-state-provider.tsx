@@ -160,26 +160,26 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
           isHalfDay: false,
         },
       },
+      {
+        id: 3,
+        type: "swap",
+        status: "pending",
+        createdDate: new Date(),
+        createdBy: "John Smith",
+        updatedDate: new Date(),
+        updatedBy: "John Smith",
+        shiftSwapRequest: {
+          requestId: 3,
+          requestorShift: "AM",
+          requestorShiftDate: new Date(2023, 10, 5),
+          requestedShift: "AM",
+          requestedShiftDate: new Date(2023, 10, 1),
+          requestedShiftEmployee: "John Wick",
+          swapReason: "Unable to work on actual day",
+        },
+      },
     ],
-      // {
-      //   id: 3,
-      //   type: "swap",
-      //   status: "pending",
-      //   createdDate: new Date(),
-      //   createdBy: "John Smith",
-      //   updatedDate: new Date(),
-      //   updatedBy: "John Smith",
-      //   shiftSwapRequest: {
-      //     requestId: 3,
-      //     requestorShift: "AM",
-      //     requestorShiftDate: new Date(2023, 10, 5),
-      //     requestedShift: "AM",
-      //     requestedShiftDate: new Date(2023, 10, 1),
-      //     requestedShiftEmployee: "John Wick",
-      //     swapReason: "Unable to work on actual day",
-      //   },
-      // },
-    employee:[
+    employee: [
       {
         id: 2,
         name: "JOHN WICK",
@@ -233,7 +233,8 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
         role: "E",
         position: "SERVER",
         employmentType: "PART-TIME",
-      },{
+      },
+      {
         id: 8,
         name: "JOHN WICK20",
         email: "JOHNWICK20@SIMPLYMANAGED.COM",
@@ -286,8 +287,8 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
         role: "E",
         position: "SERVER",
         employmentType: "PART-TIME",
-      }
-    ]
+      },
+    ],
   });
 
   const value = React.useMemo(
