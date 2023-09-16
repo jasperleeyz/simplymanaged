@@ -6,7 +6,7 @@ import ScheduleRoutes from "./modules/schedule";
 import RequestRoutes from "./modules/request";
 import PageNotFound from "./shared/error/page-not-found";
 import ProfileRoutes from "./modules/profile";
-import PeopleRoutes from "./modules/people";
+import SysAdminRoutes from "./modules/sysadmin";
 import { PATHS } from "./configs/constants";
 
 const AppRoutes = () => {
@@ -20,7 +20,7 @@ const AppRoutes = () => {
           <Route path={`/${PATHS.SCHEDULE}/*`} element={<ScheduleRoutes />} />
           <Route path={`/${PATHS.REQUESTS}/*`} element={<RequestRoutes />} />
 
-          <Route path={`/${PATHS.EMPLOYEE}/*`} element={<PeopleRoutes />} />
+          <Route path={`/${PATHS.EMPLOYEES}/*`} element={<SysAdminRoutes />} />
           <Route path="*" element={<PageNotFound />} />
         </ErrorBoundaryRoutes>
       </div>

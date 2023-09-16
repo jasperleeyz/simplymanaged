@@ -31,7 +31,7 @@ export const PATHS = {
     REQUESTS: 'requests',
     VIEW_REQUEST: 'view-request',
 
-    EMPLOYEE: 'employee',
+    EMPLOYEES: 'employees',
     ADD_EMPLOYEE: 'add',
 }
 
