@@ -8,7 +8,7 @@ import { PATHS } from "../../configs/constants"
 import IUser from "../../shared/model/user.model"
 import { ROLES } from "../../configs/constants"
 
-const EmployeesPage = () => {
+const EmployeesEditPage = () => {
 
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext)
   const navigate = useNavigate()
@@ -533,4 +533,4 @@ const EmployeesPage = () => {
   )
 }
 
-export default EmployeesPage
+export default EmployeesEditPage

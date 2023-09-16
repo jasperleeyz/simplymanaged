@@ -93,7 +93,7 @@ const ProfilePage = () => {
               value={editUser?.email.toLowerCase()}
               required
               onChange={(e) =>
-                setEditUser((prev) => ({ ...prev, name: e.target.value }))
+                setEditUser((prev) => ({ ...prev, email: e.target.value }))
               }
             />
           )}
