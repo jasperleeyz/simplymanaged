@@ -7,7 +7,8 @@ import RequestRoutes from "./modules/request";
 import PageNotFound from "./shared/error/page-not-found";
 import ProfileRoutes from "./modules/profile";
 import SysAdminRoutes from "./modules/sysadmin";
-import { PATHS } from "./configs/constants";
+import { PATHS, ROLES } from "./configs/constants";
+import PrivateRoute from "./shared/auth/private-route";
 
 const AppRoutes = () => {
   return (
@@ -17,10 +18,31 @@ const AppRoutes = () => {
           <Route index element={<Home />} />
           <Route path={`/${PATHS.MY_PROFILE}/*`} element={<ProfileRoutes />} />
 
-          <Route path={`/${PATHS.SCHEDULE}/*`} element={<ScheduleRoutes />} />
-          <Route path={`/${PATHS.REQUESTS}/*`} element={<RequestRoutes />} />
+          <Route
+            path={`/${PATHS.SCHEDULE}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER, ROLES.EMPLOYEE]}>
+                <ScheduleRoutes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={`/${PATHS.REQUESTS}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER, ROLES.EMPLOYEE]}>
+                <RequestRoutes />
+              </PrivateRoute>
+            }
+          />
 
-          <Route path={`/${PATHS.EMPLOYEES}/*`} element={<SysAdminRoutes />} />
+          <Route
+            path={`/${PATHS.EMPLOYEES}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
+                <SysAdminRoutes />
+              </PrivateRoute>
+            }
+          />
           <Route path="*" element={<PageNotFound />} />
         </ErrorBoundaryRoutes>
       </div>

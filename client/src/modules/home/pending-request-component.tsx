@@ -14,7 +14,7 @@ const PendingRequestComponent = ({ requests }: IProps) => {
         <p className="font-semibold">Requestor</p>
       </div>
       {requests.map((req, idx) => (
-        <div className="grid grid-cols-2 mt-2">
+        <div key={idx} className="grid grid-cols-2 mt-2">
           <p>{capitalizeString(req.type)}</p>
           <p>{req.createdBy}</p>
         </div>

@@ -13,7 +13,13 @@ import RejectButton from "../../shared/layout/buttons/reject-button";
 const Requests = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   // const [requests, setRequests] = React.useState<Request[]>([]);
-  const requests = globalState?.requests;
+  const requests = globalState?.requests.filter((req) => {
+    if (globalState.user?.role === "E") {
+      return req.type === "swap" ? req : null;
+    } else {
+      return req.type !== "swap" ? req : null;
+    }
+  });
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = React.useState(1);
 
@@ -22,7 +28,7 @@ const Requests = () => {
     req.status = status;
     setGlobalState((prev) => ({
       ...prev,
-      requests: prev.requests.map((r) => (r.id === req.id ? req : r))
+      requests: prev.requests.map((r) => (r.id === req.id ? req : r)),
     }));
   };
 
@@ -61,12 +67,33 @@ const Requests = () => {
                             DATE.DDMMYYYY_HHMM_A_OPTION
                           )}`}</p>
                         </>
-                      ) : (
+                      ) : request.type === "shift" ? (
                         <p>
                           {`${request.shiftRequest?.shiftDate.toLocaleDateString()}, ${
                             request.shiftRequest?.shift
                           } Shift`}
                         </p>
+                      ) : (
+                        <>
+                          <p>
+                            {`His/Her schedule: ${request.shiftSwapRequest?.requestorShiftDate.toLocaleDateString(
+                              DATE.LANGUAGE
+                            )}, ${request.shiftSwapRequest?.requestorShiftDate.toLocaleDateString(
+                              DATE.LANGUAGE,
+                              { weekday: "long" }
+                            )},
+                            ${request.shiftSwapRequest?.requestorShift}
+                          `}
+                          </p>
+                          <p>{`Your schedule: ${request.shiftSwapRequest?.requestedShiftDate.toLocaleDateString(
+                            DATE.LANGUAGE
+                          )}, ${request.shiftSwapRequest?.requestedShiftDate.toLocaleDateString(
+                            DATE.LANGUAGE,
+                            { weekday: "long" }
+                          )},
+                            ${request.shiftSwapRequest?.requestedShift}
+                          `}</p>
+                        </>
                       )}
                     </Table.Cell>
                     <Table.Cell>{capitalizeString(request.type)}</Table.Cell>
