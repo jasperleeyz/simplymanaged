@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import {
   Avatar,
@@ -8,10 +10,9 @@ import {
   TextInput,
   Table,
   Pagination,
-  Toast,
   Select,
 } from "flowbite-react";
-import { capitalizeString, isNumber } from "../../configs/utils";
+import { capitalizeString, isNumber, validName, validEmail  } from "../../configs/utils";
 import { HiCheck, HiX, HiPencil, HiSave } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PATHS } from "../../configs/constants";
@@ -52,6 +53,13 @@ const EmployeesAddPage = () => {
     email: "",
   });
 
+  const [inputColor, setInputColor] = useState({
+    firstName : 'gray',
+    lastName : 'gray',
+    phone: 'gray',
+    email: 'gray',
+  })
+
   const [selectedButton, setSelectedButton] = useState(null);
 
   const handleButtonClick = (buttonName) => {
@@ -78,7 +86,49 @@ const EmployeesAddPage = () => {
     };
   };
 
-  const addEmployeeFunc = () => {
+  const addEmployeeFunc = (addNew) => {
+
+    //Check Name Error
+    if(!validName(employee.firstName) || !validName(employee.lastName) || !isNumber(employee.phone) || !validEmail(employee.email)){
+      
+      if (!validName(employee.firstName)){
+        setInputColor(prev => ({
+          ...prev,
+          firstName: 'failure',
+        }));
+      }
+      if(!validName(employee.lastName)){
+        setInputColor(prev => ({
+          ...prev,
+          lastName: 'failure',
+        }));
+      }
+      if(!isNumber(employee.phone)){
+        setInputColor(prev => ({
+          ...prev,
+          phone: 'failure',
+        }));
+      }
+      if(!validEmail(employee.email)){
+        console.log(' .... Is valid email:', employee.email);
+        setInputColor(prev => ({
+          ...prev,
+          email: 'failure',
+        }));
+      }
+
+      toast.error('Invalid Details.',{
+        position : "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        progress: undefined,
+        theme: "light",
+        });
+        return;
+    }
+
     const newEmployee: IUser = {
       id: employees.length + 1,
       name: employee.firstName + " " + employee.lastName,
@@ -88,6 +138,8 @@ const EmployeesAddPage = () => {
       position: "Position",
       employmentType: "Full Time",
     };
+    
+    console.log('Is valid email:', employee.email);
 
     const updatedEmployees = [...employees];
 
@@ -99,11 +151,6 @@ const EmployeesAddPage = () => {
       ...prev,
       employee: updatedEmployees,
     }));
-
-    setPageToast(prev => ({
-      ...prev,
-      added: true
-    }))
     
     setSelectedButton(null)
     getButtonStyle(ROLES.EMPLOYEE)
@@ -112,16 +159,23 @@ const EmployeesAddPage = () => {
 
     resetEmployee()
 
+    toast.success('Added Employee Sucessfully.',{
+      position : "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: false,
+      progress: undefined,
+      theme: "light",
+      });
+      return;
+
+    
+
   };
 
-    //Toast
-    const [pageToast, setPageToast] = useState({
-      added : false,
-      failed : false
-    })
-
   return (
-    <div id="add-employee-page">
+    <div id="add-employee-page" className="relative">
       <p className="header">Add an employee</p>
       <div id="user-details" className="w-full md:w-3/5">
         <div className="flex">
@@ -129,6 +183,7 @@ const EmployeesAddPage = () => {
             <Label htmlFor="first-name" value="First Name*" />
             <TextInput
               id="first-name"
+              color = {inputColor.firstName}
               placeholder="Given Name"
               sizing="md"
               required
@@ -137,7 +192,12 @@ const EmployeesAddPage = () => {
               onChange= {(e) => {setEmployee(prev => ({
                 ...prev,
                 firstName: capitalizeString(e.target.value)
-              }))}}
+              }))
+              setInputColor(prev => ({
+                ...prev,
+                firstName: 'gray',
+              }))  
+              }}
               autoComplete="off"
             />
           </div>
@@ -145,6 +205,7 @@ const EmployeesAddPage = () => {
             <Label htmlFor="last-name" value="Last Name*" />
             <TextInput
               id="last-name"
+              color = {inputColor.lastName}
               placeholder="Family Name"
               sizing="md"
               required
@@ -153,7 +214,12 @@ const EmployeesAddPage = () => {
               onChange= {(e) => {setEmployee(prev => ({
                 ...prev,
                 lastName: capitalizeString(e.target.value)
-              }))}}
+              }))
+              setInputColor(prev => ({
+                ...prev,
+                lastName: 'gray',
+              }))
+              }}
               autoComplete="off"
             />
           </div>
@@ -166,6 +232,7 @@ const EmployeesAddPage = () => {
             <div className="flex-1 pr-2">
               <TextInput
                 id="phone"
+                color = {inputColor.phone}
                 placeholder="Phone"
                 sizing="md"
                 required
@@ -175,13 +242,19 @@ const EmployeesAddPage = () => {
                 onChange= {(e) => {setEmployee(prev => ({
                   ...prev,
                   phone: e.target.value
-                }))}}
+                }))
+                setInputColor(prev => ({
+                  ...prev,
+                  phone: 'gray',
+                }))
+                }}
                 autoComplete="off"
               />
             </div>
             <div className="flex-1 pl-2">
               <TextInput
                 id="email"
+                color = {inputColor.email}
                 placeholder="Email"
                 sizing="md"
                 required
@@ -190,7 +263,12 @@ const EmployeesAddPage = () => {
                 onChange= {(e) => {setEmployee(prev => ({
                   ...prev,
                   email: e.target.value.toLowerCase()
-                }))}}
+                }))
+                setInputColor(prev => ({
+                  ...prev,
+                  email: 'gray',
+                }))  
+                }}
                 autoComplete="off"
               />
             </div>
@@ -261,7 +339,7 @@ const EmployeesAddPage = () => {
               color="gray"
               onClick={() => {
                 navigate(`/${PATHS.EMPLOYEES}`);
-                addEmployeeFunc();
+                addEmployeeFunc(false);
               }}
               disabled={!employee.firstName || !employee.lastName || !employee.email || !employee.phone || !selectedButton}
             >
@@ -270,7 +348,7 @@ const EmployeesAddPage = () => {
           </div>
           <div className="pl-2">
             <Button color="gray" 
-              onClick={() => addEmployeeFunc()}
+              onClick={() => addEmployeeFunc(true)}
               disabled={!employee.firstName || !employee.lastName || !employee.email || !employee.phone || !selectedButton}>
               Save and add new
             </Button>
@@ -278,44 +356,7 @@ const EmployeesAddPage = () => {
           </div>
         </div>
       </div>
-
-      <div>
-        {pageToast.added && (
-          <Toast
-            style={{
-              position: "absolute",
-              top: "100px",
-              right: "10px",
-              width: "17%",
-            }}
-          >
-            <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
-              <HiCheck className="h-5 w-5" />
-            </div>
-            <Label
-              className="ml-3 text-sm font-normal"
-              value="Added employee successfully."
-            />
-            <Toast.Toggle
-              onDismiss={() => setPageToast(prev => ({
-                ...prev,
-                added: false
-              }))}
-            />
-          </Toast>
-        )}
-        {/*
-      <Toast style={{ position: 'absolute', top: '100px', right: '10px' }}>
-        <div className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-green-100 text-green-500 dark:bg-green-800 dark:text-green-200">
-          <HiX className="h-5 w-5" />
-        </div>
-        <div className="ml-3 text-sm font-normal">
-          Added employee successfully.
-        </div>
-        <Toast.Toggle />
-      </Toast>
-          */}
-      </div>
+      <ToastContainer />
     </div>
   );
 };

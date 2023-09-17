@@ -12,3 +12,13 @@ export const capitalizeString = (str) => {
 export const isNumber = (value) => {
   return !isNaN(value);
 }
+
+export const validEmail = (value) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(value)
+}
+
+export const validName = (value) => {
+  const nameRegex = /^[a-zA-Z]+$/
+  return nameRegex.test(value)
+}
