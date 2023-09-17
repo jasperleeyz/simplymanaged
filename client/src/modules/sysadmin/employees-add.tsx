@@ -1,26 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useContext, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import {
-  Avatar,
-  Checkbox,
-  Button,
-  Label,
-  TextInput,
-  Table,
-  Pagination,
-  Select,
-} from "flowbite-react";
-import { capitalizeString, isNumber, validName, validEmail  } from "../../configs/utils";
-import { HiCheck, HiX, HiPencil, HiSave } from "react-icons/hi";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Checkbox, Button, Label, TextInput } from "flowbite-react";
+import { capitalizeString, isNumber, validName, validEmail } from "../../configs/utils";
+import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../configs/constants";
 import IUser from "../../shared/model/user.model";
 import { ROLES } from "../../configs/constants";
 
 const EmployeesAddPage = () => {
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
+  const { globalState, setGlobalState } = useContext(GlobalStateContext);
   const navigate = useNavigate();
 
   // TODO: to retrieve employees from API // should return only employees that are
@@ -47,15 +37,15 @@ const EmployeesAddPage = () => {
   };
 
   const [errorMessage, setErrorMessage] = useState({
-    firstName : "",
-    lastName : "",
+    firstName: "",
+    lastName: "",
     phone: "",
     email: "",
   });
 
   const [inputColor, setInputColor] = useState({
-    firstName : 'gray',
-    lastName : 'gray',
+    firstName: 'gray',
+    lastName: 'gray',
     phone: 'gray',
     email: 'gray',
   })
@@ -87,91 +77,111 @@ const EmployeesAddPage = () => {
   };
 
   const addEmployeeFunc = (addNew) => {
-
-    //Check Name Error
-    if(!validName(employee.firstName) || !validName(employee.lastName) || !isNumber(employee.phone) || !validEmail(employee.email)){
-      
-      if (!validName(employee.firstName)){
+    setErrorMessage(prev => ({
+      ...prev,
+      firstName: '',
+    }));
+    setErrorMessage(prev => ({
+      ...prev,
+      lastName: '',
+    }));
+    setErrorMessage(prev => ({
+      ...prev,
+      phone: '',
+    }));
+    setErrorMessage(prev => ({
+      ...prev,
+      email: '',
+    }));
+    //Check Error
+    if (!validName(employee.firstName) || !validName(employee.lastName) || !isNumber(employee.phone) || !validEmail(employee.email)) {
+      if (!validName(employee.firstName)) {
+        setErrorMessage(prev => ({
+          ...prev,
+          firstName: '"First name must consist of letters only.',
+        }));
         setInputColor(prev => ({
           ...prev,
           firstName: 'failure',
         }));
       }
-      if(!validName(employee.lastName)){
+      if (!validName(employee.lastName)) {
+        setErrorMessage(prev => ({
+          ...prev,
+          lastName: 'Last name must consist of letters only.',
+        }));
         setInputColor(prev => ({
           ...prev,
           lastName: 'failure',
         }));
       }
-      if(!isNumber(employee.phone)){
+      if (!isNumber(employee.phone)) {
+        setErrorMessage(prev => ({
+          ...prev,
+          phone: 'Phone must contain only numbers.',
+        }));
         setInputColor(prev => ({
           ...prev,
           phone: 'failure',
         }));
       }
-      if(!validEmail(employee.email)){
-        console.log(' .... Is valid email:', employee.email);
+      if (!validEmail(employee.email)) {
+        setErrorMessage(prev => ({
+          ...prev,
+          email: 'Email must be in the format "emp@sim.com".',
+        }));
         setInputColor(prev => ({
           ...prev,
           email: 'failure',
         }));
       }
 
-      toast.error('Invalid Details.',{
-        position : "top-right",
+      toast.error('Invalid Details.', {
+        position: "top-right",
         autoClose: 3000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: false,
         progress: undefined,
         theme: "light",
-        });
-        return;
-    }
-
-    const newEmployee: IUser = {
-      id: employees.length + 1,
-      name: employee.firstName + " " + employee.lastName,
-      email: employee.email,
-      phoneNo: employee.phone,
-      role: employee.role,
-      position: "Position",
-      employmentType: "Full Time",
-    };
-    
-    console.log('Is valid email:', employee.email);
-
-    const updatedEmployees = [...employees];
-
-    updatedEmployees.push(newEmployee);
-
-    setEmployees(updatedEmployees);
-
-    setGlobalState(prev => ({
-      ...prev,
-      employee: updatedEmployees,
-    }));
-    
-    setSelectedButton(null)
-    getButtonStyle(ROLES.EMPLOYEE)
-    getButtonStyle(ROLES.SCHEDULER)
-    getButtonStyle(ROLES.SYSADMIN)
-
-    resetEmployee()
-
-    toast.success('Added Employee Sucessfully.',{
-      position : "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      progress: undefined,
-      theme: "light",
       });
-      return;
+    }
+    else {
+      const newEmployee: IUser = {
+        id: employees.length + 1,
+        name: employee.firstName + " " + employee.lastName,
+        email: employee.email,
+        phoneNo: employee.phone,
+        role: employee.role,
+        position: "Position",
+        employmentType: "Full Time",
+      };
+      const updatedEmployees = [...employees];
+      updatedEmployees.push(newEmployee);
+      setEmployees(updatedEmployees);
+      setGlobalState(prev => ({
+        ...prev,
+        employee: updatedEmployees,
+      }));
 
-    
-
+      if (addNew) {
+        setSelectedButton(null)
+        resetEmployee()
+        toast.success('Added Employee Sucessfully.', {
+          position: "top-right",
+          autoClose: 3000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: false,
+          progress: undefined,
+          theme: "light",
+        });
+      }
+      else {
+        localStorage.setItem('addEmployee', 'true');
+        navigate(`/${PATHS.EMPLOYEES}`);
+      }
+    }
   };
 
   return (
@@ -183,20 +193,21 @@ const EmployeesAddPage = () => {
             <Label htmlFor="first-name" value="First Name*" />
             <TextInput
               id="first-name"
-              color = {inputColor.firstName}
+              color={inputColor.firstName}
               placeholder="Given Name"
               sizing="md"
               required
               value={employee.firstName}
-              style={{ width: "100%" }}
-              onChange= {(e) => {setEmployee(prev => ({
-                ...prev,
-                firstName: capitalizeString(e.target.value)
-              }))
-              setInputColor(prev => ({
-                ...prev,
-                firstName: 'gray',
-              }))  
+              helperText={<span className="error-message">{errorMessage.firstName}</span>}
+              onChange={(e) => {
+                setEmployee(prev => ({
+                  ...prev,
+                  firstName: capitalizeString(e.target.value)
+                }))
+                setInputColor(prev => ({
+                  ...prev,
+                  firstName: 'gray',
+                }))
               }}
               autoComplete="off"
             />
@@ -205,20 +216,21 @@ const EmployeesAddPage = () => {
             <Label htmlFor="last-name" value="Last Name*" />
             <TextInput
               id="last-name"
-              color = {inputColor.lastName}
+              color={inputColor.lastName}
               placeholder="Family Name"
               sizing="md"
               required
               value={employee.lastName}
-              style={{ width: "100%" }}
-              onChange= {(e) => {setEmployee(prev => ({
-                ...prev,
-                lastName: capitalizeString(e.target.value)
-              }))
-              setInputColor(prev => ({
-                ...prev,
-                lastName: 'gray',
-              }))
+              helperText={<span className="error-message">{errorMessage.lastName}</span>}
+              onChange={(e) => {
+                setEmployee(prev => ({
+                  ...prev,
+                  lastName: capitalizeString(e.target.value)
+                }))
+                setInputColor(prev => ({
+                  ...prev,
+                  lastName: 'gray',
+                }))
               }}
               autoComplete="off"
             />
@@ -232,21 +244,21 @@ const EmployeesAddPage = () => {
             <div className="flex-1 pr-2">
               <TextInput
                 id="phone"
-                color = {inputColor.phone}
+                color={inputColor.phone}
                 placeholder="Phone"
                 sizing="md"
                 required
                 value={employee.phone}
-                style={{ width: "100%" }}
                 helperText={<span className="error-message">{errorMessage.phone}</span>}
-                onChange= {(e) => {setEmployee(prev => ({
-                  ...prev,
-                  phone: e.target.value
-                }))
-                setInputColor(prev => ({
-                  ...prev,
-                  phone: 'gray',
-                }))
+                onChange={(e) => {
+                  setEmployee(prev => ({
+                    ...prev,
+                    phone: e.target.value
+                  }))
+                  setInputColor(prev => ({
+                    ...prev,
+                    phone: 'gray',
+                  }))
                 }}
                 autoComplete="off"
               />
@@ -254,20 +266,21 @@ const EmployeesAddPage = () => {
             <div className="flex-1 pl-2">
               <TextInput
                 id="email"
-                color = {inputColor.email}
+                color={inputColor.email}
                 placeholder="Email"
                 sizing="md"
                 required
                 value={employee.email}
-                style={{ width: "100%" }}
-                onChange= {(e) => {setEmployee(prev => ({
-                  ...prev,
-                  email: e.target.value.toLowerCase()
-                }))
-                setInputColor(prev => ({
-                  ...prev,
-                  email: 'gray',
-                }))  
+                helperText={<span className="error-message">{errorMessage.email}</span>}
+                onChange={(e) => {
+                  setEmployee(prev => ({
+                    ...prev,
+                    email: e.target.value.toLowerCase()
+                  }))
+                  setInputColor(prev => ({
+                    ...prev,
+                    email: 'gray',
+                  }))
                 }}
                 autoComplete="off"
               />
@@ -338,21 +351,19 @@ const EmployeesAddPage = () => {
             <Button
               color="gray"
               onClick={() => {
-                navigate(`/${PATHS.EMPLOYEES}`);
                 addEmployeeFunc(false);
               }}
-              disabled={!employee.firstName || !employee.lastName || !employee.email || !employee.phone || !selectedButton}
-            >
+              disabled={!employee.firstName || !employee.lastName || !employee.email || !employee.phone || !selectedButton}>
               Save and finish
             </Button>
           </div>
           <div className="pl-2">
-            <Button color="gray" 
+            <Button color="gray"
               onClick={() => addEmployeeFunc(true)}
               disabled={!employee.firstName || !employee.lastName || !employee.email || !employee.phone || !selectedButton}>
               Save and add new
             </Button>
-            
+
           </div>
         </div>
       </div>
