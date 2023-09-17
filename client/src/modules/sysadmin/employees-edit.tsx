@@ -3,11 +3,12 @@ import { ToastContainer, toast } from 'react-toastify';
 import { GlobalStateContext } from "../../configs/global-state-provider"
 import { Button, Label, TextInput, Select, Modal} from "flowbite-react"
 import { capitalizeString, validName, isNumber, validEmail } from "../../configs/utils"
-import { HiOutlineExclamationCircle } from "react-icons/hi"
+import { HiOutlineExclamationCircle, HiCheck, HiX} from "react-icons/hi"
 import { useNavigate } from "react-router-dom"
 import { PATHS } from "../../configs/constants"
 import IUser from "../../shared/model/user.model"
 import { ROLES } from "../../configs/constants"
+import BackButton from "../../shared/layout/buttons/back-button";
 
 const EmployeesEditPage = () => {
 
@@ -133,7 +134,7 @@ const EmployeesEditPage = () => {
       if (!validName(newEmployeeData.name)) {
         setErrorMessage(prev => ({
           ...prev,
-          name: '"Name must consist of letters only.',
+          name: 'Name must consist of letters only.',
         }));
         setInputColor(prev => ({
           ...prev,
@@ -352,24 +353,22 @@ const EmployeesEditPage = () => {
           </div>
           <div className="mt-4 flex" > {/* Add margin-top for spacing */}
             <div className="pr-2">
-              <Button  color="gray"
-              disabled={deleted || (!newEmployeeData.email && !newEmployeeData.phone)}
-              onClick={() => editEmployeeFunc() }>
-                Apply
-              </Button>
+              <BackButton/>
             </div>
             <div className="pr-2 pl-2">
-              <Button color="gray"
+              <Button color="success"
                 disabled={deleted || (!applied && isEmptyNewEmployeeData)}
                 onClick={() => {saveEmployeeFunc()}}>
+                <HiCheck className="mr-2 my-auto" />
                 Save
               </Button>
             </div>
             <div className="pl-2">
-              <Button color="gray"
+              <Button color="failure"
                 disabled={deleted}
                 onClick={() => 
                 props.setOpenModal('pop-up')}>
+                <HiX className="mr-2 my-auto" />
                 Delete
               </Button>
               <Modal show={props.openModal === 'pop-up'} size="md" popup onClose={() => props.setOpenModal(undefined)}>

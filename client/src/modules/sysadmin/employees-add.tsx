@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { PATHS } from "../../configs/constants";
 import IUser from "../../shared/model/user.model";
 import { ROLES } from "../../configs/constants";
+import BackButton from "../../shared/layout/buttons/back-button";
 
 const EmployeesAddPage = () => {
   const { globalState, setGlobalState } = useContext(GlobalStateContext);
@@ -19,17 +20,15 @@ const EmployeesAddPage = () => {
   );
 
   const [employee, setEmployee] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
-    role: ""
+    name: '',
+    phone: '',
+    email: '',
+    role: ''
   });
 
   const resetEmployee = () => {
     setEmployee({
-      firstName: '',
-      lastName: '',
+      name: '',
       phone: '',
       email: '',
       role: ''
@@ -37,15 +36,13 @@ const EmployeesAddPage = () => {
   };
 
   const [errorMessage, setErrorMessage] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    email: "",
+    name: '',
+    phone: '',
+    email: '',
   });
 
   const [inputColor, setInputColor] = useState({
-    firstName: 'gray',
-    lastName: 'gray',
+    name: 'gray',
     phone: 'gray',
     email: 'gray',
   })
@@ -94,8 +91,8 @@ const EmployeesAddPage = () => {
       email: '',
     }));
     //Check Error
-    if (!validName(employee.firstName) || !validName(employee.lastName) || !isNumber(employee.phone) || !validEmail(employee.email)) {
-      if (!validName(employee.firstName)) {
+    if (!validName(employee.name) || !isNumber(employee.phone) || !validEmail(employee.email)) {
+      if (!validName(employee.name)) {
         setErrorMessage(prev => ({
           ...prev,
           firstName: '"First name must consist of letters only.',
@@ -103,16 +100,6 @@ const EmployeesAddPage = () => {
         setInputColor(prev => ({
           ...prev,
           firstName: 'failure',
-        }));
-      }
-      if (!validName(employee.lastName)) {
-        setErrorMessage(prev => ({
-          ...prev,
-          lastName: 'Last name must consist of letters only.',
-        }));
-        setInputColor(prev => ({
-          ...prev,
-          lastName: 'failure',
         }));
       }
       if (!isNumber(employee.phone)) {
@@ -149,12 +136,12 @@ const EmployeesAddPage = () => {
     else {
       const newEmployee: IUser = {
         id: employees.length + 1,
-        name: employee.firstName + " " + employee.lastName,
+        name: employee.name,
         email: employee.email,
         phoneNo: employee.phone,
         role: employee.role,
         position: "Position",
-        employmentType: "Full Time",
+        employmentType: "FULL-TIME",
       };
       const updatedEmployees = [...employees];
       updatedEmployees.push(newEmployee);
@@ -190,46 +177,24 @@ const EmployeesAddPage = () => {
       <div id="user-details" className="w-full md:w-3/5">
         <div className="flex">
           <div className="flex-1 pr-2">
-            <Label htmlFor="first-name" value="First Name*" />
+            <Label htmlFor="first-name" value="Name" />
             <TextInput
               id="first-name"
-              color={inputColor.firstName}
-              placeholder="Given Name"
+              color={inputColor.name}
+              placeholder="Name"
               sizing="md"
               required
-              value={employee.firstName}
-              helperText={<span className="error-message">{errorMessage.firstName}</span>}
+              value={employee.name}
+              helperText={<span className="error-message">{errorMessage.name}</span>}
+              style = {{width:'49.5%'}}
               onChange={(e) => {
                 setEmployee(prev => ({
                   ...prev,
-                  firstName: capitalizeString(e.target.value)
+                  name: capitalizeString(e.target.value)
                 }))
                 setInputColor(prev => ({
                   ...prev,
-                  firstName: 'gray',
-                }))
-              }}
-              autoComplete="off"
-            />
-          </div>
-          <div className="flex-1 pl-2">
-            <Label htmlFor="last-name" value="Last Name*" />
-            <TextInput
-              id="last-name"
-              color={inputColor.lastName}
-              placeholder="Family Name"
-              sizing="md"
-              required
-              value={employee.lastName}
-              helperText={<span className="error-message">{errorMessage.lastName}</span>}
-              onChange={(e) => {
-                setEmployee(prev => ({
-                  ...prev,
-                  lastName: capitalizeString(e.target.value)
-                }))
-                setInputColor(prev => ({
-                  ...prev,
-                  lastName: 'gray',
+                  name: 'gray',
                 }))
               }}
               autoComplete="off"
@@ -237,7 +202,6 @@ const EmployeesAddPage = () => {
           </div>
         </div>
         <div className="mt-4">
-          {" "}
           {/* Add margin-top for spacing */}
           <Label htmlFor="contact-information" value="Contact Information" />
           <div className="flex">
@@ -288,8 +252,8 @@ const EmployeesAddPage = () => {
           </div>
         </div>
         <div className="mt-4">
-          {" "}
           {/* Add margin-top for spacing */}
+          {/*
           <div className="flex items-center gap-2">
             <Checkbox id="auth-link" />
             <Label
@@ -297,14 +261,13 @@ const EmployeesAddPage = () => {
               value="Send authentication link to email"
             />
           </div>
+          */}
         </div>
         <div className="mt-2">
-          {" "}
           {/* Add margin-top for spacing */}
           <Label htmlFor="access-level" value="Access Level" />
         </div>
         <div className="mt-2">
-          {" "}
           {/* Add margin-top for spacing */}
           <Button.Group>
             <Button
@@ -345,26 +308,28 @@ const EmployeesAddPage = () => {
             />
           </div>
           }*/}
-        <div className="mt-4 flex">
+        <div className="mt-6 flex items-center justify-between">
           {/* Add margin-top for spacing */}
+          <div className="flex">
           <div className="pr-2">
             <Button
               color="gray"
               onClick={() => {
                 addEmployeeFunc(false);
               }}
-              disabled={!employee.firstName || !employee.lastName || !employee.email || !employee.phone || !selectedButton}>
+              disabled={!employee.name || !employee.email || !employee.phone || !selectedButton}>
               Save and finish
             </Button>
           </div>
           <div className="pl-2">
             <Button color="gray"
               onClick={() => addEmployeeFunc(true)}
-              disabled={!employee.firstName || !employee.lastName || !employee.email || !employee.phone || !selectedButton}>
+              disabled={!employee.name || !employee.email || !employee.phone || !selectedButton}>
               Save and add new
             </Button>
-
           </div>
+          </div>
+          <BackButton/>
         </div>
       </div>
       <ToastContainer />

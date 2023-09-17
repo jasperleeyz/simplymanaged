@@ -19,6 +19,6 @@ export const validEmail = (value) => {
 }
 
 export const validName = (value) => {
-  const nameRegex = /^[a-zA-Z]+$/
+  const nameRegex = /^[a-zA-Z\s]+$/
   return nameRegex.test(value)
 }

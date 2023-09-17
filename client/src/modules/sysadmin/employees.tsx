@@ -54,6 +54,7 @@ const EmployeesPage = () => {
 
   return (
     <div id="main-page">
+      <p className="header">Employees</p>
       <div className="flex justify-between">
         <TextInput
           placeholder="Search..."
@@ -75,13 +76,11 @@ const EmployeesPage = () => {
             <Table.HeadCell><label>Employee</label></Table.HeadCell>
             <Table.HeadCell><label>Email</label></Table.HeadCell>
             <Table.HeadCell><label>Phone</label></Table.HeadCell>
-            <Table.HeadCell><label>Location</label></Table.HeadCell>
+            <Table.HeadCell><label>Position</label></Table.HeadCell>
             <Table.HeadCell><label>Account Status</label></Table.HeadCell>
             <Table.HeadCell>
-              <span className="sr-only">
-                <HiPencil className="my-auto mr-2" />
-                Edit
-              </span>
+            </Table.HeadCell>
+            <Table.HeadCell>
             </Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
@@ -95,7 +94,7 @@ const EmployeesPage = () => {
                 </Table.Cell>
                 <Table.Cell><label>{emp.email}</label></Table.Cell>
                 <Table.Cell><label>{emp.phoneNo}</label></Table.Cell>
-                <Table.Cell><label>{emp.role}</label></Table.Cell>
+                <Table.Cell><label>{emp.position}</label></Table.Cell>
                 <Table.Cell><label>{emp.employmentType}</label></Table.Cell>
                 <Table.Cell>
                   <Button
@@ -105,7 +104,18 @@ const EmployeesPage = () => {
                       localStorage.setItem('editEmployee', JSON.stringify(emp));
                     }}
                   >
-                    <HiPencil />
+                    Edit
+                  </Button>
+                </Table.Cell>
+                <Table.Cell>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      navigate(`/${PATHS.EMPLOYEES}/${PATHS.EDIT_PROFILE}`);
+                      localStorage.setItem('editEmployee', JSON.stringify(emp));
+                    }}
+                  >
+                    View
                   </Button>
                 </Table.Cell>
               </Table.Row>
