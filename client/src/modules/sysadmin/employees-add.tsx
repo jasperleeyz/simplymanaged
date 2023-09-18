@@ -2,10 +2,10 @@ import { useContext, useState } from "react";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { Checkbox, Button, Label, TextInput } from "flowbite-react";
+import { Checkbox, Button, Label, TextInput, Select } from "flowbite-react";
 import { capitalizeString, isNumber, validName, validEmail } from "../../configs/utils";
 import { useNavigate } from "react-router-dom";
-import { PATHS } from "../../configs/constants";
+import { HiUserAdd } from "react-icons/hi"
 import IUser from "../../shared/model/user.model";
 import { ROLES } from "../../configs/constants";
 import BackButton from "../../shared/layout/buttons/back-button";
@@ -23,7 +23,10 @@ const EmployeesAddPage = () => {
     name: '',
     phone: '',
     email: '',
-    role: ''
+    role: ROLES.EMPLOYEE,
+    position: 'Barista',
+    employmentType: 'Full-Time',
+    status: 'Active'
   });
 
   const resetEmployee = () => {
@@ -31,7 +34,10 @@ const EmployeesAddPage = () => {
       name: '',
       phone: '',
       email: '',
-      role: ''
+      role: ROLES.EMPLOYEE,
+      position: 'Barista',
+      employmentType: 'Full-Time',
+      status: 'Active'
     });
   };
 
@@ -47,33 +53,7 @@ const EmployeesAddPage = () => {
     email: 'gray',
   })
 
-  const [selectedButton, setSelectedButton] = useState(null);
-
-  const handleButtonClick = (buttonName) => {
-    // Perform the action associated with the button here
-    // Set the selected button
-    setSelectedButton(buttonName);
-
-    let role = ""; // Initialize role variable
-
-    if (buttonName === ROLES.EMPLOYEE) {
-      role = ROLES.EMPLOYEE; // Assuming 'R' is for Employee
-    } else if (buttonName === ROLES.SCHEDULER) {
-      role = ROLES.SCHEDULER;
-    } else if (buttonName === ROLES.SYSADMIN) {
-      role = ROLES.SYSADMIN;
-    }
-    employee.role = role;
-  };
-
-  const getButtonStyle = (buttonName) => {
-    return {
-      backgroundColor: selectedButton === buttonName ? "gray" : "white",
-      color: selectedButton === buttonName ? "white" : "black",
-    };
-  };
-
-  const addEmployeeFunc = (addNew) => {
+  const addEmployeeFunc = () => {
     setErrorMessage(prev => ({
       ...prev,
       firstName: '',
@@ -91,7 +71,7 @@ const EmployeesAddPage = () => {
       email: '',
     }));
     //Check Error
-    if (!validName(employee.name) || !isNumber(employee.phone) || !validEmail(employee.email)) {
+    if (!validName(employee.name) || !isNumber(employee.phone) || (employee.phone.length != 8) || !validEmail(employee.email)) {
       if (!validName(employee.name)) {
         setErrorMessage(prev => ({
           ...prev,
@@ -102,10 +82,11 @@ const EmployeesAddPage = () => {
           firstName: 'failure',
         }));
       }
-      if (!isNumber(employee.phone)) {
+      if (!isNumber(employee.phone) || (employee.phone.length != 8)) {
+        console.log(employee.phone.length)
         setErrorMessage(prev => ({
           ...prev,
-          phone: 'Phone must contain only numbers.',
+          phone: 'Phone must contain only 8 numbers.',
         }));
         setInputColor(prev => ({
           ...prev,
@@ -140,8 +121,9 @@ const EmployeesAddPage = () => {
         email: employee.email,
         phoneNo: employee.phone,
         role: employee.role,
-        position: "Position",
-        employmentType: "FULL-TIME",
+        position: employee.position,
+        employmentType: employee.employmentType,
+        status: employee.status
       };
       const updatedEmployees = [...employees];
       updatedEmployees.push(newEmployee);
@@ -151,107 +133,99 @@ const EmployeesAddPage = () => {
         employee: updatedEmployees,
       }));
 
-      if (addNew) {
-        setSelectedButton(null)
-        resetEmployee()
-        toast.success('Added Employee Sucessfully.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          progress: undefined,
-          theme: "light",
-        });
-      }
-      else {
-        localStorage.setItem('addEmployee', 'true');
-        navigate(`/${PATHS.EMPLOYEES}`);
-      }
+      toast.success(`Added ${newEmployee.name} Sucessfully.`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        progress: undefined,
+        theme: "light",
+      });
+      console.log(employee)
+      resetEmployee()
+      console.log(employee)
     }
   };
 
   return (
-    <div id="add-employee-page" className="relative">
-      <p className="header">Add an employee</p>
+    <div id="add-employee-page">
+      <p className="header">Add</p>
       <div id="user-details" className="w-full md:w-3/5">
-        <div className="flex">
-          <div className="flex-1 pr-2">
-            <Label htmlFor="first-name" value="Name" />
-            <TextInput
-              id="first-name"
-              color={inputColor.name}
-              placeholder="Name"
-              sizing="md"
-              required
-              value={employee.name}
-              helperText={<span className="error-message">{errorMessage.name}</span>}
-              style = {{width:'49.5%'}}
-              onChange={(e) => {
-                setEmployee(prev => ({
-                  ...prev,
-                  name: capitalizeString(e.target.value)
-                }))
-                setInputColor(prev => ({
-                  ...prev,
-                  name: 'gray',
-                }))
-              }}
-              autoComplete="off"
-            />
-          </div>
-        </div>
-        <div className="mt-4">
+        <Label htmlFor="first-name" value="Name" />
+        <TextInput
+          id="first-name"
+          color={inputColor.name}
+          placeholder="Name"
+          sizing="md"
+          required
+          value={employee.name}
+          helperText={<span className="error-message">{errorMessage.name}</span>}
+          style={{ width: '50%' }}
+          onChange={(e) => {
+            setEmployee(prev => ({
+              ...prev,
+              name: capitalizeString(e.target.value)
+            }))
+            setInputColor(prev => ({
+              ...prev,
+              name: 'gray',
+            }))
+          }}
+          autoComplete="off"
+        />
+        <div className="mt-2">
           {/* Add margin-top for spacing */}
-          <Label htmlFor="contact-information" value="Contact Information" />
-          <div className="flex">
-            <div className="flex-1 pr-2">
-              <TextInput
-                id="phone"
-                color={inputColor.phone}
-                placeholder="Phone"
-                sizing="md"
-                required
-                value={employee.phone}
-                helperText={<span className="error-message">{errorMessage.phone}</span>}
-                onChange={(e) => {
-                  setEmployee(prev => ({
-                    ...prev,
-                    phone: e.target.value
-                  }))
-                  setInputColor(prev => ({
-                    ...prev,
-                    phone: 'gray',
-                  }))
-                }}
-                autoComplete="off"
-              />
-            </div>
-            <div className="flex-1 pl-2">
-              <TextInput
-                id="email"
-                color={inputColor.email}
-                placeholder="Email"
-                sizing="md"
-                required
-                value={employee.email}
-                helperText={<span className="error-message">{errorMessage.email}</span>}
-                onChange={(e) => {
-                  setEmployee(prev => ({
-                    ...prev,
-                    email: e.target.value.toLowerCase()
-                  }))
-                  setInputColor(prev => ({
-                    ...prev,
-                    email: 'gray',
-                  }))
-                }}
-                autoComplete="off"
-              />
-            </div>
-          </div>
+          <Label htmlFor="email" value="Email" />
+          <TextInput
+            id="email"
+            color={inputColor.email}
+            placeholder="Email"
+            sizing="md"
+            required
+            value={employee.email}
+            helperText={<span className="error-message">{errorMessage.email}</span>}
+            style={{ width: '50%' }}
+            onChange={(e) => {
+              setEmployee(prev => ({
+                ...prev,
+                email: e.target.value.toLowerCase()
+              }))
+              setInputColor(prev => ({
+                ...prev,
+                email: 'gray',
+              }))
+            }}
+            autoComplete="off"
+          />
         </div>
-        <div className="mt-4">
+        <div className="mt-2">
+          {/* Add margin-top for spacing */}
+          <Label htmlFor="contact" value="Contact" />
+          <TextInput
+            id="phone"
+            color={inputColor.phone}
+            placeholder="Phone"
+            sizing="md"
+            required
+            value={employee.phone}
+            helperText={<span className="error-message">{errorMessage.phone}</span>}
+            style={{ width: '50%' }}
+            onChange={(e) => {
+              setEmployee(prev => ({
+                ...prev,
+                phone: e.target.value
+              }))
+              setInputColor(prev => ({
+                ...prev,
+                phone: 'gray',
+              }))
+            }}
+            autoComplete="off"
+          />
+
+        </div>
+        <div className="mt-2">
           {/* Add margin-top for spacing */}
           {/*
           <div className="flex items-center gap-2">
@@ -265,72 +239,80 @@ const EmployeesAddPage = () => {
         </div>
         <div className="mt-2">
           {/* Add margin-top for spacing */}
-          <Label htmlFor="access-level" value="Access Level" />
+          <Label htmlFor="role" value="Role" />
+          <Select
+            id="role"
+            value={employee.role === ROLES.EMPLOYEE ? 'Employee' : employee.role === ROLES.SCHEDULER ? 'Manager' : employee.role === ROLES.SYSADMIN ? 'System Admin' : ''}
+            required
+            onChange={(e) => {
+              const selectedRole = e.target.value;
+              let roleValue = '';
+              if (selectedRole === 'Employee') {
+                roleValue = ROLES.EMPLOYEE;
+              } else if (selectedRole === 'Manager') {
+                roleValue = ROLES.SCHEDULER;
+              } else if (selectedRole === 'System Admin') {
+                roleValue = ROLES.SYSADMIN;
+              }
+              setEmployee(prev => ({
+                ...prev,
+                role: roleValue
+              }));
+            }}
+            style={{ width: '50%' }}>
+            <option>
+              Employee
+            </option>
+            <option>
+              Manager
+            </option>
+            <option>
+              System Admin
+            </option>
+          </Select>
         </div>
         <div className="mt-2">
           {/* Add margin-top for spacing */}
-          <Button.Group>
-            <Button
-              color="gray"
-              onClick={() => handleButtonClick(ROLES.EMPLOYEE)}
-              style={getButtonStyle(ROLES.EMPLOYEE)}
-            >
-              Employee
-            </Button>
-            <Button
-              color="gray"
-              onClick={() => handleButtonClick(ROLES.SCHEDULER)}
-              style={getButtonStyle(ROLES.SCHEDULER)}
-            >
+          <Label htmlFor="position" value="Position" />
+          <Select
+            id="position"
+            value={employee.position}
+            required
+            onChange={(e) => {
+              setEmployee(prev => ({
+                ...prev,
+                position: e.target.value
+              }));
+            }}
+            style={{ width: '50%' }}
+          >
+            <option>
+              Barista
+            </option>
+            <option>
+              Server
+            </option>
+            <option>
               Manager
-            </Button>
-            <Button
-              color="gray"
-              onClick={() => handleButtonClick(ROLES.SYSADMIN)}
-              style={getButtonStyle(ROLES.SYSADMIN)}
-            >
-              System Admin
-            </Button>
-          </Button.Group>
+            </option>
+          </Select>
         </div>
 
-        {/*
-          <div className="mt-4"> {//Add margin-top for spacing }
-            <Label htmlFor="role" value="Role" />
-          </div>
-          <div className="mt-2"> {//Add margin-top for spacing }
-            <TextInput
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ width: '30%' }}
-                autoComplete="off"
-            />
-          </div>
-          }*/}
-        <div className="mt-6 flex items-center justify-between">
+        <div className="mt-4 flex">
           {/* Add margin-top for spacing */}
-          <div className="flex">
           <div className="pr-2">
-            <Button
-              color="gray"
-              onClick={() => {
-                addEmployeeFunc(false);
-              }}
-              disabled={!employee.name || !employee.email || !employee.phone || !selectedButton}>
-              Save and finish
+            <BackButton />
+          </div>
+          <div className="pr-2">
+            <Button color="success"
+              onClick={() => addEmployeeFunc()}
+              disabled={!employee.name || !employee.email || !employee.phone}>
+              <HiUserAdd className="mr-2 my-auto" />
+              Add
             </Button>
           </div>
-          <div className="pl-2">
-            <Button color="gray"
-              onClick={() => addEmployeeFunc(true)}
-              disabled={!employee.name || !employee.email || !employee.phone || !selectedButton}>
-              Save and add new
-            </Button>
-          </div>
-          </div>
-          <BackButton/>
         </div>
+
       </div>
       <ToastContainer />
     </div>

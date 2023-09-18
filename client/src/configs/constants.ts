@@ -33,6 +33,7 @@ export const PATHS = {
 
     EMPLOYEES: 'employees',
     ADD_EMPLOYEE: 'add',
+    VIEW_EMPLOYEE: 'view',
 }
 
 export const DATE = {

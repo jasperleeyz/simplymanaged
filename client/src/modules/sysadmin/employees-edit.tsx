@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { ToastContainer, toast } from 'react-toastify';
 import { GlobalStateContext } from "../../configs/global-state-provider"
-import { Button, Label, TextInput, Select, Modal} from "flowbite-react"
+import { Button, Label, TextInput, Select, Modal } from "flowbite-react"
 import { capitalizeString, validName, isNumber, validEmail } from "../../configs/utils"
-import { HiOutlineExclamationCircle, HiCheck, HiX} from "react-icons/hi"
+import { HiOutlineExclamationCircle, HiCheck, HiX, HiUserRemove, HiUserAdd } from "react-icons/hi"
 import { useNavigate } from "react-router-dom"
 import { PATHS } from "../../configs/constants"
 import IUser from "../../shared/model/user.model"
@@ -17,17 +17,29 @@ const EmployeesEditPage = () => {
   const [employees, setEmployees] = useState<IUser[]>(
     globalState?.employee || []
   );
-  const [authEdit, setAuthEdit] = useState(false);
+  const [auth, setAuth] = useState(false);
   const [editEmployee, setEditEmployee] = useState<IUser>({
     id: 0,
-    name: "",
-    email: "",
-    phoneNo: "",
+    name: '',
+    email: '',
+    phoneNo: '',
     role: ROLES.EMPLOYEE,
-    position: "STORE MANAGER",
-    employmentType: "FULL-TIME"
+    position: '',
+    employmentType: '',
+    status: ''
   });
-  const [applied, setApplied] = useState(false)
+
+  const [newEmployeeData, setNewEmployeeData] = useState<IUser>({
+    id: 0,
+    name: '',
+    email: '',
+    phoneNo: '',
+    role: ROLES.EMPLOYEE,
+    position: '',
+    employmentType: '',
+    status: ''
+  });
+
   const [deleted, setDeleted] = useState(false)
 
   useEffect(() => {
@@ -42,48 +54,35 @@ const EmployeesEditPage = () => {
         role: data.role,
         position: data.position,
         employmentType: data.employmentType,
+        status: data.status
       };
       setEditEmployee(tempEmployee);
+      setNewEmployeeData(tempEmployee);
       localStorage.removeItem('editEmployee');
-      setAuthEdit(true);
+      setAuth(true);
     }
   }, []);
 
-  const [newEmployeeData, setNewEmployeeData] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    role: "",
-    location: "test"
-  });
 
-  const resetNewEmployeeData = () => {
-    setNewEmployeeData({
-      name: '',
-      phone: '',
-      email: '',
-      role: '',
-      location: "test"
-    });
-  };
-
-  const isEmptyNewEmployeeData = () => {
-    console.log(newEmployeeData)
-    return newEmployeeData.name == '' && 
-    newEmployeeData.phone == '' &&
-    newEmployeeData.email == '' &&
-    newEmployeeData.role == ''
+  const isEdited = () => {
+    const keys = Object.keys(editEmployee);
+    for (let key of keys) {
+      if (editEmployee[key] !== newEmployeeData[key]) {
+        return true;
+      }
+    }
+    return false;
   }
 
   const [errorMessage, setErrorMessage] = useState({
     name: "",
-    phone: "",
+    phoneNo: "",
     email: "",
   });
 
   const [inputColor, setInputColor] = useState({
     name: 'gray',
-    phone: 'gray',
+    phoneNo: 'gray',
     email: 'gray',
   })
 
@@ -116,7 +115,78 @@ const EmployeesEditPage = () => {
     }, 3000);
   }
 
-  const editEmployeeFunc = () => {
+  const activateEmployeeFunc = () => {
+    if (editEmployee.status == 'Active') {
+      const updatedEmployee = { ...editEmployee, status: 'Deactivated' };
+      setEditEmployee(prev => ({ ...prev, status: 'Deactivated' }));
+      setNewEmployeeData(editEmployee)
+      setNewEmployeeData(prev => ({ ...prev, status: 'Deactivated' }));
+
+      const updatedEmployees = employees
+        .filter((employee) => employee) // Filter out undefined values
+        .map((employee) =>
+          employee.id === updatedEmployee.id ? updatedEmployee : employee
+        );
+
+      // Filtered array with undefined values removed
+      const filteredUpdatedEmployees = updatedEmployees.filter(
+        (employee) => employee !== undefined
+      );
+
+      setEmployees(filteredUpdatedEmployees);
+      setGlobalState(prev => ({ ...prev, employee: filteredUpdatedEmployees }));
+      props.setOpenModal(undefined);
+
+      props.setOpenModal(undefined)
+
+      toast.success(`${newEmployeeData.name} Deactivated.`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+    else {
+      const updatedEmployee = { ...editEmployee, status: 'Active' };
+      setEditEmployee(prev => ({ ...prev, status: 'Active' }));
+      setNewEmployeeData(editEmployee)
+      setNewEmployeeData(prev => ({ ...prev, status: 'Active' }));
+
+      const updatedEmployees = employees
+        .filter((employee) => employee) // Filter out undefined values
+        .map((employee) =>
+          employee.id === updatedEmployee.id ? updatedEmployee : employee
+        );
+
+      // Filtered array with undefined values removed
+      const filteredUpdatedEmployees = updatedEmployees.filter(
+        (employee) => employee !== undefined
+      );
+
+      setEmployees(filteredUpdatedEmployees);
+      setGlobalState((prev) => ({
+        ...prev,
+        employee: filteredUpdatedEmployees,
+      }));
+
+      props.setOpenModal(undefined)
+
+      toast.success(`${newEmployeeData.name} Activated.`, {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        progress: undefined,
+        theme: "light",
+      });
+    }
+  }
+
+  const saveEmployeeFunc = () => {
     setErrorMessage(prev => ({
       ...prev,
       name: '',
@@ -130,7 +200,7 @@ const EmployeesEditPage = () => {
       email: '',
     }));
 
-    if (!validName(newEmployeeData.name) || !isNumber(newEmployeeData.phone) || !validEmail(newEmployeeData.email)) {
+    if (!validName(newEmployeeData.name) || !isNumber(newEmployeeData.phoneNo) || !validEmail(newEmployeeData.email)) {
       if (!validName(newEmployeeData.name)) {
         setErrorMessage(prev => ({
           ...prev,
@@ -141,14 +211,14 @@ const EmployeesEditPage = () => {
           name: 'failure',
         }));
       }
-      if (!isNumber(newEmployeeData.phone)) {
+      if (!isNumber(newEmployeeData.phoneNo)) {
         setErrorMessage(prev => ({
           ...prev,
-          phone: 'Phone must contain only numbers.',
+          phoneNo: 'Phone must contain only numbers.',
         }));
         setInputColor(prev => ({
           ...prev,
-          phone: 'failure',
+          phoneNo: 'failure',
         }));
       }
       if (!validEmail(newEmployeeData.email)) {
@@ -172,64 +242,35 @@ const EmployeesEditPage = () => {
       });
     }
     else {
-      const tempEmployeeData: IUser = {
-        id: editEmployee.id,
-        name: newEmployeeData.name,
-        email: newEmployeeData.email,
-        phoneNo: newEmployeeData.phone,
-        role: newEmployeeData.role,
-        position: editEmployee.position,
-        employmentType: editEmployee.employmentType,
-      };
-      setEditEmployee(tempEmployeeData);
-      setApplied(true);
-      resetNewEmployeeData()
-        toast.success('Employee Updated Sucessfully.', {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: false,
-          progress: undefined,
-          theme: "light",
-        });
+      const updatedEmployees = employees
+        .filter((employee) => employee) // Filter out undefined values
+        .map((employee) =>
+          employee.id === newEmployeeData.id ? newEmployeeData : employee
+        );
+
+      // Filtered array with undefined values removed
+      const filteredUpdatedEmployees = updatedEmployees.filter(
+        (employee) => employee !== undefined
+      );
+
+      setEmployees(filteredUpdatedEmployees);
+      setEditEmployee(newEmployeeData)
+
+      setGlobalState((prev) => ({
+        ...prev,
+        employee: filteredUpdatedEmployees,
+      }));
+
+      toast.success('Employee Saved.', {
+        position: "top-right",
+        autoClose: 3000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: false,
+        progress: undefined,
+        theme: "light",
+      });
     }
-  }
-
-  const saveEmployeeFunc = () => {
-    const updatedEmployees = employees
-    .filter((employee) => employee) // Filter out undefined values
-    .map((employee) =>
-      employee.id === editEmployee.id ? editEmployee : employee
-    );
-
-    // Filtered array with undefined values removed
-    const filteredUpdatedEmployees = updatedEmployees.filter(
-      (employee) => employee !== undefined
-    );
-
-    setEmployees(filteredUpdatedEmployees);
-
-    setGlobalState((prev) => ({
-      ...prev,
-      employee: filteredUpdatedEmployees,
-    }));
-
-    toast.success('Employee Saved.', {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      progress: undefined,
-      theme: "light",
-    });
-
-    setTimeout(() => {
-      navigate(`/${PATHS.EMPLOYEES}`)
-    }, 3000);
-
-
   }
 
   const [openModal, setOpenModal] = useState<string | undefined>();
@@ -237,48 +278,45 @@ const EmployeesEditPage = () => {
 
   return (
     <div>
-    {authEdit ? (
-      <div id="edit-employee-page">
-        <p className="header">Profile</p>
-        <div id="user-details" className="w-full md:w-3/5">
-              <Label htmlFor="name" value="Name" />
+      {auth ? (
+        <div id="edit-employee-page">
+          <p className="header">Edit</p>
+          <div id="user-details" className="w-full md:w-3/5">
+            <Label htmlFor="name" value="Name" />
+            <TextInput
+              id="name"
+              color={inputColor.name}
+              sizing="md"
+              required
+              value={newEmployeeData.name}
+              style={{ width: '50%' }}
+              helperText={<span className="error-message">{errorMessage.name}</span>}
+              onChange={(e) => {
+                if (!deleted && newEmployeeData.status != 'Deactivated') {
+                  setNewEmployeeData(prev => ({
+                    ...prev,
+                    name: capitalizeString(e.target.value)
+                  }))
+                  setInputColor(prev => ({
+                    ...prev,
+                    name: 'gray',
+                  }))
+                }
+              }}
+              autoComplete="off"
+            />
+            <div className="mt-2"> {/* Add margin-top for spacing */}
+              <Label htmlFor="email" value="Email" />
               <TextInput
-                id="name"
-                color={inputColor.name}
-                placeholder= {editEmployee?.name}
-                sizing="md"
-                required
-                value = {newEmployeeData.name}
-                style={{ width: '50%' }}
-                helperText={<span className="error-message">{errorMessage.name}</span>}
-                onChange={(e) => {
-                  if(!deleted){
-                    setNewEmployeeData(prev => ({
-                      ...prev,
-                      name: capitalizeString(e.target.value)
-                    }))
-                    setInputColor(prev => ({
-                      ...prev,
-                      name: 'gray',
-                    }))
-                    setApplied(false)
-                  }
-                }}
-                autoComplete="off"
-              />
-          <div className="mt-2"> {/* Add margin-top for spacing */}
-            <Label htmlFor="email" value="Email" />
-                <TextInput
                 id="email"
                 color={inputColor.email}
-                placeholder= {editEmployee?.email}
                 sizing="md"
                 required
-                value = {newEmployeeData.email}
+                value={newEmployeeData.email}
                 style={{ width: '50%' }}
                 helperText={<span className="error-message">{errorMessage.email}</span>}
                 onChange={(e) => {
-                  if(!deleted){
+                  if (!deleted && newEmployeeData.status != 'Deactivated') {
                     setNewEmployeeData(prev => ({
                       ...prev,
                       email: e.target.value
@@ -287,116 +325,180 @@ const EmployeesEditPage = () => {
                       ...prev,
                       email: 'gray',
                     }))
-                    setApplied(false)
                   }
                 }}
                 autoComplete="off"
               />
-          </div>
-          <div className="mt-2"> {/* Add margin-top for spacing */}
-            <Label htmlFor="phone" value="Contact" />
-                <TextInput
+            </div>
+            <div className="mt-2"> {/* Add margin-top for spacing */}
+              <Label htmlFor="phone" value="Contact" />
+              <TextInput
                 id="phone"
-                color={inputColor.phone}
-                placeholder={editEmployee?.phoneNo}
+                color={inputColor.phoneNo}
                 sizing="md"
                 required
-                value = {newEmployeeData.phone}
+                value={newEmployeeData.phoneNo}
                 style={{ width: '50%' }}
-                helperText={<span className="error-message">{errorMessage.phone}</span>}
+                helperText={<span className="error-message">{errorMessage.phoneNo}</span>}
                 onChange={(e) => {
-                  if(!deleted){
+                  if (!deleted && newEmployeeData.status != 'Deactivated') {
                     setNewEmployeeData(prev => ({
                       ...prev,
-                      phone: e.target.value
+                      phoneNo: e.target.value
                     }))
                     setInputColor(prev => ({
                       ...prev,
-                      phone: 'gray',
+                      phoneNo: 'gray',
                     }))
-                    setApplied(false)
                   }
                 }}
                 autoComplete="off"
               />
-          </div>
-          <div className="mt-2"> {/* Add margin-top for spacing */}
-            <Label htmlFor="role" value="Role" />
-            <Select
-              id="role"
-              required
-              style={{ width: '50%' }}
-            >
-              <option>
-                Employee
-              </option>
-              <option>
-                Manager
-              </option>
-              <option>
-                System Admin
-              </option>
-            </Select>
-          </div>
-          <div className="mt-2"> {/* Add margin-top for spacing */}
-            <Label htmlFor="location" value="Location" />
-                <TextInput
-                id="phone"
-                placeholder="Location"
-                sizing="md"
+            </div>
+            <div className="mt-2"> {/* Add margin-top for spacing */}
+              <Label htmlFor="role" value="Role" />
+              <Select
+                id="role"
                 required
-                //value = {''}
+                value={newEmployeeData.role === ROLES.EMPLOYEE ? 'Employee' : newEmployeeData.role === ROLES.SCHEDULER ? 'Manager' : newEmployeeData.role === ROLES.SYSADMIN ? 'System Admin' : ''}
+                onChange={(e) => {
+                  if (!deleted && newEmployeeData.status != 'Deactivated') {
+                    const selectedRole = e.target.value;
+                    let roleValue = '';
+                    if (selectedRole === 'Employee') {
+                      roleValue = ROLES.EMPLOYEE;
+                    } else if (selectedRole === 'Manager') {
+                      roleValue = ROLES.SCHEDULER;
+                    } else if (selectedRole === 'System Admin') {
+                      roleValue = ROLES.SYSADMIN;
+                    }
+                    setNewEmployeeData(prev => ({
+                      ...prev,
+                      role: roleValue
+                    }));
+                  }
+                }}
+                style={{ width: '50%' }}>
+                <option>
+                  Employee
+                </option>
+                <option>
+                  Manager
+                </option>
+                <option>
+                  System Admin
+                </option>
+              </Select>
+            </div>
+            <div className="mt-2"> {/* Add margin-top for spacing */}
+              <Label htmlFor="Position" value="Position" />
+              <Select
+                id="role"
+                required
+                value={newEmployeeData.position}
+                onChange={(e) => {
+                  if (!deleted && newEmployeeData.status != 'Deactivated') {
+                    setNewEmployeeData(prev => ({
+                      ...prev,
+                      position: e.target.value
+                    }))
+                  }
+                }}
                 style={{ width: '50%' }}
-                //onChange={handleEmailChange}
-                autoComplete="off"
-              />
-          </div>
-          <div className="mt-4 flex" > {/* Add margin-top for spacing */}
-            <div className="pr-2">
-              <BackButton/>
+              >
+                <option>
+                  Barista
+                </option>
+                <option>
+                  Server
+                </option>
+                <option>
+                  Manager
+                </option>
+              </Select>
             </div>
-            <div className="pr-2 pl-2">
-              <Button color="success"
-                disabled={deleted || (!applied && isEmptyNewEmployeeData)}
-                onClick={() => {saveEmployeeFunc()}}>
-                <HiCheck className="mr-2 my-auto" />
-                Save
-              </Button>
-            </div>
-            <div className="pl-2">
-              <Button color="failure"
-                disabled={deleted}
-                onClick={() => 
-                props.setOpenModal('pop-up')}>
-                <HiX className="mr-2 my-auto" />
-                Delete
-              </Button>
-              <Modal show={props.openModal === 'pop-up'} size="md" popup onClose={() => props.setOpenModal(undefined)}>
-              <Modal.Header />
-              <Modal.Body>
-                <div className="text-center">
-                  <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
-                  <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                    Are you sure you want to delete {editEmployee?.name}
-                  </h3>
-                  <div className="flex justify-center gap-4">
-                    <Button color="failure" onClick={() => removeEmployeeFunc()}>
-                      Yes
+            <div className="mt-4 flex" > {/* Add margin-top for spacing */}
+              <div className="pr-2">
+                <BackButton />
+              </div>
+              <div className="pr-2 pl-2">
+                <Button color="success"
+                  disabled={deleted || !isEdited()}
+                  onClick={() => { saveEmployeeFunc() }}>
+                  <HiCheck className="mr-2 my-auto" />
+                  Save
+                </Button>
+              </div>
+              <div className="pl-2">
+                {editEmployee.status == 'Active' ? (
+                  <div>
+                    <Button color="failure"
+                      disabled={deleted}
+                      onClick={() =>
+                        props.setOpenModal('pop-up')}>
+                      <HiUserRemove className="mr-2 my-auto" />
+                      Deactivate
                     </Button>
-                    <Button color="gray" onClick={() => props.setOpenModal(undefined)}>
-                      No
-                    </Button>
+                    <Modal show={props.openModal === 'pop-up'} size="md" popup onClose={() => props.setOpenModal(undefined)}>
+                      <Modal.Header />
+                      <Modal.Body>
+                        <div className="text-center">
+                          <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+                          <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                            Are you sure you want to deactivate {editEmployee?.name}
+                          </h3>
+                          <div className="flex justify-center gap-4">
+                            <Button color="failure" onClick={() => activateEmployeeFunc()}>
+                              Yes
+                            </Button>
+                            <Button color="gray" onClick={() => props.setOpenModal(undefined)}>
+                              No
+                            </Button>
+                          </div>
+                        </div>
+                      </Modal.Body>
+                    </Modal>
                   </div>
-                </div>
-              </Modal.Body>
-            </Modal>
+                ) : editEmployee.status == 'Deactivated' ? (
+                  <div>
+                    <Button color="purple"
+                      disabled={deleted}
+                      onClick={() =>
+                        props.setOpenModal('pop-up')}>
+                      <HiUserAdd className="mr-2 my-auto" />
+                      Activate
+                    </Button>
+                    <Modal show={props.openModal === 'pop-up'} size="md" popup onClose={() => { props.setOpenModal(undefined); console.log(newEmployeeData); }}>
+                      <Modal.Header />
+                      <Modal.Body>
+                        <div className="text-center">
+                          <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
+                          <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
+                            Are you sure you want to activate {editEmployee?.name}
+                          </h3>
+                          <div className="flex justify-center gap-4">
+                            <Button color="failure" onClick={() => activateEmployeeFunc()}>
+                              Yes
+                            </Button>
+                            <Button color="gray" onClick={() => props.setOpenModal(undefined)}>
+                              No
+                            </Button>
+                          </div>
+                        </div>
+                      </Modal.Body>
+                    </Modal>
+                  </div>
+                ) : null}
+              </div>
             </div>
           </div>
+          <ToastContainer />
         </div>
-        <ToastContainer />
-      </div>
-      ) : (<div></div>)
-    }
+      ) : (<div className='text-center'>
+        <h1 >400 </h1>
+        <div>BAD REQUEST</div>
+      </div>)
+      }
     </div>
   );
 };

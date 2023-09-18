@@ -7,6 +7,7 @@ interface IUser {
     position: string;
     employmentType: string;
     profileImage?: string;
+    status?: string;
 }
 
 export default IUser;

@@ -8,7 +8,7 @@ import { PATHS } from "../../configs/constants";
 import IUser from "../../shared/model/user.model";
 
 const EmployeesPage = () => {
-  const { globalState} = useContext(GlobalStateContext);
+  const { globalState } = useContext(GlobalStateContext);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -95,7 +95,7 @@ const EmployeesPage = () => {
                 <Table.Cell><label>{emp.email}</label></Table.Cell>
                 <Table.Cell><label>{emp.phoneNo}</label></Table.Cell>
                 <Table.Cell><label>{emp.position}</label></Table.Cell>
-                <Table.Cell><label>{emp.employmentType}</label></Table.Cell>
+                <Table.Cell><label>{emp.status}</label></Table.Cell>
                 <Table.Cell>
                   <Button
                     size="sm"
@@ -111,8 +111,8 @@ const EmployeesPage = () => {
                   <Button
                     size="sm"
                     onClick={() => {
-                      navigate(`/${PATHS.EMPLOYEES}/${PATHS.EDIT_PROFILE}`);
-                      localStorage.setItem('editEmployee', JSON.stringify(emp));
+                      navigate(`/${PATHS.EMPLOYEES}/${PATHS.VIEW_EMPLOYEE}`);
+                      localStorage.setItem('viewEmployee', JSON.stringify(emp));
                     }}
                   >
                     View
@@ -126,14 +126,14 @@ const EmployeesPage = () => {
       <div className="text-center mt-4">
         <label>
           {filteredEmployees.length === 0
-          ? `Showing ${startIndex}  to ${Math.min(
-            endIndex,
-            filteredEmployees.length
-          )} of ${filteredEmployees.length} Entries`
-          : `Showing ${startIndex + 1}  to ${Math.min(
-            endIndex,
-            filteredEmployees.length
-          )} of ${filteredEmployees.length} Entries`}
+            ? `Showing ${startIndex}  to ${Math.min(
+              endIndex,
+              filteredEmployees.length
+            )} of ${filteredEmployees.length} Entries`
+            : `Showing ${startIndex + 1}  to ${Math.min(
+              endIndex,
+              filteredEmployees.length
+            )} of ${filteredEmployees.length} Entries`}
         </label>
       </div>
       <div className="flex items-center justify-center text-center">
