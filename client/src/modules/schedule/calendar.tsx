@@ -6,12 +6,10 @@ import {
   Flowbite,
   Label,
   Select,
-  TextInput,
 } from "flowbite-react";
 import React from "react";
 import { MONTHS, PATHS, ROLES } from "../../configs/constants";
 import CalendarMonthView from "../../shared/layout/calendar/calendar-month-view";
-import CalendarWeekView from "../../shared/layout/calendar/calendar-week-view";
 import { HiCalendar } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../configs/global-state-provider";
@@ -57,11 +55,6 @@ const Calendar = () => {
     if (!y) return new Date().getFullYear();
     return y;
   });
-  const [view, setView] = React.useState(() => {
-    const v = history.state["scheduleView"];
-    if (!v) return "month";
-    return v;
-  });
   const [isPersonal, setIsPersonal] = React.useState(() => {
     if (user?.role === ROLES.EMPLOYEE) return true;
     const ip = history.state["isPersonal"];
@@ -84,71 +77,54 @@ const Calendar = () => {
       {
         scheduleMonth: month,
         scheduleYear: year,
-        scheduleView: view,
         scheduleLocation: location,
         isPersonal: isPersonal,
       },
       ""
     );
-  }, [dateRange, location, month, year, view, isPersonal]);
+  }, [dateRange, location, month, year, isPersonal]);
 
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
       <div id="schedule-main">
         <p className="header">{isPersonal ? "My Schedule" : "All Schedules"}</p>
         <div className="w-full mb-6 md:flex md:flex-wrap">
-          {/* {view === "week" && (
+          <div className="grid grid-cols-2">
             <div>
-              <Label htmlFor="cal-date-range" value="Date" />
-              <TextInput
-                id="cal-date-range"
-                type="date"
+              <Label htmlFor="month" value="Month" />
+              <Select
+                id="month"
                 sizing="sm"
-                // value={dateRange.start}
-                // onChange={(e) =>
-                //   setDateRange({ start: e.target.value, end: dateRange.end })
-                // }
-              />
+                value={month}
+                onChange={(e) => setMonth(parseInt(e.target.value))}
+              >
+                {MONTHS.map((l, idx) => (
+                  <option key={idx} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </Select>
             </div>
-          )} */}
-          {view === "month" && (
-            <div className="grid grid-cols-2">
-              <div>
-                <Label htmlFor="month" value="Month" />
-                <Select
-                  id="month"
-                  sizing="sm"
-                  value={month}
-                  onChange={(e) => setMonth(parseInt(e.target.value))}
-                >
-                  {MONTHS.map((l, idx) => (
-                    <option key={idx} value={l.value}>
-                      {l.label}
-                    </option>
-                  ))}
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="year" value="Year" />
-                <Select
-                  id="year"
-                  sizing="sm"
-                  value={year}
-                  onChange={(e) => setYear(parseInt(e.target.value))}
-                >
-                  {range(
-                    new Date().getFullYear() - 1,
-                    new Date().getFullYear() + 2,
-                    1
-                  ).map((l, idx) => (
-                    <option key={idx} value={l}>
-                      {l}
-                    </option>
-                  ))}
-                </Select>
-              </div>
+            <div>
+              <Label htmlFor="year" value="Year" />
+              <Select
+                id="year"
+                sizing="sm"
+                value={year}
+                onChange={(e) => setYear(parseInt(e.target.value))}
+              >
+                {range(
+                  new Date().getFullYear() - 1,
+                  new Date().getFullYear() + 2,
+                  1
+                ).map((l, idx) => (
+                  <option key={idx} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </Select>
             </div>
-          )}
+          </div>
           <div className="mt-3 md:mt-0 md:ms-24">
             <Label htmlFor="location" value="Location" />
             <Select
@@ -181,32 +157,13 @@ const Calendar = () => {
               )}
             </div>
           )}
-          {/* <div className="ms-auto md:flex md:flex-wrap content-end">
-            <Button.Group>
-              <Button
-                color={view === "week" ? "dark" : ""}
-                onClick={() => setView("week")}
-              >
-                Week
-              </Button>
-              <Button
-                color={view === "month" ? "dark" : ""}
-                onClick={() => setView("month")}
-              >
-                Month
-              </Button>
-            </Button.Group>
-          </div> */}
         </div>
-        {view === "month" && (
-          <CalendarMonthView
-            month={month}
-            year={year}
-            isPersonal={isPersonal}
-            location={location}
-          />
-        )}
-        {/* {view === "week" && <CalendarWeekView />} */}
+        <CalendarMonthView
+          month={month}
+          year={year}
+          isPersonal={isPersonal}
+          location={location}
+        />
       </div>
     </Flowbite>
   );

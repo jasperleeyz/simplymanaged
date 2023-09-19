@@ -139,7 +139,7 @@ const AddSchedule = () => {
 
   return (
     <div>
-      <p className="header">Create Schedule</p>
+      <p className="header">{`${location.pathname.endsWith(PATHS.EDIT_SCHEDULE) ? "Edit" : "Create"} Schedule`}</p>
       <div className="mb-3 flex justify-between">
         <BackButton size="sm" />
         <Button
