@@ -52,6 +52,11 @@ const Calendar = () => {
     if (!m) return new Date().getMonth();
     return m;
   });
+  const [year, setYear] = React.useState(() => {
+    const y = history.state["scheduleYear"];
+    if (!y) return new Date().getFullYear();
+    return y;
+  });
   const [view, setView] = React.useState(() => {
     const v = history.state["scheduleView"];
     if (!v) return "month";
@@ -64,6 +69,12 @@ const Calendar = () => {
     return ip;
   });
 
+  const range = (start, stop, step) =>
+    Array.from(
+      { length: (stop - start) / step + 1 },
+      (_, i) => start + i * step
+    );
+
   // TODO: retrigger schedule retrieval when control values changed by user
   React.useEffect(() => {
     // api call to retrieve schedule
@@ -72,20 +83,21 @@ const Calendar = () => {
     history.replaceState(
       {
         scheduleMonth: month,
+        scheduleYear: year,
         scheduleView: view,
         scheduleLocation: location,
         isPersonal: isPersonal,
       },
       ""
     );
-  }, [dateRange, location, month, view, isPersonal]);
+  }, [dateRange, location, month, year, view, isPersonal]);
 
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
       <div id="schedule-main">
         <p className="header">{isPersonal ? "My Schedule" : "All Schedules"}</p>
         <div className="w-full mb-6 md:flex md:flex-wrap">
-          {view === "week" && (
+          {/* {view === "week" && (
             <div>
               <Label htmlFor="cal-date-range" value="Date" />
               <TextInput
@@ -98,22 +110,43 @@ const Calendar = () => {
                 // }
               />
             </div>
-          )}
+          )} */}
           {view === "month" && (
-            <div>
-              <Label htmlFor="month" value="Month" />
-              <Select
-                id="month"
-                sizing="sm"
-                value={month}
-                onChange={(e) => setMonth(parseInt(e.target.value))}
-              >
-                {MONTHS.map((l, idx) => (
-                  <option key={idx} value={l.value}>
-                    {l.label}
-                  </option>
-                ))}
-              </Select>
+            <div className="grid grid-cols-2">
+              <div>
+                <Label htmlFor="month" value="Month" />
+                <Select
+                  id="month"
+                  sizing="sm"
+                  value={month}
+                  onChange={(e) => setMonth(parseInt(e.target.value))}
+                >
+                  {MONTHS.map((l, idx) => (
+                    <option key={idx} value={l.value}>
+                      {l.label}
+                    </option>
+                  ))}
+                </Select>
+              </div>
+              <div>
+                <Label htmlFor="year" value="Year" />
+                <Select
+                  id="year"
+                  sizing="sm"
+                  value={year}
+                  onChange={(e) => setYear(parseInt(e.target.value))}
+                >
+                  {range(
+                    new Date().getFullYear() - 1,
+                    new Date().getFullYear() + 2,
+                    1
+                  ).map((l, idx) => (
+                    <option key={idx} value={l}>
+                      {l}
+                    </option>
+                  ))}
+                </Select>
+              </div>
             </div>
           )}
           <div className="mt-3 md:mt-0 md:ms-24">
@@ -168,6 +201,7 @@ const Calendar = () => {
         {view === "month" && (
           <CalendarMonthView
             month={month}
+            year={year}
             isPersonal={isPersonal}
             location={location}
           />
