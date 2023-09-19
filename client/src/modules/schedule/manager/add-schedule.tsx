@@ -20,7 +20,8 @@ import {
   ScheduleDetails,
 } from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
+import { capitalizeString } from "../../../configs/utils";
 
 const AddSchedule = () => {
   const location = useLocation();
@@ -52,7 +53,10 @@ const AddSchedule = () => {
 
   const [showModal, setShowModal] = React.useState(false);
 
-  const [showEmpModal, setShowEmpModal] = React.useState(false);
+  const [showEmpProps, setShowEmpProps] = React.useState({
+    show: false,
+    emp: {} as IUser | undefined,
+  });
 
   // TODO: to retrieve employees from API // should return only employees that are
   // available or meet the schedule criteria
@@ -128,8 +132,7 @@ const AddSchedule = () => {
       schedule: [...prev.schedule, scheduleDetailsState],
     }));
 
-
-    toast.success("Schedule created successfully", {pauseOnHover: false});
+    toast.success("Schedule created successfully", { pauseOnHover: false });
 
     navigate(`/${PATHS.SCHEDULE}`, { replace: true });
   };
@@ -174,19 +177,21 @@ const AddSchedule = () => {
         {/* Schedule Location */}
         <div className="mb-3">
           <Label htmlFor="schedule-location" value="Location" />
-          <Select id="schedule-location" value={scheduleDetailsState.location} onChange={(e) => {
-            setScheduleDetailsState((prev) => ({
-              ...prev,
-              location: e.target.value,
-            }));
-          }}>
-            {
-              globalState?.locations.map((l, idx) => (
-                <option key={idx} value={l}>
-                  {l}
-                </option>
-              ))
-            }
+          <Select
+            id="schedule-location"
+            value={scheduleDetailsState.location}
+            onChange={(e) => {
+              setScheduleDetailsState((prev) => ({
+                ...prev,
+                location: e.target.value,
+              }));
+            }}
+          >
+            {globalState?.locations.map((l, idx) => (
+              <option key={idx} value={l}>
+                {l}
+              </option>
+            ))}
           </Select>
         </div>
         {/* Schedule Date */}
@@ -221,10 +226,7 @@ const AddSchedule = () => {
         </div>
         {/* Select Employees */}
         <div className="mb-3">
-          <Label
-            htmlFor="schedule-employees"
-            value="Employees Available"
-          />
+          <Label htmlFor="schedule-employees" value="Employees Available" />
           <div id="schedule-employees">
             {employees.map((emp, idx) => {
               return (
@@ -250,9 +252,14 @@ const AddSchedule = () => {
                       }
                     }}
                   />
-                  <a className="ml-3 underline underline-offset-2 " onClick={() => {
-                    
-                  }}>{emp.name}</a>
+                  <Label
+                    className="ml-3 underline underline-offset-2 "
+                    onClick={() => {
+                      setShowEmpProps((prev) => ({ show: true, emp: emp }));
+                    }}
+                  >
+                    {capitalizeString(emp.name)}
+                  </Label>
                 </div>
               );
             })}
@@ -269,7 +276,7 @@ const AddSchedule = () => {
               return (
                 <div key={idx} className="flex items-center mb-3">
                   <div className="w-1/4">
-                    <p>{emp.name}</p>
+                    <p>{capitalizeString(emp.name)}</p>
                   </div>
                   <div className="w-3/4 flex items-center">
                     <p className="mr-3">Shift/Period:</p>
@@ -293,70 +300,78 @@ const AddSchedule = () => {
           </Button>
         </div>
       </form>
-      <Modal show={showModal} onClose={() => setShowModal(false)}>
-        <Modal.Header>Auto Assign Personnel?</Modal.Header>
-        <Modal.Body>
-          <div>
-            <p>
-              Any employees previously selected will be cleared and system will
-              re-assign the employees for this schedule.
-            </p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full md:w-1/2 ms-auto flex justify-center">
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => autoAssignPersonnel()}
-            >
-              Yes
-            </Button>
-            <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => setShowModal(false)}
-            >
-              No
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-      <Modal show={showEmpModal} onClose={() => setShowEmpModal(false)}>
-        <Modal.Header></Modal.Header>
-        <Modal.Body>
-          <div>
-            <p>
-              Any employees previously selected will be cleared and system will
-              re-assign the employees for this schedule.
-            </p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full md:w-1/2 ms-auto flex justify-center">
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => autoAssignPersonnel()}
-            >
-              Yes
-            </Button>
-            <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => setShowModal(false)}
-            >
-              No
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
+
+      {/* Modal for auto assign personnel */}
+      {showModal && (
+        <Modal show={showModal} dismissible onClose={() => setShowModal(false)}>
+          <Modal.Header>Auto Assign Personnel?</Modal.Header>
+          <Modal.Body>
+            <div>
+              <p>
+                Any employees previously selected will be cleared and system
+                will re-assign the employees for this schedule.
+              </p>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="w-full md:w-1/2 ms-auto flex justify-center">
+              <Button
+                color="success"
+                className="w-full mr-3"
+                size="sm"
+                onClick={() => autoAssignPersonnel()}
+              >
+                Yes
+              </Button>
+              <Button
+                color="failure"
+                className="w-full"
+                size="sm"
+                onClick={() => setShowModal(false)}
+              >
+                No
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
+      )}
+
+      {/* Modal for showing emp details */}
+      {showEmpProps.show && (
+        <Modal
+          show={showEmpProps.show}
+          dismissible
+          onClose={() => setShowEmpProps({ show: false, emp: undefined })}
+        >
+          <Modal.Header></Modal.Header>
+          <Modal.Body>
+            <div className="grid grid-cols-2">
+              <Details
+                id="emp-name"
+                labelValue={"Name"}
+                value={capitalizeString(showEmpProps.emp?.name)}
+              />
+              <Details
+                id="emp-position"
+                labelValue={"Position"}
+                value={capitalizeString(showEmpProps.emp?.position)}
+              />
+              {/* <p>{showEmpProps?.emp?.}</p> */}
+            </div>
+          </Modal.Body>
+        </Modal>
+      )}
     </div>
   );
 };
 
 export default AddSchedule;
+
+const Details = ({ id, labelValue, value }: any) => {
+  return (
+    <div className="block">
+      <Label htmlFor={id}>{labelValue}</Label>
+      <p id={id}>{value}</p>
+    </div>
+  );
+};
