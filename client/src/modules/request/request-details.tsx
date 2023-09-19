@@ -11,6 +11,7 @@ import ApproveButton from "../../shared/layout/buttons/approve-button";
 import RejectButton from "../../shared/layout/buttons/reject-button";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { toast } from 'react-toastify';
+import LabeledField from "../../shared/layout/fields/labeled-field";
 
 const RequestDetails = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -37,36 +38,36 @@ const RequestDetails = () => {
       <div className="mx-10">
         {request.type !== "swap" && (
           <div className="grid gap-3 grid-cols-2">
-            <Details
+            <LabeledField
               id="request-by"
               labelValue="Requested By"
               value={request.createdBy}
             />
-            <Details
+            <LabeledField
               id="request-date"
               labelValue="Request Date"
               value={request.createdDate.toLocaleDateString()}
             />
-            <Details
+            <LabeledField
               id="request-type"
               labelValue="Request Type"
               value={capitalizeString(request.type)}
             />
-            <Details
+            <LabeledField
               id="request-status"
               labelValue="Request Status"
               value={capitalizeString(request.status)}
             />
             {request.type === "shift" && (
               <>
-                <Details
+                <LabeledField
                   id="request-shift-date"
                   labelValue="Shift Date"
                   value={request.shiftRequest?.shiftDate.toLocaleDateString(
                     DATE.LANGUAGE
                   )}
                 />
-                <Details
+                <LabeledField
                   id="request-shift-period"
                   labelValue="Shift"
                   value={request.shiftRequest?.shift}
@@ -75,17 +76,17 @@ const RequestDetails = () => {
             )}
             {request.type === "leave" && (
               <>
-                <Details
+                <LabeledField
                   id="request-leave-type"
                   labelValue="Leave Type"
                   value={request.leaveRequest?.leaveType}
                 />
-                <Details
+                <LabeledField
                   id="request-leave-half-day"
                   labelValue="Is Half Day?"
                   value={request.leaveRequest?.isHalfDay ? "Yes" : "No"}
                 />
-                <Details
+                <LabeledField
                   id="request-leave-from"
                   labelValue="From"
                   value={request.leaveRequest?.leaveDateFrom.toLocaleDateString(
@@ -93,7 +94,7 @@ const RequestDetails = () => {
                     DATE.DDMMYYYY_HHMM_A_OPTION
                   )}
                 />
-                <Details
+                <LabeledField
                   id="request-leave-to"
                   labelValue="To"
                   value={request.leaveRequest?.leaveDateTo.toLocaleDateString(
@@ -102,7 +103,7 @@ const RequestDetails = () => {
                   )}
                 />
                 {request.leaveRequest?.leaveReason ? (
-                  <Details
+                  <LabeledField
                     id="request-leave-reason"
                     labelValue="Reason"
                     value={request.leaveRequest?.leaveReason}
@@ -112,12 +113,12 @@ const RequestDetails = () => {
             )}
             {!request.updatedBy && (
               <>
-                <Details
+                <LabeledField
                   id="request-updated-by"
                   labelValue="Updated By"
                   value={request.updatedBy}
                 />
-                <Details
+                <LabeledField
                   id="request-updated-date"
                   labelValue="Updated Date"
                   value={request.updatedDate.toLocaleDateString(DATE.LANGUAGE)}
@@ -149,24 +150,16 @@ const RequestDetails = () => {
 
 export default RequestDetails;
 
-const Details = ({ id, labelValue, value }: any) => {
-  return (
-    <div className="block">
-      <Label htmlFor={id}>{labelValue}</Label>
-      <p id={id}>{value}</p>
-    </div>
-  );
-};
 
 const SwapRequestDetails = ({ request }) => {
   return (
     <div className="grid gap-5">
-      <Details
+      <LabeledField
         id="request-swap-requestor"
         labelValue="Requestor"
         value={request.createdBy}
       />
-      <Details
+      <LabeledField
         id="request-swap-requestor-shift-date"
         labelValue="Requestor's Shift"
         value={
@@ -180,7 +173,7 @@ const SwapRequestDetails = ({ request }) => {
           request.shiftSwapRequest?.requestorShift
         }
       />
-      <Details
+      <LabeledField
         id="request-swap-requested-shift-date"
         labelValue="Requested Shift"
         value={
@@ -194,7 +187,7 @@ const SwapRequestDetails = ({ request }) => {
           request.shiftSwapRequest?.requestedShift
         }
       />
-      <Details
+      <LabeledField
         id="request-swap-reason"
         labelValue="Reason"
         value={request.shiftSwapRequest?.swapReason}

@@ -22,6 +22,7 @@ import {
 import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
 import { capitalizeString } from "../../../configs/utils";
+import LabeledField from "../../../shared/layout/fields/labeled-field";
 
 const AddSchedule = () => {
   const location = useLocation();
@@ -346,12 +347,12 @@ const AddSchedule = () => {
           <Modal.Header></Modal.Header>
           <Modal.Body>
             <div className="grid grid-cols-2">
-              <Details
+              <LabeledField
                 id="emp-name"
                 labelValue={"Name"}
                 value={capitalizeString(showEmpProps.emp?.name)}
               />
-              <Details
+              <LabeledField
                 id="emp-position"
                 labelValue={"Position"}
                 value={capitalizeString(showEmpProps.emp?.position)}
@@ -366,12 +367,3 @@ const AddSchedule = () => {
 };
 
 export default AddSchedule;
-
-const Details = ({ id, labelValue, value }: any) => {
-  return (
-    <div className="block">
-      <Label htmlFor={id}>{labelValue}</Label>
-      <p id={id}>{value}</p>
-    </div>
-  );
-};
