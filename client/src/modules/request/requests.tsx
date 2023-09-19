@@ -9,6 +9,7 @@ import { DATE, PATHS } from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import ApproveButton from "../../shared/layout/buttons/approve-button";
 import RejectButton from "../../shared/layout/buttons/reject-button";
+import { toast } from 'react-toastify';
 
 const Requests = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -30,6 +31,8 @@ const Requests = () => {
       ...prev,
       requests: prev.requests.map((r) => (r.id === req.id ? req : r)),
     }));
+
+    toast.success(`Successfully ${status} request`)
   };
 
   // load initial request data TODO: replace with API call
@@ -113,7 +116,7 @@ const Requests = () => {
                           <>
                             <ApproveButton
                               size="sm"
-                              onClick={() => updateStatus(request, "approve")}
+                              onClick={() => updateStatus(request, "approved")}
                             />
                             <RejectButton
                               size="sm"

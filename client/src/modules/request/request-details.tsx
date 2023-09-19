@@ -10,6 +10,7 @@ import BackButton from "../../shared/layout/buttons/back-button";
 import ApproveButton from "../../shared/layout/buttons/approve-button";
 import RejectButton from "../../shared/layout/buttons/reject-button";
 import { GlobalStateContext } from "../../configs/global-state-provider";
+import { toast } from 'react-toastify';
 
 const RequestDetails = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -26,6 +27,8 @@ const RequestDetails = () => {
       requests: prev.requests.map((r) => (r.id === req.id ? updatedReq : r)),
     }));
     // navigate(".", { state: { request: updatedReq }, replace: true });
+
+    toast.success(`Successfully ${status} request`)
   };
 
   return (

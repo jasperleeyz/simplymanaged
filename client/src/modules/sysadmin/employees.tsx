@@ -1,5 +1,5 @@
 import { useContext, useState, useEffect } from "react";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { Button, TextInput, Table, Pagination } from "flowbite-react";
 import { HiPencil } from "react-icons/hi";
@@ -14,15 +14,7 @@ const EmployeesPage = () => {
   useEffect(() => {
     const addEmployee = localStorage.getItem('addEmployee');
     if (addEmployee === 'true') {
-      toast.success('Added Employee Sucessfully.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.success('Added employee sucessfully');
       localStorage.removeItem('addEmployee');
     }
   }, []);
@@ -147,7 +139,6 @@ const EmployeesPage = () => {
           totalPages={Math.ceil(filteredEmployees.length / employeesPerPage)}
         />
       </div>
-      <ToastContainer />
     </div>
   );
 };

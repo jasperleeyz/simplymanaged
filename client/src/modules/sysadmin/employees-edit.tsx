@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { GlobalStateContext } from "../../configs/global-state-provider"
 import { Button, Label, TextInput, Select, Modal } from "flowbite-react"
 import { capitalizeString, validName, isNumber, validEmail } from "../../configs/utils"
@@ -100,15 +100,7 @@ const EmployeesEditPage = () => {
     setDeleted(true)
     props.setOpenModal(undefined)
 
-    toast.success('Employee Deleted.', {
-      position: "top-right",
-      autoClose: 3000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: false,
-      progress: undefined,
-      theme: "light",
-    });
+    toast.success('Employee deleted');
 
     setTimeout(() => {
       navigate(`/${PATHS.EMPLOYEES}`)
@@ -139,15 +131,7 @@ const EmployeesEditPage = () => {
 
       props.setOpenModal(undefined)
 
-      toast.success(`${newEmployeeData.name} Deactivated.`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.success(`${newEmployeeData.name} deactivated`);
     }
     else {
       const updatedEmployee = { ...editEmployee, status: 'Active' };
@@ -174,15 +158,7 @@ const EmployeesEditPage = () => {
 
       props.setOpenModal(undefined)
 
-      toast.success(`${newEmployeeData.name} Activated.`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.success(`${newEmployeeData.name} activated`);
     }
   }
 
@@ -231,15 +207,7 @@ const EmployeesEditPage = () => {
           email: 'failure',
         }));
       }
-      toast.error('Invalid Details.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.error('Invalid details');
     }
     else {
       const updatedEmployees = employees
@@ -261,15 +229,7 @@ const EmployeesEditPage = () => {
         employee: filteredUpdatedEmployees,
       }));
 
-      toast.success('Employee Saved.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.success('Employee saved');
     }
   }
 
@@ -492,7 +452,6 @@ const EmployeesEditPage = () => {
               </div>
             </div>
           </div>
-          <ToastContainer />
         </div>
       ) : (<div className='text-center'>
         <h1 >400 </h1>

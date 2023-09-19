@@ -8,6 +8,7 @@ type GlobalState = {
   user?: IUser;
   isAuthenticated: boolean;
   workShifts?: any[];
+  locations: string[];
   schedule: ScheduleDetails[];
   requests: Request[];
   employee: IUser[];
@@ -40,6 +41,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     isAuthenticated: true,
     workShifts: ["AM", "PM", "FULL"],
+    locations: ["Toa Payoh", "Ang Mo Kio"],
     schedule: [
       {
         scheduleTemplate: "",

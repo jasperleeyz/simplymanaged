@@ -1,6 +1,5 @@
 import { useContext, useState } from "react";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { Checkbox, Button, Label, TextInput, Select } from "flowbite-react";
 import { capitalizeString, isNumber, validName, validEmail } from "../../configs/utils";
@@ -104,15 +103,7 @@ const EmployeesAddPage = () => {
         }));
       }
 
-      toast.error('Invalid Details.', {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.error('Invalid details');
     }
     else {
       const newEmployee: IUser = {
@@ -133,15 +124,7 @@ const EmployeesAddPage = () => {
         employee: updatedEmployees,
       }));
 
-      toast.success(`Added ${newEmployee.name} Sucessfully.`, {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: false,
-        progress: undefined,
-        theme: "light",
-      });
+      toast.success(`Added ${newEmployee.name} Sucessfully.`);
       console.log(employee)
       resetEmployee()
       console.log(employee)
@@ -314,7 +297,6 @@ const EmployeesAddPage = () => {
         </div>
 
       </div>
-      <ToastContainer />
     </div>
   );
 };
