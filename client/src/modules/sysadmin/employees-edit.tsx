@@ -176,7 +176,7 @@ const EmployeesEditPage = () => {
       email: '',
     }));
 
-    if (!validName(newEmployeeData.name) || !isNumber(newEmployeeData.phoneNo) || !validEmail(newEmployeeData.email)) {
+    if (!validName(newEmployeeData.name) || !isNumber(newEmployeeData.phoneNo) || (newEmployeeData.phoneNo.length != 8) || !validEmail(newEmployeeData.email)) {
       if (!validName(newEmployeeData.name)) {
         setErrorMessage(prev => ({
           ...prev,
@@ -187,10 +187,10 @@ const EmployeesEditPage = () => {
           name: 'failure',
         }));
       }
-      if (!isNumber(newEmployeeData.phoneNo)) {
+      if (!isNumber(newEmployeeData.phoneNo) || (newEmployeeData.phoneNo.length != 8)) {
         setErrorMessage(prev => ({
           ...prev,
-          phoneNo: 'Phone must contain only numbers.',
+          phoneNo: 'Phone must contain only 8 numbers.',
         }));
         setInputColor(prev => ({
           ...prev,
@@ -229,7 +229,7 @@ const EmployeesEditPage = () => {
         employee: filteredUpdatedEmployees,
       }));
 
-      toast.success('Employee saved');
+      toast.success('Employee updated');
     }
   }
 

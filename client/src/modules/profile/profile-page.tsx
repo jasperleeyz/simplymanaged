@@ -1,11 +1,12 @@
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { Avatar, Button, Label, TextInput } from "flowbite-react";
-import { capitalizeString, isNumber } from "../../configs/utils";
+import { capitalizeString, validName, isNumber, validEmail } from "../../configs/utils"
 import { HiPencil, HiSave } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PATHS } from "../../configs/constants";
 import IUser from "../../shared/model/user.model";
+import { toast } from 'react-toastify';
 
 const ProfilePage = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -23,20 +24,77 @@ const ProfilePage = () => {
     };
   });
 
+  const [inputColor, setInputColor] = React.useState({
+    name: 'gray',
+    phoneNo: 'gray',
+    email: 'gray',
+  })
+
   const isEdit = useLocation().pathname.endsWith("edit");
 
   // TODO: get user profile (details, preferences) here
   //   globalState?.user.id
 
   const saveProfile = () => {
-    // save profile
-    setGlobalState((prev) => ({
+
+    setErrorMessage(prev => ({
       ...prev,
-      user: editUser,
+      name: '',
+    }));
+    setErrorMessage(prev => ({
+      ...prev,
+      phoneNo: '',
+    }));
+    setErrorMessage(prev => ({
+      ...prev,
+      email: '',
     }));
 
-    // then navigate to profile page
-    navigate(`/${PATHS.MY_PROFILE}`, { replace: true });
+    if (!validName(editUser.name) || !isNumber(editUser.phoneNo) || (editUser.phoneNo.length != 8) || !validEmail(editUser.email)) {
+      if (!validName(editUser.name)) {
+        setErrorMessage(prev => ({
+          ...prev,
+          name: 'Name must consist of letters only.',
+        }));
+        setInputColor(prev => ({
+          ...prev,
+          name: 'failure',
+        }));
+      }
+      if (!isNumber(editUser.phoneNo) || (editUser.phoneNo.length != 8)) {
+        setErrorMessage(prev => ({
+          ...prev,
+          phoneNo: 'Phone must contain only 8 numbers.',
+        }));
+        setInputColor(prev => ({
+          ...prev,
+          phoneNo: 'failure',
+        }));
+      }
+      if (!validEmail(editUser.email)) {
+        setErrorMessage(prev => ({
+          ...prev,
+          email: 'Email must be in the format "emp@sim.com".',
+        }));
+        setInputColor(prev => ({
+          ...prev,
+          email: 'failure',
+        }));
+      }
+      toast.error('Invalid details');
+    }
+    else{
+      // save profile
+      setGlobalState((prev) => ({
+        ...prev,
+        user: editUser,
+      }));
+
+      toast.success('Profile updated');
+
+      // then navigate to profile page
+      navigate(`/${PATHS.MY_PROFILE}`, { replace: true });
+    }
   };
 
   return (
@@ -78,10 +136,14 @@ const ProfilePage = () => {
             <TextInput
               id="user-name"
               value={capitalizeString(editUser?.name)}
+              color={inputColor.name}
               required
-              onChange={(e) =>
+              helperText={<span className="error-message">{errorMessage.name}</span>}
+              onChange={(e) =>{
                 setEditUser((prev) => ({ ...prev, name: e.target.value }))
-              }
+                setInputColor(prev => ({ ...prev, name: 'gray'}))
+              }}
+              autoComplete="off"
             />
           )}
           <Label htmlFor="user-email" value="Email" />
@@ -91,29 +153,32 @@ const ProfilePage = () => {
             <TextInput
               id="user-email"
               value={editUser?.email.toLowerCase()}
+              color={inputColor.email}
               required
-              onChange={(e) =>
+              helperText={<span className="error-message">{errorMessage.email}</span>}
+              onChange={(e) =>{
                 setEditUser((prev) => ({ ...prev, email: e.target.value }))
-              }
+                setInputColor(prev => ({ ...prev, email: 'gray'}))
+              }}
+              autoComplete="off"
             />
           )}
-          <Label htmlFor="user-phone-no" value="Phone No." />
+          <Label htmlFor="user-phone-no" value="Phone" />
           {!isEdit ? (
             <p id="user-phone-no">{globalState?.user?.phoneNo}</p>
           ) : (
             <TextInput
               id="user-phone-no"
               value={editUser?.phoneNo}
+              color={inputColor.phoneNo}
               required
               helperText={<span className="error-message">{errorMessage.phoneNo}</span>}
               onChange={(e) => {
-                if (isNumber(e.target.value)) {
-                  setErrorMessage((prev) => ({ ...prev, phoneNo: "" }));
-                  setEditUser((prev) => ({ ...prev, phoneNo: e.target.value }));
-                } else {
-                  setErrorMessage((prev) => ({ ...prev, phoneNo: "Only numbers are allowed" }));
-                }
+                  setEditUser((prev) => ({ ...prev, phoneNo: e.target.value }))
+                  setInputColor(prev => ({ ...prev, phoneNo: 'gray'}))
+          
               }}
+              autoComplete="off"
             />
           )}
           {/* <Label htmlFor="user-" value="Name" />

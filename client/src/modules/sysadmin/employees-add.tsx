@@ -124,7 +124,7 @@ const EmployeesAddPage = () => {
         employee: updatedEmployees,
       }));
 
-      toast.success(`Added ${newEmployee.name} Sucessfully.`);
+      toast.success(`Added ${newEmployee.name} sucessfully`);
       console.log(employee)
       resetEmployee()
       console.log(employee)
