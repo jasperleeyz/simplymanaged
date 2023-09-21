@@ -124,7 +124,7 @@ const Header = () => {
           </Navbar.Link>
           )}
           {globalState?.user?.role == ROLES.EMPLOYEE && (<Navbar.Link
-            active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
+            active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
             to={`/${PATHS.REQUESTS}`}
             as={Link}
           >

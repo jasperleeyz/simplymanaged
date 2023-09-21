@@ -29,7 +29,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [globalState, setGlobalState] = React.useState<GlobalState>({
     user: {
-      id: 1,
+      id: 0,
       name: "JOHN DOE",
       email: "JOHNDOE@SIMPLYMANAGED.COM",
       phoneNo: "99999999",
@@ -44,6 +44,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
     locations: ["Toa Payoh", "Ang Mo Kio"],
     schedule: [
       {
+        id: 1,
         scheduleTemplate: "",
         date: new Date(),
         location: "Toa Payoh",
@@ -57,6 +58,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
             position: "MANAGER",
             employmentType: "FULL-TIME",
             shift: "PM",
+            attendance: "N"
           },
           {
             id: 1,
@@ -67,10 +69,12 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
             position: "STORE MANAGER",
             employmentType: "FULL-TIME",
             shift: "AM",
+            attendance: "N"
           },
         ],
       },
       {
+        id: 2,
         scheduleTemplate: "",
         date: new Date("2023-09-30"),
         location: "Toa Payoh",
@@ -84,12 +88,15 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
             position: "MANAGER",
             employmentType: "FULL-TIME",
             shift: "PM",
+            attendance: "N"
           },
         ],
       },
       {
+        id: 3,
         scheduleTemplate: "",
         date: new Date("2023-09-04"),
+        location: "Ang Mo Kio",
         employeesSelected: [
           {
             id: 4,
@@ -100,10 +107,12 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
             position: "SERVER",
             employmentType: "PART-TIME",
             shift: "FULL",
+            attendance: "N"
           },
         ],
       },
       {
+        id: 4,
         scheduleTemplate: "",
         date: new Date("2023-10-01"),
         location: "Toa Payoh",
@@ -117,6 +126,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
             position: "MANAGER",
             employmentType: "FULL-TIME",
             shift: "PM",
+            attendance: "N"
           },
           {
             id: 4,
@@ -127,6 +137,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
             position: "SERVER",
             employmentType: "PART-TIME",
             shift: "FULL",
+            attendance: "N"
           },
         ],
       },

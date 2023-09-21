@@ -28,6 +28,7 @@ const AddSchedule = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const date: Date = location.state?.date;
+  const isEdit = location.pathname.endsWith(PATHS.EDIT_SCHEDULE);
 
   // TODO: can retrieve schedule templates from global state to populate dropdownlist
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -38,8 +39,9 @@ const AddSchedule = () => {
         return location.state.schedule;
       } else {
         return {
+          id: 0,
           scheduleTemplate: "",
-          date: date || new Date(),
+          date: date || moment(new Date()).add(1, "days").toDate(),
           employeesSelected: [],
           location: "Toa Payoh",
         };
@@ -98,8 +100,8 @@ const AddSchedule = () => {
     setScheduleDetailsState((prev) => ({
       ...prev,
       employeesSelected: [
-        { ...employees[0], shift: "PM" },
-        { ...employees[1], shift: "FULL" },
+        { ...employees[0], shift: "PM", attendance: "N" },
+        { ...employees[1], shift: "FULL", attendance: "N" },
       ],
     }));
   };
@@ -127,20 +129,43 @@ const AddSchedule = () => {
 
   //  TODO: to invoke API to create schedule
   const createSchedule = () => {
-    setGlobalState((prev) => ({
-      ...prev,
-      // TODO: add schedule to global state
-      schedule: [...prev.schedule, scheduleDetailsState],
-    }));
+    if (isEdit) {
+      
+      setGlobalState((prev) => ({
+        ...prev,
+        schedule: prev.schedule.map((s) => {
+          if (s.id === scheduleDetailsState.id) {
+            return scheduleDetailsState;
+          } else {
+            return s;
+          }
+        }),
+      }));
 
-    toast.success("Schedule created successfully", { pauseOnHover: false });
+      toast.success("Schedule updated successfully");
+    } else {
+      const id = globalState?.schedule?.length
+        ? globalState?.schedule?.length + 1
+        : 1;
+
+      setGlobalState((prev) => ({
+        ...prev,
+        // TODO: add schedule to global state
+        schedule: [
+          ...prev.schedule,
+          { ...scheduleDetailsState, id: id, attendance: "N" },
+        ],
+      }));
+
+      toast.success("Schedule created successfully");
+    }
 
     navigate(`/${PATHS.SCHEDULE}`, { replace: true });
   };
 
   return (
     <div>
-      <p className="header">{`${location.pathname.endsWith(PATHS.EDIT_SCHEDULE) ? "Edit" : "Create"} Schedule`}</p>
+      <p className="header">{`${isEdit ? "Edit" : "Create"} Schedule`}</p>
       <div className="mb-3 flex justify-between">
         <BackButton size="sm" />
         <Button
@@ -201,7 +226,7 @@ const AddSchedule = () => {
           <TextInput
             id="schedule-date"
             type="date"
-            min={moment(new Date()).format("yyyy-MM-DD")}
+            min={moment(new Date()).add(1, "days").format("yyyy-MM-DD")}
             value={moment(scheduleDetailsState.date).format("yyyy-MM-DD")}
             helperText={
               <span className="error-message">{errorMessage.date}</span>
@@ -239,7 +264,10 @@ const AddSchedule = () => {
                       if (e.currentTarget.checked) {
                         setScheduleDetailsState((prev) => ({
                           ...prev,
-                          employeesSelected: [...prev.employeesSelected, emp],
+                          employeesSelected: [
+                            ...prev.employeesSelected,
+                            { ...emp, shift: "AM", attendance: "N" },
+                          ],
                         }));
                       } else {
                         setScheduleDetailsState((prev) => ({
