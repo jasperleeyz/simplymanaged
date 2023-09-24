@@ -9,15 +9,24 @@ import ProfileRoutes from "./modules/profile";
 import SysAdminRoutes from "./modules/sysadmin";
 import { PATHS, ROLES } from "./configs/constants";
 import PrivateRoute from "./shared/auth/private-route";
+import Login from "./shared/auth/login";
 
 const AppRoutes = () => {
+  
   return (
     <div className="md:mx-auto max-w-6xl my-6" style={{ minHeight: "600px" }}>
       <div className="mx-3">
         <ErrorBoundaryRoutes>
+          <Route path="/login" element={<Login />} />
           <Route index element={<Home />} />
-          <Route path={`/${PATHS.MY_PROFILE}/*`} element={<ProfileRoutes />} />
-
+          <Route
+            path={`/${PATHS.MY_PROFILE}/*`}
+            element={
+              <PrivateRoute>
+                <ProfileRoutes />
+              </PrivateRoute>
+            }
+          />
           <Route
             path={`/${PATHS.SCHEDULE}/*`}
             element={
@@ -34,7 +43,6 @@ const AppRoutes = () => {
               </PrivateRoute>
             }
           />
-
           <Route
             path={`/${PATHS.EMPLOYEES}/*`}
             element={
