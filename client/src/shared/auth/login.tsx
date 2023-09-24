@@ -1,9 +1,10 @@
 import { Button, Card, Label } from "flowbite-react";
 import React from "react";
 import LabeledInputText from "../layout/form/labeled-text-input";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
+import { GlobalStateContext } from "../../configs/global-state-provider";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string().email("Invalid email address").required("Required"),
@@ -11,6 +12,15 @@ const LoginSchema = Yup.object().shape({
 });
 
 const Login = () => {
+  const isAuthenticated =
+    React.useContext(GlobalStateContext)?.globalState?.isAuthenticated;
+  const navigate = useNavigate();
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, []);
 
   return (
     <div className="w-1/2 mx-auto">
@@ -28,7 +38,9 @@ const Login = () => {
                 labelValue="Email"
                 value={props.values.email}
                 onChange={props.handleChange}
-                color={props.errors.email && props.touched.email ? "failure" : "gray"}
+                color={
+                  props.errors.email && props.touched.email ? "failure" : "gray"
+                }
                 helperText={
                   props.errors.email && props.touched.email ? (
                     <>{props.errors.email}</>
@@ -42,12 +54,16 @@ const Login = () => {
                 labelValue="Password"
                 value={props.values.password}
                 onChange={props.handleChange}
-                color={props.errors.password && props.touched.password ? "failure" : "gray"}
+                color={
+                  props.errors.password && props.touched.password
+                    ? "failure"
+                    : "gray"
+                }
                 helperText={
-                    props.errors.password && props.touched.password ? (
-                      <>{props.errors.password}</>
-                    ) : null
-                  }
+                  props.errors.password && props.touched.password ? (
+                    <>{props.errors.password}</>
+                  ) : null
+                }
               />
               <div className="flex items-center mt-8 justify-between">
                 <Link
