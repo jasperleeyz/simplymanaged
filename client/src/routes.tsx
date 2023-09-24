@@ -10,6 +10,7 @@ import SysAdminRoutes from "./modules/sysadmin";
 import { PATHS, ROLES } from "./configs/constants";
 import PrivateRoute from "./shared/auth/private-route";
 import Login from "./shared/auth/login";
+import RegistrationRoutes from "./modules/registration";
 
 const AppRoutes = () => {
   
@@ -17,6 +18,7 @@ const AppRoutes = () => {
     <div className="md:mx-auto max-w-6xl my-6" style={{ minHeight: "600px" }}>
       <div className="mx-3">
         <ErrorBoundaryRoutes>
+          <Route path="/registration/*" element={<RegistrationRoutes />} />
           <Route path="/login" element={<Login />} />
           <Route index element={<Home />} />
           <Route

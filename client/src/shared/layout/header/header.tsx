@@ -17,12 +17,12 @@ import { ROLES } from "../../../configs/constants";
 const customHeaderTheme: CustomFlowbiteTheme = {
   navbar: {
     root: {
-        inner: {
-            base: "mx-auto flex flex-wrap items-center justify-between max-w-6xl",
-        }
+      inner: {
+        base: "mx-auto flex flex-wrap items-center justify-between max-w-6xl",
+      },
     },
-    collapse:{
-        base: "w-full me-auto md:block md:w-auto",
+    collapse: {
+      base: "w-full me-auto md:block md:w-auto",
     },
     link: {
       active: {
@@ -39,99 +39,106 @@ const Header = () => {
   return (
     <Flowbite theme={{ theme: customHeaderTheme }}>
       <Navbar fluid rounded className="border-b">
-        <Navbar.Brand href="/">
+        <Navbar.Brand href={globalState?.isAuthenticated ? "/" : "/login"}>
           <img alt="SiM Logo" className="mr-3 h-12 sm:h-14" src="/logo.png" />
           {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
           SimplyManaged
         </span> */}
         </Navbar.Brand>
-        <div className="flex md:order-2">
-          <Dropdown
-            inline
-            arrowIcon={false}
-            label={
-              <Avatar
-                alt="User settings"
-                img={globalState?.user?.profileImage}
-                rounded
-                className="mr-3"
-              />
-            }
-          >
-            <Dropdown.Header>
-              <span className="block text-sm">{capitalizeString(globalState?.user?.name)}</span>
-              <span className="block truncate text-sm font-medium">
-                {globalState?.user?.email.toLowerCase()}
-              </span>
-            </Dropdown.Header>
-            <Dropdown.Item className="font-normal" as={Link} to={`/${PATHS.MY_PROFILE}`}>My profile</Dropdown.Item>
-            <Dropdown.Divider />
-            <Dropdown.Item>Sign out</Dropdown.Item>
-          </Dropdown>
-          <Navbar.Toggle />
-        </div>
-        <Navbar.Collapse>
-          <Navbar.Link active={location.pathname === "/"} to="/" as={Link}>
-            <p>Dashboard</p>
-          </Navbar.Link>
-          {/*SYSADMIN HEADER*/}
-          {globalState?.user?.role == ROLES.SYSADMIN && (<Navbar.Link
-            active={location.pathname.startsWith("/" + PATHS.EMPLOYEES)}
-            to={`/${PATHS.EMPLOYEES}`}
-            as={Link}
-          >
-            People
-          </Navbar.Link>
-          )}
-          {/*SCHEDULER HEADER*/}
-          {globalState?.user?.role == ROLES.SCHEDULER && (<Navbar.Link
-            active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
-            to={`/${PATHS.SCHEDULE}`}
-            as={Link}
-          >
-            Schedule
-          </Navbar.Link>
-          )}
-          {/* <Navbar.Link
-            active={location.pathname.startsWith("/people")}
-            to="/people"
-            as={Link}
-          >
-            People
-          </Navbar.Link> */}
-          {globalState?.user?.role == ROLES.SCHEDULER && (<Navbar.Link
-            active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
-            to={`/${PATHS.REQUESTS}`}
-            as={Link}
-          >
-            Requests
-          </Navbar.Link>
-          )}
-          {/* <Navbar.Link
-            active={location.pathname.startsWith("/reports")}
-            to="/reports"
-            as={Link}
-          >
-            Reports
-          </Navbar.Link> */}
-          {/*EMPLOYEE*/}
-          {globalState?.user?.role == ROLES.EMPLOYEE && (<Navbar.Link
-            active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
-            to={`/${PATHS.SCHEDULE}`}
-            as={Link}
-          >
-            Schedule
-          </Navbar.Link>
-          )}
-          {globalState?.user?.role == ROLES.EMPLOYEE && (<Navbar.Link
-            active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
-            to={`/${PATHS.REQUESTS}`}
-            as={Link}
-          >
-            Requests
-          </Navbar.Link>
-          )}
-        </Navbar.Collapse>
+        {globalState?.isAuthenticated && (
+          <>
+            <div className="flex md:order-2">
+              <Dropdown
+                inline
+                arrowIcon={false}
+                label={
+                  <Avatar
+                    alt="User settings"
+                    img={globalState?.user?.profileImage}
+                    rounded
+                    className="mr-3"
+                  />
+                }
+              >
+                <Dropdown.Header>
+                  <span className="block text-sm">
+                    {capitalizeString(globalState?.user?.name)}
+                  </span>
+                  <span className="block truncate text-sm font-medium">
+                    {globalState?.user?.email.toLowerCase()}
+                  </span>
+                </Dropdown.Header>
+                <Dropdown.Item
+                  className="font-normal"
+                  as={Link}
+                  to={`/${PATHS.MY_PROFILE}`}
+                >
+                  My profile
+                </Dropdown.Item>
+                <Dropdown.Divider />
+                <Dropdown.Item>Sign out</Dropdown.Item>
+              </Dropdown>
+              <Navbar.Toggle />
+            </div>
+            <Navbar.Collapse>
+              <Navbar.Link active={location.pathname === "/"} to="/" as={Link}>
+                <p>Dashboard</p>
+              </Navbar.Link>
+
+              {/*SYSADMIN HEADER*/}
+              {globalState?.user?.role == ROLES.SYSADMIN && (
+                <Navbar.Link
+                  active={location.pathname.startsWith("/" + PATHS.EMPLOYEES)}
+                  to={`/${PATHS.EMPLOYEES}`}
+                  as={Link}
+                >
+                  People
+                </Navbar.Link>
+              )}
+
+              {/*SCHEDULER HEADER*/}
+              {globalState?.user?.role == ROLES.SCHEDULER && (
+                <Navbar.Link
+                  active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
+                  to={`/${PATHS.SCHEDULE}`}
+                  as={Link}
+                >
+                  Schedule
+                </Navbar.Link>
+              )}
+
+              {globalState?.user?.role == ROLES.SCHEDULER && (
+                <Navbar.Link
+                  active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
+                  to={`/${PATHS.REQUESTS}`}
+                  as={Link}
+                >
+                  Requests
+                </Navbar.Link>
+              )}
+
+              {/*EMPLOYEE*/}
+              {globalState?.user?.role == ROLES.EMPLOYEE && (
+                <Navbar.Link
+                  active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
+                  to={`/${PATHS.SCHEDULE}`}
+                  as={Link}
+                >
+                  Schedule
+                </Navbar.Link>
+              )}
+              {globalState?.user?.role == ROLES.EMPLOYEE && (
+                <Navbar.Link
+                  active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
+                  to={`/${PATHS.REQUESTS}`}
+                  as={Link}
+                >
+                  Requests
+                </Navbar.Link>
+              )}
+            </Navbar.Collapse>
+          </>
+        )}
       </Navbar>
     </Flowbite>
   );

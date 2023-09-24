@@ -23,7 +23,7 @@ const Login = () => {
   }, []);
 
   return (
-    <div className="w-1/2 mx-auto">
+    <div className="md:w-1/2 mx-auto">
       <Card>
         <Formik
           initialValues={{ email: "", password: "" }}
@@ -38,6 +38,7 @@ const Login = () => {
                 labelValue="Email"
                 value={props.values.email}
                 onChange={props.handleChange}
+                onBlur={props.handleBlur}
                 color={
                   props.errors.email && props.touched.email ? "failure" : "gray"
                 }
@@ -54,6 +55,7 @@ const Login = () => {
                 labelValue="Password"
                 value={props.values.password}
                 onChange={props.handleChange}
+                onBlur={props.handleBlur}
                 color={
                   props.errors.password && props.touched.password
                     ? "failure"
