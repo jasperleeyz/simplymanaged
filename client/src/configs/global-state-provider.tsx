@@ -33,7 +33,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       name: "JOHN DOE",
       email: "JOHNDOE@SIMPLYMANAGED.COM",
       phoneNo: "99999999",
-      role: ROLES.SYSADMIN,
+      role: ROLES.SUPERADMIN,
       position: "STORE MANAGER",
       employmentType: "FULL-TIME",
       profileImage:

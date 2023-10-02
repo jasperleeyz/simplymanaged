@@ -4,9 +4,10 @@ import LabeledInputText from "../../shared/layout/form/labeled-text-input";
 import { Card, Label, Select, TextInput } from "flowbite-react";
 import { isNumber } from "../../configs/utils";
 
-const RegistrationSchema = Yup.object().shape({
+const RegistrationSchema = (employeesList: number[]) => Yup.object().shape({
   companyName: Yup.string().required("Required"),
   industry: Yup.string().required("Required"),
+  uen: Yup.string().required("Required"),
   contactPersonName: Yup.string().required("Required"),
   email: Yup.string().email("Invalid email address").required("Required"),
   contactNumber: Yup.string().matches(
@@ -14,12 +15,13 @@ const RegistrationSchema = Yup.object().shape({
     "Must be a number"
   ).required("Required"),
   address: Yup.string().required("Required"),
-  city: Yup.string().required("Required"),
-  state: Yup.string().required("Required"),
-  zipCode: Yup.string().required("Required"),
+  noOfEmployees: Yup.number().required("Required").test({test: (v: number) => employeesList.includes(v), message: "Invalid number of employees"}),
 });
 
 const RegistrationForm = () => {
+
+  const employeesList = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
   return (
     <div className="md:w-1/2 mx-auto">
       <Card>
@@ -37,7 +39,7 @@ const RegistrationForm = () => {
             zipCode: "",
           }}
           onSubmit={(values, { setSubmitting }) => {}}
-          validationSchema={RegistrationSchema}
+          validationSchema={RegistrationSchema(employeesList)}
         >
           {(props) => (
             <form onSubmit={props.handleSubmit}>
@@ -78,8 +80,9 @@ const RegistrationForm = () => {
                         ) : null
                     }
                 >
-                    <option value=""></option>
+                    <option value="" />
                     {/* get list of possible values and loop to create option */}
+                    <option value="11">11</option>
                 </Select>
               </div>
                 <LabeledInputText

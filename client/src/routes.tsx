@@ -11,6 +11,7 @@ import { PATHS, ROLES } from "./configs/constants";
 import PrivateRoute from "./shared/auth/private-route";
 import Login from "./shared/auth/login";
 import RegistrationRoutes from "./modules/registration";
+import CodeManagementRoutes from "./modules/code-management";
 
 const AppRoutes = () => {
   
@@ -21,6 +22,14 @@ const AppRoutes = () => {
           <Route path="/registration/*" element={<RegistrationRoutes />} />
           <Route path="/login" element={<Login />} />
           <Route index element={<Home />} />
+          <Route
+            path={`/${PATHS.CODE}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SUPERADMIN]}>
+                <CodeManagementRoutes />
+              </PrivateRoute>
+            }
+          />
           <Route
             path={`/${PATHS.MY_PROFILE}/*`}
             element={

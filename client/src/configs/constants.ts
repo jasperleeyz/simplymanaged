@@ -14,6 +14,7 @@ export const MONTHS = [
 ]
 
 export const ROLES = {
+    SUPERADMIN: 'SA',
     SCHEDULER: 'S',
     EMPLOYEE: 'E',
     SYSADMIN: 'A'
@@ -34,6 +35,11 @@ export const PATHS = {
     EMPLOYEES: 'employees',
     ADD_EMPLOYEE: 'add',
     VIEW_EMPLOYEE: 'view',
+
+    CODE: 'code',
+    VIEW_CODE: 'view',
+    ADD_CODE: 'add',
+    EDIT_CODE: 'edit',
 }
 
 export const DATE = {
