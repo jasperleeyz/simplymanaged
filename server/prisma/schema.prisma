@@ -8,21 +8,319 @@ datasource db {
   relationMode = "prisma"
 }
 
-model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
-  posts Post[]
+// System Tables for Registration
+model Code {
+  id           Int      @id @default(autoincrement())
+  code_type    String
+  code         String
+  description  String
+  status       String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+
+  @@unique([code_type, code])
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  title     String
-  content   String?
-  published Boolean  @default(false)
-  viewCount Int      @default(0)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model Registration {
+  id              Int      @id @default(autoincrement())
+  uen_id          String
+  company_name    String
+  registrant_name String
+  contact_no      Int      @unique
+  email           String   @unique
+  industry        String
+  no_of_employees Int
+  approve_status  String
+  created_by      String   @default("SYSTEM")
+  created_date    DateTime @default(now())
+  updated_by      String
+  updated_date    DateTime @updatedAt
+}
+
+// System Tables for Subscribed Companies
+model Company {
+  id                        Int                      @id @default(autoincrement())
+  uen                       String                   @unique
+  name                      String
+  contact_no                Int                      @unique
+  email                     String                   @unique
+  address                   String
+  industry                  String
+  no_of_employees           Int
+  created_by                String                   @default("SYSTEM")
+  created_date              DateTime                 @default(now())
+  updated_by                String
+  updated_date              DateTime                 @updatedAt
+  subscriptions             Subscription[]           @relation("company_subscriptions")
+  company_codes             CompanyCode[]            @relation("company_codes")
+  role_based_access_control RoleBasedAccessControl[] @relation("company_rbac")
+  employees                 User[]                   @relation("company_employees")
+  departments               Department[]             @relation("company_departments")
+  company_locations         CompanyLocation[]        @relation("company_locations")
+  rosters                   Roster[]                 @relation("company_rosters")
+  roster_templates          RosterTemplate[]         @relation("company_roster_templates")
+}
+
+model Subscription {
+  id                Int      @id @default(autoincrement())
+  company_id        Int
+  type              String
+  employee_quantity Int
+  status            String
+  start_date        DateTime
+  end_date          DateTime
+  created_by        String   @default("SYSTEM")
+  created_date      DateTime @default(now())
+  updated_by        String
+  updated_date      DateTime @updatedAt
+  company           Company  @relation("company_subscriptions", fields: [company_id], references: [id])
+
+  @@index([company_id])
+}
+
+model CompanyCode {
+  id           Int
+  company_id   Int
+  code_id      Int
+  code_type    String
+  code         String
+  description  String
+  status       String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_codes", fields: [company_id], references: [id])
+
+  @@id([company_id, code_id])
+  @@index([company_id])
+}
+
+model CompanyLocation {
+  id           Int
+  company_id   Int
+  name         String
+  address      String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_locations", fields: [company_id], references: [id])
+  rosters      Roster[] @relation("location_rosters")
+
+  @@id([id, company_id])
+  @@index([company_id])
+}
+
+model RoleBasedAccessControl {
+  id           Int      @id @default(autoincrement())
+  company_id   Int
+  user_role    String
+  module       String
+  access_type  String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_rbac", fields: [company_id], references: [id])
+
+  @@index([company_id])
+}
+
+model Department {
+  id                 Int
+  company_id         Int
+  department_name    String
+  department_head_id Int?
+  created_by         String
+  created_date       DateTime @default(now())
+  updated_by         String
+  updated_date       DateTime @updatedAt
+  company            Company  @relation("company_departments", fields: [company_id], references: [id])
+  employees          User[]   @relation("user_department")
+  department_head    User?    @relation("department_head", fields: [department_head_id, company_id], references: [id, company_id], onDelete: NoAction, onUpdate: NoAction)
+  rosters            Roster[] @relation("department_rosters")
+
+  @@id([company_id, id])
+  @@unique([department_head_id, company_id])
+  @@index([company_id])
+}
+
+// System Tables for Users/Employees
+model User {
+  id                   Int
+  company_id           Int
+  fullname             String
+  email                String             @unique
+  contact_no           Int                @unique
+  role                 String
+  position             String
+  department_id        Int?
+  status               String
+  created_by           String
+  created_date         DateTime           @default(now())
+  updated_by           String
+  updated_date         DateTime           @updatedAt
+  preferences          UserPreference[]   @relation("user_preferences")
+  company              Company            @relation("company_employees", fields: [company_id], references: [id])
+  department           Department?        @relation("user_department", fields: [company_id, department_id], references: [company_id, id])
+  department_in_charge Department?        @relation("department_head")
+  employment_details   EmploymentDetails? @relation("employment_details")
+  schedules            UserSchedule[]     @relation("user_schedules")
+  requests             Request[]          @relation("user_requests")
+
+  @@id([id, company_id])
+  @@index([company_id, department_id])
+}
+
+model UserPreference {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  user_company_id Int
+  module          String
+  preference      String
+  created_by      String
+  created_date    DateTime @default(now())
+  updated_by      String
+  updated_date    DateTime @updatedAt
+  user            User     @relation("user_preferences", fields: [user_id, user_company_id], references: [id, company_id])
+
+  @@index([user_id, user_company_id])
+}
+
+model EmploymentDetails {
+  user_id         Int
+  user_company_id Int
+  working_hours   Int
+  employment_type String
+  user            User   @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id])
+
+  @@id([user_id, user_company_id])
+  @@index([user_id, user_company_id])
+}
+
+model UserSchedule {
+  id              Int      @id @default(autoincrement())
+  user_id         Int
+  user_company_id Int
+  roster_id       Int
+  start_date      DateTime
+  end_date        DateTime
+  shift           String
+  status          String
+  created_by      String
+  created_date    DateTime @default(now())
+  updated_by      String
+  updated_date    DateTime @updatedAt
+  user            User     @relation("user_schedules", fields: [user_id, user_company_id], references: [id, company_id])
+  roster          Roster   @relation("roster_schedules", fields: [roster_id, user_company_id], references: [id, company_id])
+
+  @@index([user_id, user_company_id])
+  @@index([roster_id, user_company_id])
+}
+
+model Request {
+  id            Int           @id @default(autoincrement())
+  user_id       Int
+  company_id    Int
+  type          String
+  status        String
+  created_by    String
+  created_date  DateTime      @default(now())
+  updated_by    String
+  updated_date  DateTime      @updatedAt
+  user          User          @relation("user_requests", fields: [user_id, company_id], references: [id, company_id])
+  bid_request   BidRequest?   @relation("bid_request")
+  leave_request LeaveRequest? @relation("leave_request")
+  swap_request  SwapRequest?  @relation("swap_request")
+
+  @@index([user_id, company_id])
+}
+
+model BidRequest {
+  request_id          Int      @id
+  requested_roster_id Int
+  shift               String
+  start_date          DateTime
+  end_date            DateTime
+  request             Request  @relation("bid_request", fields: [request_id], references: [id])
+
+  @@index([request_id])
+}
+
+model LeaveRequest {
+  request_id Int      @id
+  type       String
+  remarks    String
+  start_date DateTime
+  end_date   DateTime
+  request    Request  @relation("leave_request", fields: [request_id], references: [id])
+
+  @@index([request_id])
+}
+
+model SwapRequest {
+  request_id            Int     @id
+  requester_user_id     Int
+  requester_schedule_id Int
+  requested_user_id     Int
+  requested_schedule_id Int
+  reason                String
+  request               Request @relation("swap_request", fields: [request_id], references: [id])
+
+  @@index([request_id])
+}
+
+// System Tables for Rostering
+model Roster {
+  id            Int
+  company_id    Int
+  location_id   Int
+  department_id Int
+  start_date    DateTime
+  end_date      DateTime
+  type          String
+  created_by    String
+  created_date  DateTime        @default(now())
+  updated_by    String
+  updated_date  DateTime        @updatedAt
+  schedules     UserSchedule[]  @relation("roster_schedules")
+  company       Company         @relation("company_rosters", fields: [company_id], references: [id])
+  department    Department      @relation("department_rosters", fields: [department_id, company_id], references: [id, company_id])
+  location      CompanyLocation @relation("location_rosters", fields: [location_id, company_id], references: [id, company_id])
+
+  @@id([id, company_id])
+  @@index([company_id])
+  @@index([department_id, company_id])
+  @@index([location_id, company_id])
+}
+
+model RosterTemplate {
+  id              Int
+  company_id      Int
+  name            String
+  no_of_employees Int
+  created_by      String
+  created_date    DateTime                 @default(now())
+  updated_by      String
+  updated_date    DateTime                 @updatedAt
+  company         Company                  @relation("company_roster_templates", fields: [company_id], references: [id])
+  positions       RosterTemplatePosition[] @relation("roster_template_positions")
+
+  @@id([id, company_id])
+  @@unique([name, company_id])
+  @@index([company_id])
+}
+
+model RosterTemplatePosition {
+  roster_template_id Int
+  company_id         Int
+  position           String
+  count              Int
+  roster_template    RosterTemplate @relation("roster_template_positions", fields: [roster_template_id, company_id], references: [id, company_id])
+
+  @@id([roster_template_id, company_id, position])
+  @@index([roster_template_id, company_id])
 }
