@@ -158,6 +158,7 @@ model User {
   role                 String
   position             String
   department_id        Int?
+  password             String
   status               String
   created_by           String
   created_date         DateTime           @default(now())

@@ -39,7 +39,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
       profileImage:
         "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
     },
-    isAuthenticated: true,
+    isAuthenticated: false,
     workShifts: ["AM", "PM", "FULL"],
     locations: ["Toa Payoh", "Ang Mo Kio"],
     schedule: [

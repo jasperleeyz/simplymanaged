@@ -14,14 +14,20 @@ import RegistrationRoutes from "./modules/registration";
 import CodeManagementRoutes from "./modules/code-management";
 
 const AppRoutes = () => {
-  
   return (
     <div className="md:mx-auto max-w-6xl my-6" style={{ minHeight: "600px" }}>
       <div className="mx-3">
         <ErrorBoundaryRoutes>
           <Route path="/registration/*" element={<RegistrationRoutes />} />
           <Route path="/login" element={<Login />} />
-          <Route index element={<Home />} />
+          <Route
+            index
+            element={
+              <PrivateRoute>
+                <Home />
+              </PrivateRoute>
+            }
+          />
           <Route
             path={`/${PATHS.CODE}/*`}
             element={

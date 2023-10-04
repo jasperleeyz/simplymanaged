@@ -1,3 +1,5 @@
+export const API_URL = 'http://localhost:3000/api';
+
 export const MONTHS = [
     { value: 0, label: 'January' },
     { value: 1, label: 'February' },
