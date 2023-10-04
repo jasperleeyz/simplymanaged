@@ -36,10 +36,20 @@ const Header = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const location = useLocation();
 
+  const getHomeLink = () => {
+    if (globalState?.user?.role == ROLES.SUPERADMIN) {
+      return `/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`;
+    } else if (globalState?.user?.role == ROLES.SYSADMIN) {
+      return `/${PATHS.EMPLOYEES}`;
+    } else {
+      return "/";
+    }
+  };
+
   return (
     <Flowbite theme={{ theme: customHeaderTheme }}>
       <Navbar fluid rounded className="border-b">
-        <Navbar.Brand href={globalState?.isAuthenticated ? "/" : "/login"}>
+        <Navbar.Brand href={globalState?.isAuthenticated ? getHomeLink() : "/login"}>
           <img alt="SiM Logo" className="mr-3 h-12 sm:h-14" src="/logo.png" />
           {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
           SimplyManaged
@@ -81,9 +91,25 @@ const Header = () => {
               <Navbar.Toggle />
             </div>
             <Navbar.Collapse>
-              <Navbar.Link active={location.pathname === "/"} to="/" as={Link}>
-                <p>Dashboard</p>
-              </Navbar.Link>
+              {/*SUPERADMIN HEADER*/}
+              {globalState?.user?.role == ROLES.SUPERADMIN && (
+                <>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.REGISTRATION)}
+                    to={`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`}
+                    as={Link}
+                  >
+                    Registrations
+                  </Navbar.Link>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.CODE)}
+                    to={`/${PATHS.CODE}`}
+                    as={Link}
+                  >
+                    Code Management
+                  </Navbar.Link>
+                </>
+              )}
 
               {/*SYSADMIN HEADER*/}
               {globalState?.user?.role == ROLES.SYSADMIN && (
@@ -96,45 +122,32 @@ const Header = () => {
                 </Navbar.Link>
               )}
 
-              {/*SCHEDULER HEADER*/}
-              {globalState?.user?.role == ROLES.SCHEDULER && (
-                <Navbar.Link
-                  active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
-                  to={`/${PATHS.SCHEDULE}`}
-                  as={Link}
-                >
-                  Schedule
-                </Navbar.Link>
-              )}
-
-              {globalState?.user?.role == ROLES.SCHEDULER && (
-                <Navbar.Link
-                  active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
-                  to={`/${PATHS.REQUESTS}`}
-                  as={Link}
-                >
-                  Requests
-                </Navbar.Link>
-              )}
-
-              {/*EMPLOYEE*/}
-              {globalState?.user?.role == ROLES.EMPLOYEE && (
-                <Navbar.Link
-                  active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
-                  to={`/${PATHS.SCHEDULE}`}
-                  as={Link}
-                >
-                  Schedule
-                </Navbar.Link>
-              )}
-              {globalState?.user?.role == ROLES.EMPLOYEE && (
-                <Navbar.Link
-                  active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
-                  to={`/${PATHS.REQUESTS}`}
-                  as={Link}
-                >
-                  Requests
-                </Navbar.Link>
+              {/* EMPLOYEE & MANAGER HEADER*/}
+              {(globalState?.user?.role == ROLES.SCHEDULER ||
+                globalState?.user?.role == ROLES.EMPLOYEE) && (
+                <>
+                  <Navbar.Link
+                    active={location.pathname === "/"}
+                    to="/"
+                    as={Link}
+                  >
+                    <p>Dashboard</p>
+                  </Navbar.Link>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}
+                    to={`/${PATHS.SCHEDULE}`}
+                    as={Link}
+                  >
+                    Schedule
+                  </Navbar.Link>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.REQUESTS)}
+                    to={`/${PATHS.REQUESTS}`}
+                    as={Link}
+                  >
+                    Requests
+                  </Navbar.Link>
+                </>
               )}
             </Navbar.Collapse>
           </>

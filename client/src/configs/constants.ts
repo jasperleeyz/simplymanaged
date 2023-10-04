@@ -42,6 +42,9 @@ export const PATHS = {
     VIEW_CODE: 'view',
     ADD_CODE: 'add',
     EDIT_CODE: 'edit',
+
+    REGISTRATION: 'registration',
+    VIEW_REGISTRATION: 'view',
 }
 
 export const DATE = {
