@@ -1,14 +1,49 @@
 import IUser from "./user.model";
 
-export interface EmployeeSchedule extends IUser {
-  shift?: string;
-  attendance?: string;
+export interface IRosterTemplate {
+  id: number;
+  companyId: number;
+  name: string;
+  noOfEmployees: number;
+  positions: IRosterTemplatePosition[];
+  createdBy: string;
+  createdDate: Date;
+  updatedBy: string;
+  updatedDate: Date;
 }
 
-export interface ScheduleDetails {
+export interface IRosterTemplatePosition {
+  rosterTemplateId: number;
+  companyId: number;
+  position: string;
+  count: number;
+}
+
+export interface IRoster {
   id: number;
-  date?: Date;
-  location?: string;
-  scheduleTemplate?: string;
-  employeesSelected: EmployeeSchedule[];
+  companyId: number;
+  locationId: number;
+  departmentId: number;
+  startDate: Date;
+  endDate: Date;
+  type: string;
+  createdBy: string;
+  createdDate: Date;
+  updatedBy: string;
+  updatedDate: Date;
+  employees?: IUser[];
+}
+
+export interface IUserSchedule {
+  id: number;
+  userId: number;
+  userCompanyId: number;
+  rosterId: number;
+  startDate: Date;
+  endDate: Date;
+  shift: string;
+  createdBy: string;
+  createdDate: Date;
+  updatedBy: string;
+  updatedDate: Date;
 }

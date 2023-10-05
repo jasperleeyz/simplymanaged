@@ -1,43 +1,46 @@
-export interface Request {
+import IUser from "./user.model";
+
+export interface IRequest {
     id: number;
+    userId: number;
+    companyId: number;
     type: string;
     status: string;
     createdDate: Date;
     createdBy: string;
     updatedDate: Date;
     updatedBy: string;
-    shiftRequest?: ShiftRequest;
-    leaveRequest?: LeaveRequest;
-    shiftSwapRequest?: ShiftSwapRequest;
+    bidRequest?: IBidRequest;
+    leaveRequest?: ILeaveRequest;
+    swapRequest?: ISwapRequest;
 }
 
 
-export interface ShiftRequest {
+export interface IBidRequest {
     requestId: number;
+    requestedRoster: any; // TODO: define roster model
     shift: string;
-    shiftDate: Date;
-
+    startDate: Date;
+    endDate: Date;
 }
 
 
-export interface LeaveRequest {
+export interface ILeaveRequest {
     requestId: number;
-    leaveType: string;
-    leaveDateFrom: Date;
-    leaveDateTo: Date;
-    leaveReason?: string;
+    type: string;
+    startDate: Date;
+    endDate: Date;
+    remarks?: string;
     isHalfDay: boolean;
-
 }
 
 
-export interface ShiftSwapRequest {
+export interface ISwapRequest {
     requestId: number;
-    requestorShift: string; // original shift of the requestor
-    requestorShiftDate: Date; // original shift date of the requestor
-    requestedShift: string; // requested shift
-    requestedShiftDate: Date; // requested shift date
-    requestedShiftEmployee: string; // employee who owns the requested shift
-    swapReason: string;
+    requester: IUser;
+    requesterSchedule: any; // TODO: define schedule model
+    requestedUser: IUser; // employee who owns the requested shift
+    requestedSchedule: any; // TODO: define schedule model
+    reason: string;
 
 }
