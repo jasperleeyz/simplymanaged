@@ -1,4 +1,4 @@
-export const API_URL = process.env.NODE_ENV === 'production' ? 'https://simplymanaged-server.onrender.com/api' : 'http://localhost:3000/api';
+export const API_URL = !import.meta.env.DEV ? 'https://simplymanaged-server.onrender.com/api' : 'http://localhost:3000/api';
 
 export const MONTHS = [
     { value: 0, label: 'January' },
