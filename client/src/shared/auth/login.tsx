@@ -5,29 +5,89 @@ import { Link, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { GlobalStateContext } from "../../configs/global-state-provider";
+import { API_URL } from "../../configs/constants";
 
 const LoginSchema = Yup.object().shape({
-  email: Yup.string().email("Invalid email address").required("Required"),
-  password: Yup.string().required("Required"),
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Field is required"),
+  password: Yup.string().required("Field is required"),
 });
+
+type LoginDetails = {
+  email: string;
+  password: string;
+};
 
 const Login = () => {
   const isAuthenticated =
     React.useContext(GlobalStateContext)?.globalState?.isAuthenticated;
+
+  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const navigate = useNavigate();
+
+  const [loginError, setLoginError] = React.useState<string>("");
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  const login = async (loginDetails: LoginDetails) => {
+    await fetch(`${API_URL}/login`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(loginDetails),
+    })
+      .then((res) => {
+        if (res.status === 200) {
+          return res.json().then((data) => {
+            // save token to session storage
+            sessionStorage.setItem("bearerToken", data.bearerToken);
+
+            // set global state to store user details
+            setGlobalState((prevState) => ({
+              ...prevState,
+              isAuthenticated: true,
+              user: {...prevState.user, ...data.user},
+            }));
+
+            return Promise.resolve();
+          });
+        } else {
+          return res.text().then((data) => {
+            return Promise.reject(data);
+          });
+        }
+      })
+      .catch((err) => {
+        return Promise.reject(err);
+      });
+  };
 
   React.useEffect(() => {
     if (isAuthenticated) {
       navigate("/");
     }
-  }, []);
+  }, [isAuthenticated]);
 
   return (
     <div className="md:w-1/2 mx-auto">
       <Card>
         <Formik
           initialValues={{ email: "", password: "" }}
-          onSubmit={(values, { setSubmitting }) => {}}
+          onSubmit={async (values, { setSubmitting }) => {
+            setSubmitting(true);
+            try {
+              await login(values).then(() => {
+                console.log("login success");
+                navigate("/");
+              });
+            } catch (err) {
+              console.log(err);
+              setLoginError(err as string);
+            } finally {
+              setSubmitting(false);
+            }
+          }}
           validationSchema={LoginSchema}
         >
           {(props) => (
@@ -67,6 +127,9 @@ const Login = () => {
                   ) : null
                 }
               />
+              <div className="items-center mt-5">
+                <p className="text-red-600">{loginError}</p>
+              </div>
               <div className="flex items-center mt-8 justify-between">
                 <Link
                   className="hover:underline underline-offset-4 text-cyan-600 text-sm"
@@ -74,7 +137,12 @@ const Login = () => {
                 >
                   Forget password?
                 </Link>
-                <Button type="submit" size="sm">
+                <Button
+                  type="submit"
+                  size="sm"
+                  isProcessing={props.isSubmitting}
+                  disabled={props.isSubmitting}
+                >
                   Login
                 </Button>
               </div>

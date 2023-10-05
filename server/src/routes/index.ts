@@ -1,4 +1,4 @@
-import * as express from 'express';
+import * as express from "express";
 
 // import sub routers
 import { userRouter } from './User';

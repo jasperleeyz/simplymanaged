@@ -1,31 +1,56 @@
-import { Prisma, PrismaClient } from '@prisma/client'
-import express from 'express'
-const path = require('path')
-const cors = require('cors')
-import { routes } from './routes/index'
+import { Prisma, PrismaClient } from "@prisma/client";
+import express from "express";
+const path = require("path");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const multer = require("multer");
+const upload = multer();
+const bcrypt = require("bcryptjs");
+const salt = bcrypt.genSaltSync(10);
+// const hash = bcrypt.hashSync("B4c0/\/", salt);
+const jwt = require("jsonwebtoken");
+const auth = require("./middleware/auth");
 
-if (process.env.NODE_ENV !== 'production') { require('dotenv').config(); }
+import { routes } from "./routes/index";
 
-const prisma = new PrismaClient()
-const app = express()
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config();
+}
+
+const prisma = new PrismaClient();
+const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json())
+app.use(express.json());
 // serve files for react client
-app.use(express.static(path.join(__dirname, '../client/build')))
+app.use(express.static(path.join(__dirname, "../client/build")));
+
+console.log(process.env.WEBPAGE_URL)
 
 // set cors options
 const corsOptions = {
-  origin: 'http://localhost:5173',
+  origin: process.env.WEBPAGE_URL,
   optionsSuccessStatus: 200,
-}
-
+};
 // use cors
-app.use(cors(corsOptions))
+app.use(cors(corsOptions));
+
+// to parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
+// to parse application/json
+app.use(bodyParser.json());
+// to parse multipart/form-data
+app.use(upload.array());
+
+app.use(cookieParser());
+
+// use auth middleware
+app.use(auth);
 
 // use master router
-app.use('/api', routes)
+app.use("/api", routes);
 
 // app.post(`/signup`, async (req, res) => {
 //   const { name, email, posts } = req.body
@@ -45,6 +70,47 @@ app.use('/api', routes)
 //   })
 //   res.json(result)
 // })
+
+app.post(`/api/login`, async (req, res) => {
+  console.info("In " + req.path);
+  try {
+    const { email, password } = req.body;
+    if(!email || !password) {
+      res.status(400).send("Both email and password are required");
+      throw new Error("Both email and password are required");
+    }
+
+    // const user = await prisma.user.findUnique({
+    //   where: {
+    //     email: email,
+    //   },
+    // });
+
+    const user = { email: "abcdef@email.com", password: bcrypt.hashSync("password", salt), role: "S", fullname: "Gojo Satoru" };
+
+    if(user && bcrypt.compareSync(password, user.password)) {
+      const token = jwt.sign({ email: user.email, name: user.fullname, role: user.role }, process.env.JWT_SECRET, {
+        expiresIn: '1d', // expires in 24 hours
+      });
+
+      jwt.verify(token, process.env.JWT_SECRET);
+      console.log("success");
+      console.log(token);
+
+      const { password, ...userWithoutPassword } = user;
+
+      res.status(200).json({
+        user: userWithoutPassword,
+        bearerToken: token,
+      });
+    } else { 
+      res.status(400).send("Invalid email or password");
+    }
+
+  } catch (error) {
+    console.error(error);
+  }
+});
 
 // app.post(`/post`, async (req, res) => {
 //   const { title, content, authorEmail } = req.body
@@ -166,13 +232,13 @@ app.use('/api', routes)
 //   res.json(posts)
 // })
 
-app.get('*', (req, res) => {
+app.get("*", (req, res) => {
   // res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'))
-  res.redirect('http://localhost:5173/')
+  res.redirect(process.env.WEBPAGE_URL+"/");
 });
 
 const server = app.listen(PORT, () =>
   console.log(`
-🚀 Server ready at: http://localhost:${PORT}
-⭐️ See sample requests: http://pris.ly/e/ts/rest-express#3-using-the-rest-api`),
-)
+🚀 Server ready at: ${process.env.NODE_ENV !== "production" ? `http://localhost:${PORT}` : `https://simplymanaged-server.onrender.com`}
+⭐️ See sample requests: http://pris.ly/e/ts/rest-express#3-using-the-rest-api`)
+);
