@@ -9,12 +9,14 @@ const EmployeesViewPage = () => {
   const [auth, setAuth] = useState(false);
   const [viewEmployee, setViewEmployee] = useState<IUser>({
     id: 0,
-    name: '',
+    companyId: 0,
+    fullname: '',
     email: '',
-    phoneNo: '',
+    contactNo: '',
     role: ROLES.EMPLOYEE,
     position: '',
-    employmentType: '',
+    // employmentType: {},
+    status: ''
   });
 
   useEffect(() => {
@@ -23,12 +25,13 @@ const EmployeesViewPage = () => {
       const data = JSON.parse(tempData)
       const tempEmployee: IUser = {
         id: data.id,
-        name: data.name,
+        companyId: data.companyId,
+        fullname: data.fullname,
         email: data.email,
-        phoneNo: data.phoneNo,
+        contactNo: data.contactNo,
         role: data.role,
         position: data.position,
-        employmentType: data.employmentType,
+        // employmentType: data.employmentType,
         profileImage: data.profileImage,
         status: data.status,
       };
@@ -58,11 +61,11 @@ const EmployeesViewPage = () => {
             </div>
             <div id="user-details" className="w-full md:w-3/5">
               <Label htmlFor="user-name" value="Name" />
-              <p id="user-name">{viewEmployee.name}</p>
+              <p id="user-name">{viewEmployee.fullname}</p>
               <Label htmlFor="user-email" value="Email" />
               <p id="user-email">{viewEmployee.email}</p>
               <Label htmlFor="user-phone-no" value="Phone No." />
-              <p id="user-phone-no">{viewEmployee.phoneNo}</p>
+              <p id="user-phone-no">{viewEmployee.contactNo}</p>
             </div>
           </div>
           <hr className="w-full my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
@@ -72,7 +75,7 @@ const EmployeesViewPage = () => {
             <p id="employment-id">{viewEmployee.id}</p>
             <Label htmlFor="employment-type" value="Employment Type" />
             <p id="employment-type">
-              {viewEmployee.employmentType}
+              {/* {viewEmployee.employmentType} */}
             </p>
             <Label htmlFor="employment-position" value="Position" />
             <p id="employment-position">

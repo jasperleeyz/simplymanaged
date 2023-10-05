@@ -1,9 +1,9 @@
 import React from "react";
-import { Request } from "../../shared/model/request.model";
+import { IRequest } from "../../shared/model/request.model";
 import { capitalizeString } from "../../configs/utils";
 
 interface IProps {
-  requests: Request[];
+  requests: IRequest[];
 }
 
 const PendingRequestComponent = ({ requests }: IProps) => {

@@ -3,13 +3,13 @@
 import React from "react";
 import { Button, Modal } from "flowbite-react";
 import { HiExclamationCircle } from "react-icons/hi";
-import { ScheduleDetails } from "../../../shared/model/schedule.model";
+import { IRoster } from "../../../shared/model/schedule.model";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 
 type IProps = {
   openModal: boolean;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
-  schedule: ScheduleDetails | any;
+  schedule: IRoster | any;
 };
 
 const DeleteSchedulePrompt = (props: IProps) => {
@@ -19,8 +19,8 @@ const DeleteSchedulePrompt = (props: IProps) => {
   const deleteSchedule = () => {
     setGlobalState((prev) => ({
       ...prev,
-      schedule: prev.schedule.filter(
-        (schedule) => schedule.date !== props.schedule.date
+      schedule: prev.schedule?.filter(
+        (schedule) => schedule.startDate !== props.schedule.date
       ),
     }));
     props.setOpenModal((prev) => false);

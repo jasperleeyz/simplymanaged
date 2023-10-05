@@ -1,3 +1,4 @@
+import { ICompanyLocation } from "./company.model";
 import IUser from "./user.model";
 
 export interface IRosterTemplate {
@@ -32,6 +33,7 @@ export interface IRoster {
   updatedBy: string;
   updatedDate: Date;
   employees?: IUser[];
+  location?: ICompanyLocation;
 }
 
 export interface IUserSchedule {
@@ -42,8 +44,11 @@ export interface IUserSchedule {
   startDate: Date;
   endDate: Date;
   shift: string;
+  attendance?: string;
   createdBy: string;
   createdDate: Date;
   updatedBy: string;
   updatedDate: Date;
 }
+
+

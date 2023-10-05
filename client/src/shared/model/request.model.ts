@@ -1,3 +1,4 @@
+import { IRoster, IUserSchedule } from "./schedule.model";
 import IUser from "./user.model";
 
 export interface IRequest {
@@ -18,7 +19,7 @@ export interface IRequest {
 
 export interface IBidRequest {
     requestId: number;
-    requestedRoster: any; // TODO: define roster model
+    requestedRoster: IRoster; 
     shift: string;
     startDate: Date;
     endDate: Date;
@@ -38,9 +39,8 @@ export interface ILeaveRequest {
 export interface ISwapRequest {
     requestId: number;
     requester: IUser;
-    requesterSchedule: any; // TODO: define schedule model
+    requesterSchedule: IUserSchedule; 
     requestedUser: IUser; // employee who owns the requested shift
-    requestedSchedule: any; // TODO: define schedule model
+    requestedSchedule: IUserSchedule; 
     reason: string;
-
 }
