@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Request } from "../../shared/model/request.model";
+import { IRequest } from "../../shared/model/request.model";
 import { Label } from "flowbite-react";
 import { capitalizeString } from "../../configs/utils";
 import { DATE } from "../../configs/constants";
@@ -17,15 +17,15 @@ const RequestDetails = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const location = useLocation();
   const navigate = useNavigate();
-  const request = location.state.request as Request;
+  const request = location.state.request as IRequest;
 
-  const updateStatus = (req: Request, status: string) => {
+  const updateStatus = (req: IRequest, status: string) => {
     req.status = status;
     // TODO: replace with update status API
     const updatedReq = req;
     setGlobalState((prev) => ({
       ...prev,
-      requests: prev.requests.map((r) => (r.id === req.id ? updatedReq : r)),
+      requests: prev.requests?.map((r) => (r.id === req.id ? updatedReq : r)),
     }));
     // navigate(".", { state: { request: updatedReq }, replace: true });
 
@@ -63,14 +63,14 @@ const RequestDetails = () => {
                 <LabeledField
                   id="request-shift-date"
                   labelValue="Shift Date"
-                  value={request.shiftRequest?.shiftDate.toLocaleDateString(
+                  value={request.bidRequest?.startDate.toLocaleDateString(
                     DATE.LANGUAGE
                   )}
                 />
                 <LabeledField
                   id="request-shift-period"
                   labelValue="Shift"
-                  value={request.shiftRequest?.shift}
+                  value={request.bidRequest?.shift}
                 />
               </>
             )}
@@ -79,7 +79,7 @@ const RequestDetails = () => {
                 <LabeledField
                   id="request-leave-type"
                   labelValue="Leave Type"
-                  value={request.leaveRequest?.leaveType}
+                  value={request.leaveRequest?.type}
                 />
                 <LabeledField
                   id="request-leave-half-day"
@@ -89,7 +89,7 @@ const RequestDetails = () => {
                 <LabeledField
                   id="request-leave-from"
                   labelValue="From"
-                  value={request.leaveRequest?.leaveDateFrom.toLocaleDateString(
+                  value={request.leaveRequest?.startDate.toLocaleDateString(
                     DATE.LANGUAGE,
                     DATE.DDMMYYYY_HHMM_A_OPTION
                   )}
@@ -97,16 +97,16 @@ const RequestDetails = () => {
                 <LabeledField
                   id="request-leave-to"
                   labelValue="To"
-                  value={request.leaveRequest?.leaveDateTo.toLocaleDateString(
+                  value={request.leaveRequest?.endDate.toLocaleDateString(
                     DATE.LANGUAGE,
                     DATE.DDMMYYYY_HHMM_A_OPTION
                   )}
                 />
-                {request.leaveRequest?.leaveReason ? (
+                {request.leaveRequest?.remarks ? (
                   <LabeledField
                     id="request-leave-reason"
                     labelValue="Reason"
-                    value={request.leaveRequest?.leaveReason}
+                    value={request.leaveRequest?.remarks}
                   />
                 ) : null}
               </>

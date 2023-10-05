@@ -16,8 +16,8 @@ import moment from "moment";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import IUser from "../../../shared/model/user.model";
 import {
-  EmployeeSchedule,
-  ScheduleDetails,
+  IUserSchedule,
+  IRoster,
 } from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
@@ -34,7 +34,7 @@ const AddSchedule = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
 
   const [scheduleDetailsState, setScheduleDetailsState] =
-    React.useState<ScheduleDetails>(() => {
+    React.useState<IRoster>(() => {
       if (location.state?.schedule) {
         return location.state.schedule;
       } else {
@@ -64,33 +64,33 @@ const AddSchedule = () => {
   // TODO: to retrieve employees from API // should return only employees that are
   // available or meet the schedule criteria
   const employees: IUser[] = [
-    {
-      id: 2,
-      name: "JOHN WICK",
-      email: "JOHNWICK@SIMPLYMANAGED.COM",
-      phoneNo: "88888888",
-      role: "E",
-      position: "MANAGER",
-      employmentType: "FULL-TIME",
-    },
-    {
-      id: 3,
-      name: "DEADPOOL",
-      email: "DEADPOOL@SIMPLYMANAGED.COM",
-      phoneNo: "77777777",
-      role: "E",
-      position: "BARISTA",
-      employmentType: "PART-TIME",
-    },
-    {
-      id: 4,
-      name: "HARRY POTTER",
-      email: "HARRYPOTTER@SIMPLYMANAGED.COM",
-      phoneNo: "66666666",
-      role: "E",
-      position: "SERVER",
-      employmentType: "PART-TIME",
-    },
+    // {
+    //   id: 2,
+    //   fullname: "JOHN WICK",
+    //   email: "JOHNWICK@SIMPLYMANAGED.COM",
+    //   phoneNo: "88888888",
+    //   role: "E",
+    //   position: "MANAGER",
+    //   employmentType: "FULL-TIME",
+    // },
+    // {
+    //   id: 3,
+    //   name: "DEADPOOL",
+    //   email: "DEADPOOL@SIMPLYMANAGED.COM",
+    //   phoneNo: "77777777",
+    //   role: "E",
+    //   position: "BARISTA",
+    //   employmentType: "PART-TIME",
+    // },
+    // {
+    //   id: 4,
+    //   name: "HARRY POTTER",
+    //   email: "HARRYPOTTER@SIMPLYMANAGED.COM",
+    //   phoneNo: "66666666",
+    //   role: "E",
+    //   position: "SERVER",
+    //   employmentType: "PART-TIME",
+    // },
   ];
 
   const autoAssignPersonnel = () => {
@@ -106,41 +106,42 @@ const AddSchedule = () => {
     }));
   };
 
-  const updateEmployeeShift = (e, employee: EmployeeSchedule) => {
-    const updatedArray = [...scheduleDetailsState.employeesSelected];
-    updatedArray.forEach((emp) => {
-      if (emp.id === employee.id) {
-        emp.shift = e.target.value;
-      }
-    });
-    setScheduleDetailsState((prev) => ({
-      ...prev,
-      employeesSelected: [...updatedArray],
-    }));
+  const updateEmployeeShift = (e, employee: IUserSchedule) => {
+    // const updatedArray = [...scheduleDetailsState.employeesSelected];
+    // updatedArray.forEach((emp) => {
+    //   if (emp.id === employee.id) {
+    //     emp.shift = e.target.value;
+    //   }
+    // });
+    // setScheduleDetailsState((prev) => ({
+    //   ...prev,
+    //   employeesSelected: [...updatedArray],
+    // }));
   };
 
   const isEmpSelected = (employee: IUser) => {
-    return (
-      scheduleDetailsState.employeesSelected.find(
-        (emp) => emp.id === employee.id
-      ) !== undefined
-    );
+    // return (
+    //   scheduleDetailsState.employeesSelected.find(
+    //     (emp) => emp.id === employee.id
+    //   ) !== undefined
+    // );
+    return false;
   };
 
   //  TODO: to invoke API to create schedule
   const createSchedule = () => {
     if (isEdit) {
       
-      setGlobalState((prev) => ({
-        ...prev,
-        schedule: prev.schedule.map((s) => {
-          if (s.id === scheduleDetailsState.id) {
-            return scheduleDetailsState;
-          } else {
-            return s;
-          }
-        }),
-      }));
+      // setGlobalState((prev) => ({
+      //   ...prev,
+      //   schedule: prev.schedule.map((s) => {
+      //     if (s.id === scheduleDetailsState.id) {
+      //       return scheduleDetailsState;
+      //     } else {
+      //       return s;
+      //     }
+      //   }),
+      // }));
 
       toast.success("Schedule updated successfully");
     } else {
@@ -148,14 +149,14 @@ const AddSchedule = () => {
         ? globalState?.schedule?.length + 1
         : 1;
 
-      setGlobalState((prev) => ({
-        ...prev,
-        // TODO: add schedule to global state
-        schedule: [
-          ...prev.schedule,
-          { ...scheduleDetailsState, id: id, attendance: "N" },
-        ],
-      }));
+      // setGlobalState((prev) => ({
+      //   ...prev,
+      //   // TODO: add schedule to global state
+      //   schedule: [
+      //     ...prev.schedule,
+      //     { ...scheduleDetailsState, id: id, attendance: "N" },
+      //   ],
+      // }));
 
       toast.success("Schedule created successfully");
     }
@@ -184,7 +185,7 @@ const AddSchedule = () => {
           <Label htmlFor="schedule-template" value="Template" />
           <Select
             id="schedule-template"
-            value={scheduleDetailsState.scheduleTemplate}
+            // value={scheduleDetailsState.scheduleTemplate}
             onChange={(e) =>
               setScheduleDetailsState((prev) => ({
                 ...prev,
@@ -205,15 +206,15 @@ const AddSchedule = () => {
           <Label htmlFor="schedule-location" value="Location" />
           <Select
             id="schedule-location"
-            value={scheduleDetailsState.location}
+            value={scheduleDetailsState.location?.name}
             onChange={(e) => {
-              setScheduleDetailsState((prev) => ({
-                ...prev,
-                location: e.target.value,
-              }));
+              // setScheduleDetailsState((prev) => ({
+              //   ...prev,
+              //   location: e.target.value,
+              // }));
             }}
           >
-            {globalState?.locations.map((l, idx) => (
+            {globalState?.locations?.map((l, idx) => (
               <option key={idx} value={l}>
                 {l}
               </option>
@@ -227,7 +228,7 @@ const AddSchedule = () => {
             id="schedule-date"
             type="date"
             min={moment(new Date()).add(1, "days").format("yyyy-MM-DD")}
-            value={moment(scheduleDetailsState.date).format("yyyy-MM-DD")}
+            value={moment(scheduleDetailsState.startDate).format("yyyy-MM-DD")}
             helperText={
               <span className="error-message">{errorMessage.date}</span>
             }
@@ -262,22 +263,22 @@ const AddSchedule = () => {
                     checked={isEmpSelected(emp)}
                     onChange={(e) => {
                       if (e.currentTarget.checked) {
-                        setScheduleDetailsState((prev) => ({
-                          ...prev,
-                          employeesSelected: [
-                            ...prev.employeesSelected,
-                            { ...emp, shift: "AM", attendance: "N" },
-                          ],
-                        }));
+                        // setScheduleDetailsState((prev) => ({
+                        //   ...prev,
+                        //   employeesSelected: [
+                        //     ...prev.employeesSelected,
+                        //     { ...emp, shift: "AM", attendance: "N" },
+                        //   ],
+                        // }));
                       } else {
-                        setScheduleDetailsState((prev) => ({
-                          ...prev,
-                          employeesSelected: prev.employeesSelected.filter(
-                            (_, i) => {
-                              return _.id !== emp.id;
-                            }
-                          ),
-                        }));
+                        // setScheduleDetailsState((prev) => ({
+                        //   ...prev,
+                        //   employeesSelected: prev.employeesSelected.filter(
+                        //     (_, i) => {
+                        //       return _.id !== emp.id;
+                        //     }
+                        //   ),
+                        // }));
                       }
                     }}
                   />
@@ -287,7 +288,7 @@ const AddSchedule = () => {
                       setShowEmpProps((prev) => ({ show: true, emp: emp }));
                     }}
                   >
-                    {capitalizeString(emp.name)}
+                    {capitalizeString(emp.fullname)}
                   </Label>
                 </div>
               );
@@ -301,7 +302,7 @@ const AddSchedule = () => {
             value="Employees' Schedule Details"
           />
           <div id="schedule-employees-details">
-            {scheduleDetailsState.employeesSelected.map((emp, idx) => {
+            {/* {scheduleDetailsState.employeesSelected.map((emp, idx) => {
               return (
                 <div key={idx} className="flex items-center mb-3">
                   <div className="w-1/4">
@@ -320,7 +321,7 @@ const AddSchedule = () => {
                   </div>
                 </div>
               );
-            })}
+            })} */}
           </div>
         </div>
         <div className="mt-12 flex justify-end">
@@ -378,7 +379,7 @@ const AddSchedule = () => {
               <LabeledField
                 id="emp-name"
                 labelValue={"Name"}
-                value={capitalizeString(showEmpProps.emp?.name)}
+                value={capitalizeString(showEmpProps.emp?.fullname)}
               />
               <LabeledField
                 id="emp-position"

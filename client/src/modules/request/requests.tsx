@@ -3,7 +3,7 @@
 import { Button, Pagination, Table } from "flowbite-react";
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { Request } from "../../shared/model/request.model";
+import { IRequest } from "../../shared/model/request.model";
 import { capitalizeString } from "../../configs/utils";
 import { DATE, PATHS } from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
@@ -14,7 +14,7 @@ import { toast } from 'react-toastify';
 const Requests = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   // const [requests, setRequests] = React.useState<Request[]>([]);
-  const requests = globalState?.requests.filter((req) => {
+  const requests = globalState?.requests?.filter((req) => {
     if (globalState.user?.role === "E") {
       return req.type === "swap" ? req : null;
     } else {
@@ -24,12 +24,12 @@ const Requests = () => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = React.useState(1);
 
-  const updateStatus = (req: Request, status: string) => {
+  const updateStatus = (req: IRequest, status: string) => {
     // TODO: replace with api call for updating status
     req.status = status;
     setGlobalState((prev) => ({
       ...prev,
-      requests: prev.requests.map((r) => (r.id === req.id ? req : r)),
+      requests: prev.requests?.map((r) => (r.id === req.id ? req : r)),
     }));
 
     toast.success(`Successfully ${status} request`)
@@ -60,41 +60,41 @@ const Requests = () => {
                     <Table.Cell>
                       {request.type === "leave" ? (
                         <>
-                          <p>{`${request.leaveRequest?.leaveDateFrom.toLocaleDateString(
+                          <p>{`${request.leaveRequest?.startDate.toLocaleDateString(
                             DATE.LANGUAGE,
                             DATE.DDMMYYYY_HHMM_A_OPTION
                           )}`}</p>
                           <p className="my-2">to</p>
-                          <p>{`${request.leaveRequest?.leaveDateTo.toLocaleTimeString(
+                          <p>{`${request.leaveRequest?.endDate.toLocaleTimeString(
                             DATE.LANGUAGE,
                             DATE.DDMMYYYY_HHMM_A_OPTION
                           )}`}</p>
                         </>
                       ) : request.type === "shift" ? (
                         <p>
-                          {`${request.shiftRequest?.shiftDate.toLocaleDateString()}, ${
-                            request.shiftRequest?.shift
+                          {`${request.bidRequest?.startDate.toLocaleDateString()}, ${
+                            request.bidRequest?.shift
                           } Shift`}
                         </p>
                       ) : (
                         <>
                           <p>
-                            {`His/Her schedule: ${request.shiftSwapRequest?.requestorShiftDate.toLocaleDateString(
+                            {`His/Her schedule: ${request.swapRequest?.requesterSchedule.startDate.toLocaleDateString(
                               DATE.LANGUAGE
-                            )}, ${request.shiftSwapRequest?.requestorShiftDate.toLocaleDateString(
+                            )}, ${request.swapRequest?.requesterSchedule.startDate.toLocaleDateString(
                               DATE.LANGUAGE,
                               { weekday: "long" }
                             )},
-                            ${request.shiftSwapRequest?.requestorShift}
+                            ${request.swapRequest?.requesterSchedule.shift}
                           `}
                           </p>
-                          <p>{`Your schedule: ${request.shiftSwapRequest?.requestedShiftDate.toLocaleDateString(
+                          <p>{`Your schedule: ${request.swapRequest?.requestedSchedule.startDate.toLocaleDateString(
                             DATE.LANGUAGE
-                          )}, ${request.shiftSwapRequest?.requestedShiftDate.toLocaleDateString(
+                          )}, ${request.swapRequest?.requestedSchedule.startDate.toLocaleDateString(
                             DATE.LANGUAGE,
                             { weekday: "long" }
                           )},
-                            ${request.shiftSwapRequest?.requestedShift}
+                            ${request.swapRequest?.requestedSchedule.shift}
                           `}</p>
                         </>
                       )}

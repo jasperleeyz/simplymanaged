@@ -1,3 +1,7 @@
+import { ICompany, IDepartment } from "./company.model";
+import { IRequest } from "./request.model";
+import { IUserSchedule } from "./schedule.model";
+
 interface IUser {
     id: number;
     companyId: number;
@@ -13,12 +17,12 @@ interface IUser {
     updatedBy?: string;
     updatedDate?: Date;
     preferences?: IUserPreference[]; 
-    department?: any;
-    company?: any;
-    headOfDepartment?: any;
+    department?: IDepartment;
+    company?: ICompany;
+    headOfDepartment?: IDepartment;
     employmentDetails?: IEmployementDetails;
-    schedules?: any[];
-    requests?: any[];
+    schedules?: IUserSchedule[];
+    requests?: IRequest[];
 }
 
 export default IUser;

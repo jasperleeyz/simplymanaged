@@ -21,7 +21,7 @@ const EmployeesPage = () => {
   //Main Page Variable
   // TODO: to retrieve employees from API // should return only employees that are
   const [employees] = useState<IUser[]>(
-    globalState?.employee || []
+    globalState?.employees || []
   );
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,7 +30,7 @@ const EmployeesPage = () => {
   useEffect(() => {
     // When the searchTerm changes, update the filteredEmployees state.
     const filtered = employees.filter((emp) =>
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase())
+      emp.fullname.toLowerCase().includes(searchTerm.toLowerCase())
     );
     setFilteredEmployees(filtered);
     setCurrentPage(1);
@@ -82,10 +82,10 @@ const EmployeesPage = () => {
                 className="bg-white dark:border-gray-700 dark:bg-gray-800"
               >
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {emp.name}
+                  {emp.fullname}
                 </Table.Cell>
                 <Table.Cell><label>{emp.email}</label></Table.Cell>
-                <Table.Cell><label>{emp.phoneNo}</label></Table.Cell>
+                <Table.Cell><label>{emp.contactNo}</label></Table.Cell>
                 <Table.Cell><label>{emp.position}</label></Table.Cell>
                 <Table.Cell><label>{emp.status}</label></Table.Cell>
                 <Table.Cell>

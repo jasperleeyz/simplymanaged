@@ -15,28 +15,30 @@ const EmployeesEditPage = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext)
   const navigate = useNavigate()
   const [employees, setEmployees] = useState<IUser[]>(
-    globalState?.employee || []
+    globalState?.employees || []
   );
   const [auth, setAuth] = useState(false);
   const [editEmployee, setEditEmployee] = useState<IUser>({
     id: 0,
-    name: '',
+    companyId: 0,
+    fullname: '',
     email: '',
-    phoneNo: '',
+    contactNo: '',
     role: ROLES.EMPLOYEE,
     position: '',
-    employmentType: '',
+    // employmentType: {},
     status: ''
   });
 
   const [newEmployeeData, setNewEmployeeData] = useState<IUser>({
     id: 0,
-    name: '',
+    companyId: 0,
+    fullname: '',
     email: '',
-    phoneNo: '',
+    contactNo: '',
     role: ROLES.EMPLOYEE,
     position: '',
-    employmentType: '',
+    // employmentType: {},
     status: ''
   });
 
@@ -48,12 +50,13 @@ const EmployeesEditPage = () => {
       const data = JSON.parse(tempData)
       const tempEmployee: IUser = {
         id: data.id,
-        name: data.name,
+        companyId: data.companyId,
+        fullname: data.name,
         email: data.email,
-        phoneNo: data.phoneNo,
+        contactNo: data.contactNo,
         role: data.role,
         position: data.position,
-        employmentType: data.employmentType,
+        // employmentType: data.employmentType,
         status: data.status
       };
       setEditEmployee(tempEmployee);
@@ -66,7 +69,7 @@ const EmployeesEditPage = () => {
 
   const isEdited = () => {
     const keys = Object.keys(editEmployee);
-    for (let key of keys) {
+    for (const key of keys) {
       if (editEmployee[key] !== newEmployeeData[key]) {
         return true;
       }
@@ -76,13 +79,13 @@ const EmployeesEditPage = () => {
 
   const [errorMessage, setErrorMessage] = useState({
     name: "",
-    phoneNo: "",
+    contactNo: "",
     email: "",
   });
 
   const [inputColor, setInputColor] = useState({
     name: 'gray',
-    phoneNo: 'gray',
+    contactNo: 'gray',
     email: 'gray',
   })
 
@@ -131,7 +134,7 @@ const EmployeesEditPage = () => {
 
       props.setOpenModal(undefined)
 
-      toast.success(`${newEmployeeData.name} deactivated`);
+      toast.success(`${newEmployeeData.fullname} deactivated`);
     }
     else {
       const updatedEmployee = { ...editEmployee, status: 'Active' };
@@ -158,7 +161,7 @@ const EmployeesEditPage = () => {
 
       props.setOpenModal(undefined)
 
-      toast.success(`${newEmployeeData.name} activated`);
+      toast.success(`${newEmployeeData.fullname} activated`);
     }
   }
 
@@ -176,8 +179,8 @@ const EmployeesEditPage = () => {
       email: '',
     }));
 
-    if (!validName(newEmployeeData.name) || !isNumber(newEmployeeData.phoneNo) || (newEmployeeData.phoneNo.length != 8) || !validEmail(newEmployeeData.email)) {
-      if (!validName(newEmployeeData.name)) {
+    if (!validName(newEmployeeData.fullname) || !isNumber(newEmployeeData.contactNo) || (newEmployeeData.contactNo.length != 8) || !validEmail(newEmployeeData.email)) {
+      if (!validName(newEmployeeData.fullname)) {
         setErrorMessage(prev => ({
           ...prev,
           name: 'Name must consist of letters only.',
@@ -187,14 +190,14 @@ const EmployeesEditPage = () => {
           name: 'failure',
         }));
       }
-      if (!isNumber(newEmployeeData.phoneNo) || (newEmployeeData.phoneNo.length != 8)) {
+      if (!isNumber(newEmployeeData.contactNo) || (newEmployeeData.contactNo.length != 8)) {
         setErrorMessage(prev => ({
           ...prev,
-          phoneNo: 'Phone must contain only 8 numbers.',
+          contactNo: 'Phone must contain only 8 numbers.',
         }));
         setInputColor(prev => ({
           ...prev,
-          phoneNo: 'failure',
+          contactNo: 'failure',
         }));
       }
       if (!validEmail(newEmployeeData.email)) {
@@ -248,7 +251,7 @@ const EmployeesEditPage = () => {
               color={inputColor.name}
               sizing="md"
               required
-              value={newEmployeeData.name}
+              value={newEmployeeData.fullname}
               style={{ width: '50%' }}
               helperText={<span className="error-message">{errorMessage.name}</span>}
               onChange={(e) => {
@@ -294,21 +297,21 @@ const EmployeesEditPage = () => {
               <Label htmlFor="phone" value="Contact" />
               <TextInput
                 id="phone"
-                color={inputColor.phoneNo}
+                color={inputColor.contactNo}
                 sizing="md"
                 required
-                value={newEmployeeData.phoneNo}
+                value={newEmployeeData.contactNo}
                 style={{ width: '50%' }}
-                helperText={<span className="error-message">{errorMessage.phoneNo}</span>}
+                helperText={<span className="error-message">{errorMessage.contactNo}</span>}
                 onChange={(e) => {
                   if (!deleted && newEmployeeData.status != 'Deactivated') {
                     setNewEmployeeData(prev => ({
                       ...prev,
-                      phoneNo: e.target.value
+                      contactNo: e.target.value
                     }))
                     setInputColor(prev => ({
                       ...prev,
-                      phoneNo: 'gray',
+                      contactNo: 'gray',
                     }))
                   }
                 }}
@@ -405,7 +408,7 @@ const EmployeesEditPage = () => {
                         <div className="text-center">
                           <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
                           <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                            Are you sure you want to deactivate {editEmployee?.name}
+                            Are you sure you want to deactivate {editEmployee?.fullname}
                           </h3>
                           <div className="flex justify-center gap-4">
                             <Button color="failure" onClick={() => activateEmployeeFunc()}>
@@ -434,7 +437,7 @@ const EmployeesEditPage = () => {
                         <div className="text-center">
                           <HiOutlineExclamationCircle className="mx-auto mb-4 h-14 w-14 text-gray-400 dark:text-gray-200" />
                           <h3 className="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">
-                            Are you sure you want to activate {editEmployee?.name}
+                            Are you sure you want to activate {editEmployee?.fullname}
                           </h3>
                           <div className="flex justify-center gap-4">
                             <Button color="failure" onClick={() => activateEmployeeFunc()}>

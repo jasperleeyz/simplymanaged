@@ -1,5 +1,5 @@
 import React from "react";
-import { ScheduleDetails } from "../../../shared/model/schedule.model";
+import { IUserSchedule, IRoster } from "../../../shared/model/schedule.model";
 import { useLocation } from "react-router-dom";
 import BackButton from "../../../shared/layout/buttons/back-button";
 import EditButton from "../../../shared/layout/buttons/edit-button";
@@ -10,7 +10,7 @@ import { capitalizeString } from "../../../configs/utils";
 
 const ViewSchedule = () => {
   const location = useLocation();
-  const schedule = location.state?.schedule as ScheduleDetails;
+  const schedule = location.state?.schedule as IRoster;
   const type = location.state?.type as string;
 
   return (
@@ -20,17 +20,17 @@ const ViewSchedule = () => {
         <LabeledField
           id="schedule-date"
           labelValue="Date"
-          value={schedule.date?.toLocaleDateString()}
+          value={schedule.startDate?.toLocaleDateString()}
         />
         <LabeledField
           id="schedule-location"
           labelValue="Location"
-          value={schedule.location}
+          value={schedule.location?.name}
         />
         <div className="col-span-2">
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />
           <div id="schedule-employees" className="grid grid-cols-2">
-            {schedule.employeesSelected.map((employee, idx) => (
+            {/* {schedule.employeesSelected.map((employee, idx) => (
               <div key={idx} className="flex mt-4">
                 <Avatar size="sm" img={employee.profileImage} rounded>
                   <p>{capitalizeString(employee.name)}</p>
@@ -39,7 +39,7 @@ const ViewSchedule = () => {
                   <p>{employee.phoneNo}</p>
                 </Avatar>
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
         <div className="mt-4 col-span-2">

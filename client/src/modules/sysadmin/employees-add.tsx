@@ -15,7 +15,7 @@ const EmployeesAddPage = () => {
 
   // TODO: to retrieve employees from API // should return only employees that are
   const [employees, setEmployees] = useState<IUser[]>(
-    globalState?.employee || []
+    globalState?.employees || []
   );
 
   const [employee, setEmployee] = useState({
@@ -108,12 +108,13 @@ const EmployeesAddPage = () => {
     else {
       const newEmployee: IUser = {
         id: employees.length + 1,
-        name: employee.name,
+        companyId: globalState?.user?.companyId || 0,
+        fullname: employee.name,
         email: employee.email,
-        phoneNo: employee.phone,
+        contactNo: employee.phone,
         role: employee.role,
         position: employee.position,
-        employmentType: employee.employmentType,
+        // employmentDetails: {employmentType: employee.employmentType},
         status: employee.status
       };
       const updatedEmployees = [...employees];
@@ -124,7 +125,7 @@ const EmployeesAddPage = () => {
         employee: updatedEmployees,
       }));
 
-      toast.success(`Added ${newEmployee.name} sucessfully`);
+      toast.success(`Added ${newEmployee.fullname} sucessfully`);
       console.log(employee)
       resetEmployee()
       console.log(employee)

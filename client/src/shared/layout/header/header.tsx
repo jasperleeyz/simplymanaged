@@ -72,7 +72,7 @@ const Header = () => {
               >
                 <Dropdown.Header>
                   <span className="block text-sm">
-                    {capitalizeString(globalState?.user?.name)}
+                    {capitalizeString(globalState?.user?.fullname)}
                   </span>
                   <span className="block truncate text-sm font-medium">
                     {globalState?.user?.email.toLowerCase()}

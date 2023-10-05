@@ -20,13 +20,13 @@ const ProfilePage = () => {
     return {
       name: "",
       email: "",
-      phoneNo: "",
+      contactNo: "",
     };
   });
 
   const [inputColor, setInputColor] = React.useState({
     name: 'gray',
-    phoneNo: 'gray',
+    contactNo: 'gray',
     email: 'gray',
   })
 
@@ -43,15 +43,15 @@ const ProfilePage = () => {
     }));
     setErrorMessage(prev => ({
       ...prev,
-      phoneNo: '',
+      contactNo: '',
     }));
     setErrorMessage(prev => ({
       ...prev,
       email: '',
     }));
 
-    if (!validName(editUser.name) || !isNumber(editUser.phoneNo) || (editUser.phoneNo.length != 8) || !validEmail(editUser.email)) {
-      if (!validName(editUser.name)) {
+    if (!validName(editUser.fullname) || !isNumber(editUser.contactNo) || (editUser.contactNo.length != 8) || !validEmail(editUser.email)) {
+      if (!validName(editUser.fullname)) {
         setErrorMessage(prev => ({
           ...prev,
           name: 'Name must consist of letters only.',
@@ -61,14 +61,14 @@ const ProfilePage = () => {
           name: 'failure',
         }));
       }
-      if (!isNumber(editUser.phoneNo) || (editUser.phoneNo.length != 8)) {
+      if (!isNumber(editUser.contactNo) || (editUser.contactNo.length != 8)) {
         setErrorMessage(prev => ({
           ...prev,
-          phoneNo: 'Phone must contain only 8 numbers.',
+          contactNo: 'Phone must contain only 8 numbers.',
         }));
         setInputColor(prev => ({
           ...prev,
-          phoneNo: 'failure',
+          contactNo: 'failure',
         }));
       }
       if (!validEmail(editUser.email)) {
@@ -131,11 +131,11 @@ const ProfilePage = () => {
         <div id="user-details" className="w-full md:w-3/5">
           <Label htmlFor="user-name" value="Name" />
           {!isEdit ? (
-            <p id="user-name">{capitalizeString(globalState?.user?.name)}</p>
+            <p id="user-name">{capitalizeString(globalState?.user?.fullname)}</p>
           ) : (
             <TextInput
               id="user-name"
-              value={capitalizeString(editUser?.name)}
+              value={capitalizeString(editUser?.fullname)}
               color={inputColor.name}
               required
               helperText={<span className="error-message">{errorMessage.name}</span>}
@@ -165,17 +165,17 @@ const ProfilePage = () => {
           )}
           <Label htmlFor="user-phone-no" value="Phone" />
           {!isEdit ? (
-            <p id="user-phone-no">{globalState?.user?.phoneNo}</p>
+            <p id="user-phone-no">{globalState?.user?.contactNo}</p>
           ) : (
             <TextInput
               id="user-phone-no"
-              value={editUser?.phoneNo}
-              color={inputColor.phoneNo}
+              value={editUser?.contactNo}
+              color={inputColor.contactNo}
               required
-              helperText={<span className="error-message">{errorMessage.phoneNo}</span>}
+              helperText={<span className="error-message">{errorMessage.contactNo}</span>}
               onChange={(e) => {
-                  setEditUser((prev) => ({ ...prev, phoneNo: e.target.value }))
-                  setInputColor(prev => ({ ...prev, phoneNo: 'gray'}))
+                  setEditUser((prev) => ({ ...prev, contactNo: e.target.value }))
+                  setInputColor(prev => ({ ...prev, contactNo: 'gray'}))
           
               }}
               autoComplete="off"
@@ -194,7 +194,7 @@ const ProfilePage = () => {
         <p id="employment-id">{globalState?.user?.id}</p>
         <Label htmlFor="employment-type" value="Employment Type" />
         <p id="employment-type">
-          {capitalizeString(globalState?.user?.employmentType)}
+          {/* {capitalizeString(globalState?.user?.employmentType)} */}
         </p>
         <Label htmlFor="employment-position" value="Position" />
         <p id="employment-position">
