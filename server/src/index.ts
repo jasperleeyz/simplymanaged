@@ -13,7 +13,6 @@ const jwt = require("jsonwebtoken");
 const auth = require("./middleware/auth");
 
 import { routes } from "./routes/index";
-import { env } from "process";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -28,9 +27,11 @@ app.use(express.json());
 // serve files for react client
 app.use(express.static(path.join(__dirname, "../client/build")));
 
+console.log(process.env.WEBPAGE_URL)
+
 // set cors options
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: process.env.WEBPAGE_URL,
   optionsSuccessStatus: 200,
 };
 // use cors
@@ -233,11 +234,11 @@ app.post(`/api/login`, async (req, res) => {
 
 app.get("*", (req, res) => {
   // res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'))
-  res.redirect("http://localhost:5173/");
+  res.redirect(process.env.WEBPAGE_URL+"/");
 });
 
 const server = app.listen(PORT, () =>
   console.log(`
-🚀 Server ready at: http://localhost:${PORT}
+🚀 Server ready at: ${process.env.NODE_ENV !== "production" ? `http://localhost:${PORT}` : `https://simplymanaged-server.onrender.com`}
 ⭐️ See sample requests: http://pris.ly/e/ts/rest-express#3-using-the-rest-api`)
 );
