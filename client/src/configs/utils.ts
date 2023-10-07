@@ -1,3 +1,5 @@
+import { PATHS, ROLES } from "./constants";
+
 export const capitalizeString = (str) => {
   return str
     .split(" ")
@@ -22,3 +24,13 @@ export const validName = (value) => {
   const nameRegex = /^[a-zA-Z\s]+$/
   return nameRegex.test(value)
 }
+
+export const getHomeLink = (role: string) => {
+  if (role == ROLES.SUPERADMIN) {
+    return `/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`;
+  } else if (role == ROLES.SYSADMIN) {
+    return `/${PATHS.EMPLOYEES}`;
+  } else {
+    return "/";
+  }
+};

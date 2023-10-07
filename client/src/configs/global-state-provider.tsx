@@ -15,6 +15,17 @@ type GlobalState = {
   employees?: IUser[];
 };
 
+export const InitialGlobalState: GlobalState = {
+  user: {} as IUser,
+  isAuthenticated: false,
+  workShifts: [],
+  locations: [],
+  schedule: [],
+  roster: [],
+  requests: [],
+  employees: [],
+};
+
 interface GlobalStateContextProps {
   readonly globalState: GlobalState | null;
   readonly setGlobalState: React.Dispatch<React.SetStateAction<GlobalState>>;

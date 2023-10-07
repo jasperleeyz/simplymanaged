@@ -9,9 +9,9 @@ import {
 } from "flowbite-react";
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
-import { GlobalStateContext } from "../../../configs/global-state-provider";
+import { GlobalStateContext, InitialGlobalState } from "../../../configs/global-state-provider";
 import { PATHS } from "../../../configs/constants";
-import { capitalizeString } from "../../../configs/utils";
+import { capitalizeString, getHomeLink } from "../../../configs/utils";
 import { ROLES } from "../../../configs/constants";
 
 const customHeaderTheme: CustomFlowbiteTheme = {
@@ -36,20 +36,15 @@ const Header = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const location = useLocation();
 
-  const getHomeLink = () => {
-    if (globalState?.user?.role == ROLES.SUPERADMIN) {
-      return `/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`;
-    } else if (globalState?.user?.role == ROLES.SYSADMIN) {
-      return `/${PATHS.EMPLOYEES}`;
-    } else {
-      return "/";
-    }
-  };
+  const signOut = () => {
+    sessionStorage.removeItem("bearerToken");
+    setGlobalState((prevState) => (InitialGlobalState));
+  }
 
   return (
     <Flowbite theme={{ theme: customHeaderTheme }}>
       <Navbar fluid rounded className="border-b">
-        <Navbar.Brand href={globalState?.isAuthenticated ? getHomeLink() : "/login"}>
+        <Navbar.Brand href={globalState?.isAuthenticated ? getHomeLink(globalState?.user?.role || "") : "/login"}>
           <img alt="SiM Logo" className="mr-3 h-12 sm:h-14" src="/logo.png" />
           {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
           SimplyManaged
@@ -86,7 +81,7 @@ const Header = () => {
                   My profile
                 </Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item>Sign out</Dropdown.Item>
+                <Dropdown.Item onClick={() => signOut()}>Sign out</Dropdown.Item>
               </Dropdown>
               <Navbar.Toggle />
             </div>

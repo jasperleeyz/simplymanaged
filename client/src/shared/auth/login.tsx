@@ -6,6 +6,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { API_URL } from "../../configs/constants";
+import { getHomeLink } from "../../configs/utils";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -65,7 +66,7 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate(getHomeLink(globalState?.user?.role || ""), { replace: true });
     }
   }, [isAuthenticated]);
 
