@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { API_URL } from "../../configs/constants";
 import { getHomeLink } from "../../configs/utils";
 
 const LoginSchema = Yup.object().shape({
@@ -31,7 +30,7 @@ const Login = () => {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   const login = async (loginDetails: LoginDetails) => {
-    await fetch(`${API_URL}/login`, {
+    await fetch(`/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

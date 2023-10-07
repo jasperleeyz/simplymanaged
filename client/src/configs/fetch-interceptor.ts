@@ -6,17 +6,24 @@ window.fetch = async function (...args) {
   let [url, options] = args;
 
   // request interceptor
-  console.log("url", url);
-  console.log("options", options);
+  url = `${API_URL}${url}`; // intercept quest and add base url
 
-  url = `${API_URL}${url}`;
-
+  // intercept request and add headers
+  const token = sessionStorage.getItem("bearerToken") || localStorage.getItem("bearerToken") || "";
   if (options) {
     options.headers = {
       ...options.headers,
-      Authorization: `Bearer ${sessionStorage.getItem("bearerToken") || ""}`,
+      'Content-Type': "application/json",
     };
+
+    if(token && token !== "") {
+      options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+      };
+    }
   }
+
   // call original `fetch()` with intercepted request
   const response = await originalFetch(url, options);
 

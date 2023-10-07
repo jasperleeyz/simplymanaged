@@ -1,6 +1,5 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { API_URL } from "../../../configs/constants";
 import BackButton from "../../../shared/layout/buttons/back-button";
 import { toast } from "react-toastify";
 
@@ -8,7 +7,7 @@ const RegistrationDetails = () => {
   const id = useParams()?.id;
 
   React.useEffect(() => {
-    fetch(`${API_URL}/registration/${id}`, {
+    fetch(`/registration/${id}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
