@@ -42,6 +42,7 @@ const ViewRegistration = () => {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        Authorization: `Bearer ${sessionStorage.getItem("bearerToken") || ""}`,
       },
     }).then((res) => {
       res.json().then((data) => {

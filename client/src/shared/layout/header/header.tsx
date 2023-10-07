@@ -35,7 +35,7 @@ const customHeaderTheme: CustomFlowbiteTheme = {
 const Header = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const location = useLocation();
-
+  
   const signOut = () => {
     sessionStorage.removeItem("bearerToken");
     setGlobalState((prevState) => (InitialGlobalState));

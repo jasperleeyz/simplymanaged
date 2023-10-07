@@ -46,9 +46,8 @@ const Login = () => {
 
             // set global state to store user details
             setGlobalState((prevState) => ({
-              ...prevState,
               isAuthenticated: true,
-              user: {...prevState.user, ...data.user},
+              user: {...data.user},
             }));
 
             return Promise.resolve();
@@ -78,12 +77,9 @@ const Login = () => {
           onSubmit={async (values, { setSubmitting }) => {
             setSubmitting(true);
             try {
-              await login(values).then(() => {
-                console.log("login success");
-                navigate("/");
-              });
+              await login(values);
             } catch (err) {
-              console.log(err);
+              console.error(err);
               setLoginError(err as string);
             } finally {
               setSubmitting(false);
