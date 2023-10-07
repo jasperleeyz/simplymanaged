@@ -1,6 +1,5 @@
 import { Pagination, Spinner, Table } from "flowbite-react";
 import React from "react";
-import { API_URL } from "../../../configs/constants";
 
 const ViewRegistration = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -37,12 +36,11 @@ const ViewRegistration = () => {
   };
 
   React.useEffect(() => {
-    fetch(`${API_URL}/registration?size=${sizePerPage}&page=${currentPage}`, {
+    fetch(`/registration?size=${sizePerPage}&page=${currentPage}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${sessionStorage.getItem("bearerToken") || ""}`,
       },
     }).then((res) => {
       res.json().then((data) => {
