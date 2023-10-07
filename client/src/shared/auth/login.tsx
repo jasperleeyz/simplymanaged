@@ -1,7 +1,7 @@
 import { Button, Card, Label } from "flowbite-react";
 import React from "react";
 import LabeledInputText from "../layout/form/labeled-text-input";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { GlobalStateContext } from "../../configs/global-state-provider";
@@ -25,7 +25,8 @@ const Login = () => {
 
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const navigate = useNavigate();
-
+  const location = useLocation();
+  
   const [loginError, setLoginError] = React.useState<string>("");
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -46,7 +47,7 @@ const Login = () => {
             // set global state to store user details
             setGlobalState((prevState) => ({
               isAuthenticated: true,
-              user: {...data.user},
+              user: { ...data.user },
             }));
 
             return Promise.resolve();
@@ -64,7 +65,9 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate(getHomeLink(globalState?.user?.role || ""), { replace: true });
+      navigate(
+        location.state['from'] || 
+        getHomeLink(globalState?.user?.role || ""), { replace: true });
     }
   }, [isAuthenticated]);
 
