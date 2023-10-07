@@ -6,6 +6,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { API_URL } from "../../configs/constants";
+import { getHomeLink } from "../../configs/utils";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -45,9 +46,8 @@ const Login = () => {
 
             // set global state to store user details
             setGlobalState((prevState) => ({
-              ...prevState,
               isAuthenticated: true,
-              user: {...prevState.user, ...data.user},
+              user: {...data.user},
             }));
 
             return Promise.resolve();
@@ -65,7 +65,7 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate(getHomeLink(globalState?.user?.role || ""), { replace: true });
     }
   }, [isAuthenticated]);
 
@@ -77,12 +77,9 @@ const Login = () => {
           onSubmit={async (values, { setSubmitting }) => {
             setSubmitting(true);
             try {
-              await login(values).then(() => {
-                console.log("login success");
-                navigate("/");
-              });
+              await login(values);
             } catch (err) {
-              console.log(err);
+              console.error(err);
               setLoginError(err as string);
             } finally {
               setSubmitting(false);

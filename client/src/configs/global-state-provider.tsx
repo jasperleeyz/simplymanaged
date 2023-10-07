@@ -15,6 +15,17 @@ type GlobalState = {
   employees?: IUser[];
 };
 
+export const InitialGlobalState: GlobalState = {
+  user: {} as IUser,
+  isAuthenticated: false,
+  workShifts: [],
+  locations: [],
+  schedule: [],
+  roster: [],
+  requests: [],
+  employees: [],
+};
+
 interface GlobalStateContextProps {
   readonly globalState: GlobalState | null;
   readonly setGlobalState: React.Dispatch<React.SetStateAction<GlobalState>>;
@@ -29,25 +40,25 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [globalState, setGlobalState] = React.useState<GlobalState>({
-    user: {
-      id: 0,
-      companyId: 0,
-      fullname: "JOHN DOE",
-      email: "JOHNDOE@SIMPLYMANAGED.COM",
-      contactNo: "99999999",
-      role: ROLES.SUPERADMIN,
-      position: "STORE MANAGER",
-      status: "A",
-      employmentDetails: {
-        userId: 0,
-        userCompanyId: 0,
-        workingHours: 8,
-        employmentType: "FULL-TIME"
-      },
-      profileImage:
-        "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
-      preferences: [],
-    },
+    // user: {
+    //   id: 0,
+    //   companyId: 0,
+    //   fullname: "JOHN DOE",
+    //   email: "JOHNDOE@SIMPLYMANAGED.COM",
+    //   contactNo: "99999999",
+    //   role: ROLES.SUPERADMIN,
+    //   position: "STORE MANAGER",
+    //   status: "A",
+    //   employmentDetails: {
+    //     userId: 0,
+    //     userCompanyId: 0,
+    //     workingHours: 8,
+    //     employmentType: "FULL-TIME"
+    //   },
+    //   profileImage:
+    //     "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
+    //   preferences: [],
+    // },
     isAuthenticated: false,
     // workShifts: ["AM", "PM", "FULL"],
     // locations: ["Toa Payoh", "Ang Mo Kio"],

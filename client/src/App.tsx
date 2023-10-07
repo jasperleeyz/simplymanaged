@@ -6,7 +6,7 @@ import Footer from "./shared/layout/footer/footer";
 import Header from "./shared/layout/header/header";
 import React from "react";
 import { GlobalStateContext } from "./configs/global-state-provider";
-import { API_URL } from "./configs/constants";
+import "./configs/fetch-interceptor.js";
 
 function App() {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -18,11 +18,8 @@ function App() {
     // and populate into global state (eg. list of schedule templates)
     const bearerToken = sessionStorage.getItem("bearerToken");
     if(bearerToken) {
-      fetch(`${API_URL}/user/info`, {
+      fetch(`/user/info`, {
         method: "GET",
-        headers: {
-          Authorization: `Bearer ${bearerToken}`,
-        },
       }).then((res) => {
         if (res.status === 200) {
           return res.json().then((data) => {

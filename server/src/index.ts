@@ -86,7 +86,26 @@ app.post(`/api/login`, async (req, res) => {
     //   },
     // });
 
-    const user = { email: "abcdef@email.com", password: bcrypt.hashSync("password", salt), role: "S", fullname: "Gojo Satoru" };
+    const user = {
+      email: "abcdef@email.com",
+      password: bcrypt.hashSync("password", salt),
+      role: "SA",
+      fullname: "Gojo Satoru",
+      id: 0,
+      companyId: 0,
+      contactNo: "99999999",
+      position: "STORE MANAGER",
+      status: "A",
+      employmentDetails: {
+        userId: 0,
+        userCompanyId: 0,
+        workingHours: 8,
+        employmentType: "FULL-TIME"
+      },
+      profileImage:
+        "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
+      preferences: [],
+    };
 
     if(user && bcrypt.compareSync(password, user.password)) {
       const token = jwt.sign({ email: user.email, name: user.fullname, role: user.role }, process.env.JWT_SECRET, {
