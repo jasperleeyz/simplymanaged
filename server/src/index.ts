@@ -27,8 +27,6 @@ app.use(express.json());
 // serve files for react client
 app.use(express.static(path.join(__dirname, "../client/build")));
 
-console.log(process.env.WEBPAGE_URL)
-
 // set cors options
 const corsOptions = {
   origin: process.env.WEBPAGE_URL,
@@ -113,8 +111,6 @@ app.post(`/api/login`, async (req, res) => {
       });
 
       jwt.verify(token, process.env.JWT_SECRET);
-      console.log("success");
-      console.log(token);
 
       const { password, ...userWithoutPassword } = user;
 

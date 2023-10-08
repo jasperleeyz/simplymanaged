@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken");
 const config = process.env;
 
 const verifyToken = (req, res, next) => {
-    if (!["/login", "/register"].includes(req.path.replace("/api", ""))) {
+    if (!["/login", "/register"].includes(req.path.replace("/api", "")) &&
+        !req.path.replace("/api", "").startsWith("/code/registration")) {
         const token = req.headers.authorization?.split(" ")[1];
 
         if (!token) {

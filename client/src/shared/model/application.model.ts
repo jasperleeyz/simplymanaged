@@ -1,12 +1,12 @@
 export interface IApplicationCode {
     id: number;
-    codeType: string;
+    code_type: string;
     code: string;
     description: string;
     status: string;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
 }
 

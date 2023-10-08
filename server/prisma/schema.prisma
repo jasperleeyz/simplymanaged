@@ -9,6 +9,16 @@ datasource db {
 }
 
 // System Tables for Registration
+model CodeType {
+  id           Int      @id @default(autoincrement())
+  code_type    String   @unique
+  status       String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+}
+
 model Code {
   id           Int      @id @default(autoincrement())
   code_type    String
@@ -55,6 +65,7 @@ model Company {
   updated_by                String
   updated_date              DateTime                 @updatedAt
   subscriptions             Subscription[]           @relation("company_subscriptions")
+  company_code_types        CompanyCodeType[]        @relation("company_code_types")
   company_codes             CompanyCode[]            @relation("company_codes")
   role_based_access_control RoleBasedAccessControl[] @relation("company_rbac")
   employees                 User[]                   @relation("company_employees")
@@ -81,6 +92,22 @@ model Subscription {
   @@index([company_id])
 }
 
+model CompanyCodeType {
+  id           Int      
+  company_id   Int
+  code_type    String
+  status       String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_code_types", fields: [company_id], references: [id])
+
+  @@id([id, company_id])
+  @@index([company_id])
+  @@unique([company_id, code_type])
+}
+
 model CompanyCode {
   id           Int
   company_id   Int
@@ -96,6 +123,7 @@ model CompanyCode {
 
   @@id([company_id, id])
   @@index([company_id])
+  @@unique([company_id, code_type, code])
 }
 
 model CompanyLocation {
