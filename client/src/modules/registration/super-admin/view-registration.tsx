@@ -73,7 +73,7 @@ const ViewRegistration = () => {
             <Button
               size="sm"
               onClick={() => {
-                navigate(`/registration/${registration.id}`);
+                navigate(`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}/${registration.id}`);
               }}
             >
               View

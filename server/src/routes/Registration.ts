@@ -37,7 +37,7 @@ registrationRouter.get("/:id", async (req, res) => {
       });
     });
 
-  res.status(200).json(registration);
+  res.status(200).json(generateResultJson(registration));
 });
 
 registrationRouter.post("/", async (req, res) => {

@@ -51,6 +51,7 @@ export const PATHS = {
 
 export const DATE = {
   LANGUAGE: "en-SG",
+  MOMENT_DDMMYYYY: "DD/MM/yyyy",
   DDMMYYYY_HHMM_A_OPTION: {
     day: "2-digit",
     month: "2-digit",
