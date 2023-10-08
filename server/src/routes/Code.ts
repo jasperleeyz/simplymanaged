@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
-import { extractSortObject } from "../utils/utils";
+import { generateFindObject, generateResultJson } from "../utils/utils";
 
 export const codeRouter = express.Router();
 
@@ -8,24 +8,18 @@ const prisma = new PrismaClient();
 
 codeRouter.get("/", async (req, res) => {
   const { page, size, sort, filter, cursor } = req.query;
-  
-  const sortObject = extractSortObject(sort as string);
+
+  const findObject = generateFindObject(page, size, sort, filter);
 
   const codes = await prisma.$transaction([
     prisma.code.count(),
-    prisma.code.findMany({
-      skip: (Number(page) - 1) * Number(size),
-      take: Number(size),
-      orderBy: sortObject,
-    }),
+    prisma.code.findMany(findObject),
   ]);
 
-  res.status(200).json({
-    total: codes[0],
-    page: Number(page),
-    totalPages: Math.ceil(codes[0] / Number(size)),
-    codes: codes[1],
-  });
+  // create result object
+  const result = generateResultJson(page, size, codes);
+
+  res.status(200).json(result);
 });
 
 codeRouter.post("/create-update", async (req, res) => {

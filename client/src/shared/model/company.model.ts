@@ -3,19 +3,19 @@ import IUser from "./user.model";
 
 export interface IRegistration {
     id: number;
-    uenId: string;
-    companyName: string;
-    registrantName: string;
-    contactNo: number;
+    uen_id: string;
+    company_name: string;
+    registrant_name: string;
+    contact_no: number;
     email: string;
     address: string;
     industry: string;
-    noOfEmployees: number;
-    approveStatus: string;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    no_of_employees: number;
+    approve_status: string;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
 }
 
 export interface ICompany {

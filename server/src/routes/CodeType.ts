@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
+import { generateFindObject, generateResultJson } from "../utils/utils";
 
 export const codeTypeRouter = express.Router();
 
@@ -7,18 +8,16 @@ const prisma = new PrismaClient();
 
 codeTypeRouter.get("/", async (req, res) => {
   const { page, size, sort, filter, cursor } = req.query;
-  const codes = await prisma.$transaction([
+
+  const findObject = generateFindObject(page, size, sort, filter);
+
+  const codeTypes = await prisma.$transaction([
     prisma.codeType.count(),
-    prisma.codeType.findMany({
-      skip: (Number(page) - 1) * Number(size),
-      take: Number(size),
-    }),
+    prisma.codeType.findMany(findObject),
   ]);
 
-  res.status(200).json({
-    total: codes[0],
-    page: Number(page),
-    totalPages: Math.ceil(codes[0] / Number(size)),
-    data: codes[1],
-  });
+  // create result object
+  const result = generateResultJson(page, size, codeTypes);
+
+  res.status(200).json(result);
 });

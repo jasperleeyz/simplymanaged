@@ -1,12 +1,26 @@
-import { Pagination, Spinner, Table } from "flowbite-react";
+import { Button, Pagination, Spinner, Table } from "flowbite-react";
 import React from "react";
+import { IRegistration } from "../../../shared/model/company.model";
+import { IApplicationCode } from "../../../shared/model/application.model";
+import ApproveButton from "../../../shared/layout/buttons/approve-button";
+import RejectButton from "../../../shared/layout/buttons/reject-button";
+import { useNavigate } from "react-router-dom";
+import { PATHS } from "../../../configs/constants";
+import { getAllRegistrations } from "../../../shared/api/registration.api";
+import { getAllCodes } from "../../../shared/api/code.api";
 
 const ViewRegistration = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const [sizePerPage, setSizePerPage] = React.useState(10);
+  const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
-  const registrationList = [] as any[];
+  const [registrationList, setRegistrationList] = React.useState<
+    IRegistration[]
+  >([]);
+  const [codeList, setCodeList] = React.useState<IApplicationCode[]>([]);
+
+  const navigate = useNavigate();
 
   const generateBody = () => {
     if (registrationList.length === 0) {
@@ -22,13 +36,23 @@ const ViewRegistration = () => {
     return registrationList.map((registration, idx) => {
       return (
         <Table.Row key={idx}>
-          <Table.Cell>{registration.company}</Table.Cell>
+          <Table.Cell>{registration.company_name}</Table.Cell>
           <Table.Cell>{registration.industry}</Table.Cell>
-          <Table.Cell>{registration.noOfEmployees}</Table.Cell>
           <Table.Cell>
-            <div className="flex">
-              <button className="btn btn-sm btn-primary">View</button>
-            </div>
+            {codeList.find(
+              (code) => Number(code.code) === registration.no_of_employees
+            )?.description || registration.no_of_employees}
+          </Table.Cell>
+          <Table.Cell className="flex gap-2 justify-center">
+            <Button size="sm" onClick={() => {
+              navigate(`/registration/${PATHS.VIEW_REGISTRATION}`, {
+                state: {
+                  registration: registration,
+                },
+              });
+            }}>View</Button>
+            <ApproveButton size="sm" />
+            <RejectButton size="sm" />
           </Table.Cell>
         </Table.Row>
       );
@@ -36,18 +60,18 @@ const ViewRegistration = () => {
   };
 
   React.useEffect(() => {
-    fetch(`/registration?size=${sizePerPage}&page=${currentPage}`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-    }).then((res) => {
-      res.json().then((data) => {
-        console.log(data);
-      });
-      setLoading(prev => false);
-    });
+    Promise.all([
+      getAllRegistrations(currentPage, sizePerPage)
+      .then((res) => {
+        setRegistrationList(res.data);
+        setTotalPages(res.totalPages);
+        setLoading((prev) => false);
+      }),
+      getAllCodes(undefined, undefined, undefined, "code_type(no_of_employees)")
+      .then((res) => {
+        setCodeList(res.data);
+      }),
+    ]);
   }, []);
 
   return (
@@ -79,7 +103,7 @@ const ViewRegistration = () => {
             setCurrentPage(page);
           }}
           showIcons
-          totalPages={1}
+          totalPages={totalPages}
         />
       </div>
     </div>

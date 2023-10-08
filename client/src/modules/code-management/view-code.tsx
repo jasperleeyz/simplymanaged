@@ -7,6 +7,7 @@ import { PATHS } from "../../configs/constants";
 import { capitalizeString } from "../../configs/utils";
 import EditButton from "../../shared/layout/buttons/edit-button";
 import DeleteButton from "../../shared/layout/buttons/delete-button";
+import { getAllCodes } from "../../shared/api/code.api";
 
 const ViewCode = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -46,17 +47,10 @@ const ViewCode = () => {
   };
 
   React.useEffect(() => {
-    fetch(`/code?size=${sizePerPage}&page=${currentPage}&sort=asc(code_type)`, {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-      },
-    })
+    getAllCodes(currentPage, sizePerPage, "asc(code_type)")
       .then((res) => {
-        res.json().then((data) => {
-          setCodeList(data.codes);
-          setTotalPages(data.totalPages);
-        });
+        setCodeList(res.data);
+        setTotalPages(res.totalPages);
       })
       .finally(() => {
         setLoading((prev) => false);

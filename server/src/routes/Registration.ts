@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaClientValidationError } from "@prisma/client/runtime/library";
 import express from "express";
+import { generateFindObject, generateResultJson } from "../utils/utils";
 
 export const registrationRouter = express.Router();
 
@@ -8,19 +9,18 @@ const prisma = new PrismaClient();
 
 registrationRouter.get("/", async (req, res) => {
   const { page, size, sort, filter, cursor } = req.query;
+
+  const findObject = generateFindObject(page, size, sort, filter);
+
   const registrations = await prisma.$transaction([
     prisma.registration.count(),
-    prisma.registration.findMany({
-      skip: (Number(page) - 1) * Number(size),
-      take: Number(size),
-    }),
+    prisma.registration.findMany(findObject),
   ]);
 
-  res.status(200).json({
-    total: registrations[0],
-    page: Number(page),
-    registrations: registrations[1],
-  });
+  // create result object
+  const result = generateResultJson(page, size, registrations);
+
+  res.status(200).json(result);
 });
 
 registrationRouter.get("/:id", async (req, res) => {
@@ -49,7 +49,9 @@ registrationRouter.post("/", async (req, res) => {
     registration_details.updated_by = "SYSTEM";
     registration_details.approve_status = "P";
     registration_details.contact_no = Number(registration_details.contact_no);
-    registration_details.no_of_employees = Number(registration_details.no_of_employees);
+    registration_details.no_of_employees = Number(
+      registration_details.no_of_employees
+    );
 
     const newRegistration = await prisma.registration.create({
       data: registration_details,
