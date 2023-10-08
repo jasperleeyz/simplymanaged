@@ -4,14 +4,21 @@ import { IRegistration } from "../../../shared/model/company.model";
 import { IApplicationCode } from "../../../shared/model/application.model";
 import ApproveButton from "../../../shared/layout/buttons/approve-button";
 import RejectButton from "../../../shared/layout/buttons/reject-button";
-import { useNavigate } from "react-router-dom";
-import { PATHS } from "../../../configs/constants";
-import { getAllRegistrations } from "../../../shared/api/registration.api";
+import { useLocation, useNavigate } from "react-router-dom";
+import { PATHS, REGISTRATION_STATUS } from "../../../configs/constants";
+import {
+  getAllRegistrations,
+  updateRegistration,
+} from "../../../shared/api/registration.api";
 import { getAllCodes } from "../../../shared/api/code.api";
+import { toast } from "react-toastify";
 
 const ViewRegistration = () => {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [sizePerPage, setSizePerPage] = React.useState(10);
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  const [currentPage, setCurrentPage] = React.useState(location?.state?.page || 1);
+  const [sizePerPage, setSizePerPage] = React.useState(location?.state?.sizePerPage || 10);
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
@@ -20,7 +27,26 @@ const ViewRegistration = () => {
   >([]);
   const [codeList, setCodeList] = React.useState<IApplicationCode[]>([]);
 
-  const navigate = useNavigate();
+  const updateStatus = (req: IRegistration, status: string) => {
+    updateRegistration({ ...req, approve_status: status })
+      .then((res) => {
+        toast.success(
+          `Registration ${
+            status === REGISTRATION_STATUS.APPROVED ? "approved" : "rejected"
+          } successfully!`
+        );
+        setRegistrationList((prev) =>
+          prev.map((reg) => (reg.id !== res.data.id ? reg : res.data))
+        );
+      })
+      .catch((err) => {
+        toast.error(
+          `Error ${
+            status === REGISTRATION_STATUS.APPROVED ? "approving" : "rejecting"
+          } registration`
+        );
+      });
+  };
 
   const generateBody = () => {
     if (registrationList.length === 0) {
@@ -44,15 +70,30 @@ const ViewRegistration = () => {
             )?.description || registration.no_of_employees}
           </Table.Cell>
           <Table.Cell className="flex gap-2 justify-center">
-            <Button size="sm" onClick={() => {
-              navigate(`/registration/${PATHS.VIEW_REGISTRATION}`, {
-                state: {
-                  registration: registration,
-                },
-              });
-            }}>View</Button>
-            <ApproveButton size="sm" />
-            <RejectButton size="sm" />
+            <Button
+              size="sm"
+              onClick={() => {
+                navigate(`/registration/${registration.id}`);
+              }}
+            >
+              View
+            </Button>
+            {registration.approve_status === REGISTRATION_STATUS.PENDING && (
+              <>
+                <ApproveButton
+                  size="sm"
+                  onClick={() =>
+                    updateStatus(registration, REGISTRATION_STATUS.APPROVED)
+                  }
+                />
+                <RejectButton
+                  size="sm"
+                  onClick={() =>
+                    updateStatus(registration, REGISTRATION_STATUS.REJECTED)
+                  }
+                />
+              </>
+            )}
           </Table.Cell>
         </Table.Row>
       );
@@ -61,18 +102,31 @@ const ViewRegistration = () => {
 
   React.useEffect(() => {
     Promise.all([
-      getAllRegistrations(currentPage, sizePerPage)
-      .then((res) => {
+      getAllRegistrations(currentPage, sizePerPage).then((res) => {
         setRegistrationList(res.data);
         setTotalPages(res.totalPages);
         setLoading((prev) => false);
       }),
-      getAllCodes(undefined, undefined, undefined, "code_type(no_of_employees)")
-      .then((res) => {
+      getAllCodes(
+        undefined,
+        undefined,
+        undefined,
+        "code_type(no_of_employees)"
+      ).then((res) => {
         setCodeList(res.data);
       }),
     ]);
   }, []);
+
+  React.useEffect(() => {
+    if (currentPage !== location?.state?.page || sizePerPage !== location?.state?.sizePerPage) {
+      location.state = {
+        ...location.state,
+        page: currentPage,
+        sizePerPage: sizePerPage,
+      };
+    }
+  }, [currentPage, sizePerPage]);
 
   return (
     <div id="registration-main">

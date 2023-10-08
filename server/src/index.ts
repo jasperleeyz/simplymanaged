@@ -50,25 +50,6 @@ app.use(auth);
 // use master router
 app.use("/api", routes);
 
-// app.post(`/signup`, async (req, res) => {
-//   const { name, email, posts } = req.body
-
-//   const postData = posts?.map((post: Prisma.PostCreateInput) => {
-//     return { title: post?.title, content: post?.content }
-//   })
-
-//   const result = await prisma.user.create({
-//     data: {
-//       name,
-//       email,
-//       posts: {
-//         create: postData,
-//       },
-//     },
-//   })
-//   res.json(result)
-// })
-
 app.post(`/api/login`, async (req, res) => {
   console.info("In " + req.path);
   try {

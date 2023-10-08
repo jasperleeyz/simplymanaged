@@ -60,3 +60,12 @@ export const DATE = {
     hour12: true,
   } as Intl.DateTimeFormatOptions,
 };
+
+export const REGISTRATION_STATUS = {
+  PENDING: "P",
+  APPROVED: "A",
+  REJECTED: "R",
+  R: "Rejected",
+  P: "Pending",
+  A: "Approved",
+};

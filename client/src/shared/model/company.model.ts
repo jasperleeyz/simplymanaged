@@ -11,11 +11,11 @@ export interface IRegistration {
     address: string;
     industry: string;
     no_of_employees: number;
-    approve_status: string;
-    created_by: string;
-    created_date: Date;
-    updated_by: string;
-    updated_date: Date;
+    approve_status?: string;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
 }
 
 export interface ICompany {

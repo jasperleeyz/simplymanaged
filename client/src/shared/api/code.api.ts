@@ -29,6 +29,22 @@ export const getAllCodes = async (
   return await fetch(url, {
     method: "GET",
   })
-    .then((response) => Promise.resolve(response.json()))
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.reject(response.statusText);
+    })
+    .catch((err) => Promise.reject(err));
+};
+
+export const getCodesForRegistration = async (): Promise<any> => {
+  const url = `/code/registration`;
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.reject(response.statusText);
+    })
     .catch((err) => Promise.reject(err));
 };

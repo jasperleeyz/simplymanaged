@@ -29,6 +29,9 @@ export const getAllCodeTypes = async (
   return await fetch(url, {
     method: "GET",
   })
-    .then((response) => Promise.resolve(response.json()))
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.reject(response.statusText);
+    })
     .catch((err) => Promise.reject(err));
 };

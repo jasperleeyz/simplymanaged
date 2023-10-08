@@ -38,8 +38,8 @@ model Registration {
   uen_id          String
   company_name    String
   registrant_name String
-  contact_no      Int      @unique
-  email           String   @unique
+  contact_no      Int      
+  email           String   
   address         String
   industry        String
   no_of_employees Int

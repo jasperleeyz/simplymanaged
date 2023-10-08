@@ -17,7 +17,7 @@ codeTypeRouter.get("/", async (req, res) => {
   ]);
 
   // create result object
-  const result = generateResultJson(page, size, codeTypes);
+  const result = generateResultJson(codeTypes[1], codeTypes[0], page, size);
 
   res.status(200).json(result);
 });

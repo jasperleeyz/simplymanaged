@@ -6,6 +6,9 @@ import LabeledSelect from "../../shared/layout/form/labeled-select";
 import React from "react";
 import { IApplicationCode } from "../../shared/model/application.model";
 import { toast } from "react-toastify";
+import { submitRegistration } from "../../shared/api/registration.api";
+import { IRegistration } from "../../shared/model/company.model";
+import { getCodesForRegistration } from "../../shared/api/code.api";
 
 const RegistrationSchema = (
   employeesList: IApplicationCode[],
@@ -25,7 +28,6 @@ const RegistrationSchema = (
         /^([0-9]{8}[A-Z]{1}|[0-9]{9}[A-Z]{1}|[A-Z]{1}[0-9]{2}[A-Z]{2}[0-9]{4}[A-Z]{1})+$/,
         "Please enter a valid UEN"
       )
-
       .required("Field is required"),
     registrant_name: Yup.string().required("Field is required"),
     email: Yup.string()
@@ -50,40 +52,12 @@ const RegistrationForm = () => {
     []
   );
 
-  const submitRegistration = async (body: any) => {
-    await fetch(`/registration`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    }).then((res) => {
-        if (res.ok) {
-          return Promise.resolve();
-        } else {
-          return res.text().then((data) => {
-            return Promise.reject(data);
-          });
-        }
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
-  };
-
   React.useEffect(() => {
     Promise.all([
-      fetch("/code/registration", {
-        method: "GET",
-      })
+      getCodesForRegistration()
         .then((res) => {
-          if (res.ok) {
-            res.json().then((data) => {
-              if (data) {
-                setNoOfEmployees(data.no_of_employees);
-                setIndustryList(data.industry);
-              }
-            });
-          } else {
-            console.log(res.statusText);
-          }
+          setNoOfEmployees(res.data.no_of_employees);
+          setIndustryList(res.data.industry);
         })
         .catch((err) => console.log(err)),
     ]);
@@ -108,8 +82,11 @@ const RegistrationForm = () => {
           onSubmit={async (values, { setSubmitting, resetForm }) => {
             setSubmitting(true);
             try {
-              await submitRegistration(values)
-              .then(() => {
+              await submitRegistration({
+                ...values,
+                contact_no: Number(values.contact_no),
+                no_of_employees: Number(values.no_of_employees),
+              } as IRegistration).then(() => {
                 toast.success("Registration submitted successfully");
                 resetForm();
               });

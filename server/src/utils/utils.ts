@@ -54,15 +54,15 @@ export const generateFindObject = (page: any, size: any, sort: any, filter: any)
 }
 
 
-export const generateResultJson = (page: any, size: any, data: any) => {
+export const generateResultJson = (data: any, total?: any, page?: any, size?: any) => {
   const result = {
-    data: data[1],
+    data: data,
   } as any;
 
   if (page && size) {
     result["page"] = Number(page);
-    result["totalPages"] = Math.ceil(data[0] / Number(size));
-    result["total"] = data[0];
+    result["totalPages"] = Math.ceil(total / Number(size));
+    result["total"] = total;
   }
 
   return result;

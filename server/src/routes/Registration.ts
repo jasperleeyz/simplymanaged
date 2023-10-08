@@ -1,5 +1,4 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaClientValidationError } from "@prisma/client/runtime/library";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 
@@ -18,7 +17,7 @@ registrationRouter.get("/", async (req, res) => {
   ]);
 
   // create result object
-  const result = generateResultJson(page, size, registrations);
+  const result = generateResultJson(registrations[1], registrations[0], page, size);
 
   res.status(200).json(result);
 });
@@ -43,7 +42,7 @@ registrationRouter.get("/:id", async (req, res) => {
 
 registrationRouter.post("/", async (req, res) => {
   const registration_details = req.body;
-
+  console.log(registration_details);
   try {
     registration_details.created_by = "SYSTEM";
     registration_details.updated_by = "SYSTEM";
@@ -52,12 +51,36 @@ registrationRouter.post("/", async (req, res) => {
     registration_details.no_of_employees = Number(
       registration_details.no_of_employees
     );
+  
+    const {id, ...registration} = registration_details;
 
     const newRegistration = await prisma.registration.create({
+      data: registration,
+    });
+
+    res.status(200).json(generateResultJson(newRegistration));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send(error);
+  }
+});
+
+registrationRouter.post("/update", async (req, res) => {
+  const registration_details = req.body;
+
+  try {
+    const user = req.headers["x-access-user"] as any;
+    registration_details.updated_by = user["fullname"];
+    registration_details.updated_date = new Date();
+
+    const updatedRegistration = await prisma.registration.update({
+      where: {
+        id: registration_details.id,
+      },
       data: registration_details,
     });
 
-    res.status(200).json(newRegistration);
+    res.status(200).json(generateResultJson(updatedRegistration));
   } catch (error) {
     console.error(error);
     res.status(400).send(error);

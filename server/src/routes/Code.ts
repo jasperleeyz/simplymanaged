@@ -17,7 +17,7 @@ codeRouter.get("/", async (req, res) => {
   ]);
 
   // create result object
-  const result = generateResultJson(page, size, codes);
+  const result = generateResultJson(codes[1], codes[0], page, size);
 
   res.status(200).json(result);
 });
@@ -85,33 +85,12 @@ codeRouter.post("/create-update", async (req, res) => {
           description: code.description,
           status: code.status,
           updated_by: user["name"],
+          updated_date: new Date(),
         },
       });
     }
 
-    // // insert or update code
-    // const result = await prisma.code.upsert({
-    //     where: {
-    //         id: code.id
-    //     },
-    //     update: {
-    //         code: code.code,
-    //         code_type: code.code_type,
-    //         description: code.description,
-    //         status: code.status,
-    //         updated_by: user["fullname"],
-    //     },
-    //     create: {
-    //         code: code.code,
-    //         code_type: code.code_type,
-    //         description: code.description,
-    //         status: code.status,
-    //         created_by: user["fullname"],
-    //         updated_by: user["fullname"],
-    //     }
-    // });
-
-    res.status(200).json(result);
+    res.status(200).json(generateResultJson(result));
   } catch (error) {
     console.error(error);
     res.status(400).send(error);
@@ -135,8 +114,8 @@ codeRouter.get("/registration", async (req, res) => {
     },
   });
 
-  res.status(200).json({
+  res.status(200).json(generateResultJson({
     industry: industry_codes,
     no_of_employees: no_of_employees_codes,
-  });
+  }));
 });

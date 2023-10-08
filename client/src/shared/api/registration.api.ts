@@ -1,3 +1,5 @@
+import { IRegistration } from "../model/company.model";
+
 export const getAllRegistrations = async (
   page?: number,
   size?: number,
@@ -29,6 +31,50 @@ export const getAllRegistrations = async (
   return await fetch(url, {
     method: "GET",
   })
-    .then((response) => Promise.resolve(response.json()))
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.reject(response.statusText);
+    })
     .catch((err) => Promise.reject(err));
 };
+
+export const updateRegistration = async (registration: IRegistration) => {
+  const url = `/registration/update`;
+
+  return await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(registration),
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.reject(response.statusText);
+    })
+    .catch((err) => Promise.reject(err));
+};
+
+export const getRegistrationById = async (id: number) => {
+  const url = `/registration/${id}`;
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.reject(response.statusText);
+    })
+    .catch((err) => Promise.reject(err));
+};
+
+export const submitRegistration = async (registration: IRegistration) => {
+  const url = `/registration`;
+
+  return await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(registration),
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.reject(response.statusText);
+    })
+    .catch((err) => Promise.reject(err));
+}
