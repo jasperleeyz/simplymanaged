@@ -56,7 +56,7 @@ const RegistrationDetails = () => {
         })
         .catch((err) => {
           toast.error("Error fetching registration details.", { toastId: id });
-          navigate(PATHS.REGISTRATION);
+          navigate(`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`);
         }),
       getCodesForRegistration()
         .then((res) => {
@@ -64,8 +64,8 @@ const RegistrationDetails = () => {
           setIndustryCodes(res.data.industry);
         })
         .catch((err) => {
-          toast.error("Error fetching registration details.", { toastId: id });
-          navigate(PATHS.REGISTRATION);
+          toast.error("Error fetching codes.", { toastId: id });
+          navigate(`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`);
         }),
     ]);
   }, []);

@@ -4,12 +4,14 @@ import React from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
 import { Button, TextInput } from "flowbite-react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { PATHS } from "../../configs/constants";
 import LabeledTextInput from "../../shared/layout/form/labeled-text-input";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import { toast } from "react-toastify";
-import { capitalizeString } from "../../configs/utils";
+import { getAllCodeTypes } from "../../shared/api/code-type.api";
+import { createUpdateCodes, getCodeById } from "../../shared/api/code.api";
+import BackButton from "../../shared/layout/buttons/back-button";
 
 const CodeSchema = Yup.object().shape({
   code_type: Yup.string().required("Field is required"),
@@ -22,75 +24,61 @@ const CodeSchema = Yup.object().shape({
 });
 
 const AddOrEditCode = () => {
-  const location = useLocation();
   const navigate = useNavigate();
+
+  const id = useParams()?.id;
 
   const [codeTypeList, setCodeTypeList] = React.useState<any[]>([]);
 
-  const initialValues = location?.state?.code
-    ? location.state.code
-    : {
-        id: 0,
-        code_type: "",
-        code_type_other: "",
-        code: "",
-        description: "",
-        status: "A",
-      };
-
-  const createOrUpdateCode = async (body: any) => {
-    console.log(body);
-    await fetch(`/code/create-update`, {
-      method: "POST",
-      body: JSON.stringify(body),
-    })
-      .then((res) => {
-        if (res.ok) {
-          // navigate(PATHS.VIEW_CODE);
-          return Promise.resolve();
-        } else {
-          return res.text().then((data) => {
-            return Promise.reject(data);
-          });
-        }
-      })
-      .catch((err) => {
-        return Promise.reject(err);
-      });
-  };
+  const [initialValues, setInitialValues] = React.useState<any>({
+    id: 0,
+    code_type: "",
+    code_type_other: "",
+    code: "",
+    description: "",
+    status: "A",
+  });
 
   React.useEffect(() => {
-    fetch("/code-type?size=10&page=1", {
-      method: "GET",
-    }).then((res) => {
-      if (res.ok) {
-        res.json().then((data) => {
-          if (data) {
-            setCodeTypeList(data.data);
-          }
-        });
-      } else {
+    getAllCodeTypes()
+      .then((res) => {
+        setCodeTypeList(res.data);
+      })
+      .catch((err) => {
         toast.error("Error encountered. Please try again later");
-      }
-    });
+      });
+
+    if (id) {
+      getCodeById(Number(id))
+        .then((res) => {
+          setInitialValues(res.data);
+        })
+        .catch((err) => {
+          toast.error(err, { toastId: id });
+          navigate(`/${PATHS.CODE}`);
+        });
+    }
   }, []);
 
   return (
     <div>
-      <p className="header">{`${
-        location.pathname.endsWith(PATHS.EDIT_CODE) ? "Edit" : "Add"
-      } Code`}</p>
+      <p className="header">{`${!id ? "Add" : "Edit"} Code`}</p>
       <Formik
         initialValues={initialValues}
+        enableReinitialize
         onSubmit={async (values, { setSubmitting }) => {
           setSubmitting(true);
           try {
-            await createOrUpdateCode(values).then(() => {
-              toast.success("Code created successfully");
+            await createUpdateCodes(values).then(() => {
+              toast.success(`Code ${!id ? "created" : "updated"} successfully`);
               navigate(`..`);
             });
           } catch (err) {
-            // toast.error(err); //TODO: either throw toast error or display error banner
+            toast.error(
+              `Error ${
+                !id ? "creating new" : "updating"
+              } code. Please try again later.`
+            );
           } finally {
             setSubmitting(false);
           }
@@ -186,15 +174,17 @@ const AddOrEditCode = () => {
                 }
               />
             </div>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={props.isSubmitting}
-              isProcessing={props.isSubmitting}
-              className="mt-12 ml-auto mr-0"
-            >
-              Submit
-            </Button>
+            <div className="flex justify-end mt-12 gap-3">
+              <BackButton size="sm" color="light" />
+              <Button
+                type="submit"
+                size="sm"
+                disabled={props.isSubmitting}
+                isProcessing={props.isSubmitting}
+              >
+                Submit
+              </Button>
+            </div>
           </form>
         )}
       </Formik>

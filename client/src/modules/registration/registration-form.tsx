@@ -40,7 +40,9 @@ const RegistrationSchema = (
     no_of_employees: Yup.string()
       .required("Field is required")
       .test("within-list", "Invalid option", (value) =>
-        employeesList.find((v) => v.code === value) ? true : false
+        employeesList.find((v) => Number(v.code) === Number(value))
+          ? true
+          : false
       ),
   });
 

@@ -9,17 +9,88 @@ const prisma = new PrismaClient();
 codeRouter.get("/", async (req, res) => {
   const { page, size, sort, filter, cursor } = req.query;
 
-  const findObject = generateFindObject(page, size, sort, filter);
+  try {
+    const findObject = generateFindObject(page, size, sort, filter);
 
-  const codes = await prisma.$transaction([
-    prisma.code.count(),
-    prisma.code.findMany(findObject),
-  ]);
+    const codes = await prisma.$transaction([
+      prisma.code.count(),
+      prisma.code.findMany(findObject),
+    ]);
 
-  // create result object
-  const result = generateResultJson(codes[1], codes[0], page, size);
+    // create result object
+    const result = generateResultJson(codes[1], codes[0], page, size);
 
-  res.status(200).json(result);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving codes.");
+  }
+});
+
+codeRouter.get("/registration", async (req, res) => {
+  try {
+    const industry_codes = await prisma.code.findMany({
+      where: {
+        code_type: {
+          equals: "industry",
+        },
+        status: {
+          equals: "A",
+        },
+      },
+      orderBy: {
+        description: "asc",
+      }
+    });
+
+    const no_of_employees_codes = await prisma.code.findMany({
+      where: {
+        code_type: {
+          equals: "no_of_employees",
+        },
+        status: {
+          equals: "A",
+        },
+      },
+    });
+
+    // convert code value to number and sort no_of_employees_codes by code
+    const updated_no_of_employees_codes = no_of_employees_codes.map((code) => {
+      const newCode = {...code, code: parseInt(code.code)};
+      return newCode;
+    }).sort((a, b) => a.code - b.code);
+
+    res.status(200).json(
+      generateResultJson({
+        industry: industry_codes,
+        no_of_employees: updated_no_of_employees_codes,
+      })
+    );
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving codes.");
+  }
+});
+
+codeRouter.get("/:id", async (req, res) => {
+  const id = parseInt(req.params.id);
+
+  try {
+    const code = await prisma.code.findFirst({
+      where: {
+        id: id,
+      },
+    });
+
+    if (code === null) {
+      res.status(400).send("Code not found.");
+    } else {
+      res.status(200).json(generateResultJson(code));
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving code.");
+  }
 });
 
 codeRouter.post("/create-update", async (req, res) => {
@@ -31,7 +102,6 @@ codeRouter.post("/create-update", async (req, res) => {
   code.status = code.status.toUpperCase();
   code.description = code.description.toUpperCase();
   code.code = code.code.toUpperCase();
-  code.code_type_other = code.code_type_other.toUpperCase();
 
   try {
     if (code.code_type === "OTHER") {
@@ -41,6 +111,8 @@ codeRouter.post("/create-update", async (req, res) => {
           code_type: code.code_type_other,
         },
       });
+
+      code.code_type_other = code.code_type_other.toUpperCase();
 
       // return error if code type already exists
       if (code_type !== null) {
@@ -97,25 +169,4 @@ codeRouter.post("/create-update", async (req, res) => {
   }
 });
 
-codeRouter.get("/registration", async (req, res) => {
-  const industry_codes = await prisma.code.findMany({
-    where: {
-      code_type: {
-        equals: "industry",
-      },
-    },
-  });
 
-  const no_of_employees_codes = await prisma.code.findMany({
-    where: {
-      code_type: {
-        equals: "no_of_employees",
-      },
-    },
-  });
-
-  res.status(200).json(generateResultJson({
-    industry: industry_codes,
-    no_of_employees: no_of_employees_codes,
-  }));
-});

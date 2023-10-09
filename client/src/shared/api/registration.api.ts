@@ -33,7 +33,7 @@ export const getAllRegistrations = async (
   })
     .then((response) => {
       if (response.ok) return Promise.resolve(response.json());
-      else return Promise.reject(response.statusText);
+      else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
 };
@@ -47,7 +47,7 @@ export const updateRegistration = async (registration: IRegistration) => {
   })
     .then((response) => {
       if (response.ok) return Promise.resolve(response.json());
-      else return Promise.reject(response.statusText);
+      else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
 };
@@ -60,7 +60,7 @@ export const getRegistrationById = async (id: number) => {
   })
     .then((response) => {
       if (response.ok) return Promise.resolve(response.json());
-      else return Promise.reject(response.statusText);
+      else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
 };
@@ -74,7 +74,7 @@ export const submitRegistration = async (registration: IRegistration) => {
   })
     .then((response) => {
       if (response.ok) return Promise.resolve(response.json());
-      else return Promise.reject(response.statusText);
+      else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
 }

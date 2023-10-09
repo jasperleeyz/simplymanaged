@@ -31,7 +31,7 @@ export const getAllCodeTypes = async (
   })
     .then((response) => {
       if (response.ok) return Promise.resolve(response.json());
-      else return Promise.reject(response.statusText);
+      else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
 };

@@ -3,11 +3,12 @@ import React from "react";
 import { IApplicationCode } from "../../shared/model/application.model";
 import CreateButton from "../../shared/layout/buttons/create-button";
 import { useNavigate } from "react-router-dom";
-import { PATHS } from "../../configs/constants";
-import { capitalizeString } from "../../configs/utils";
+import { CODE_STATUS, PATHS } from "../../configs/constants";
 import EditButton from "../../shared/layout/buttons/edit-button";
-import DeleteButton from "../../shared/layout/buttons/delete-button";
-import { getAllCodes } from "../../shared/api/code.api";
+import { createUpdateCodes, getAllCodes } from "../../shared/api/code.api";
+import DeactivateButton from "../../shared/layout/buttons/deactivate-button";
+import ActivateButton from "../../shared/layout/buttons/activate-button";
+import { toast } from "react-toastify";
 
 const ViewCode = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -18,6 +19,27 @@ const ViewCode = () => {
   const [codeList, setCodeList] = React.useState<IApplicationCode[]>([]);
 
   const navigate = useNavigate();
+
+  const updateStatus = (code: IApplicationCode, status: string) => {
+    createUpdateCodes({...code, status })
+    .then((res) => {
+      toast.success(
+        `Code ${
+          status === CODE_STATUS.ACTIVE ? "activated" : "deactivated"
+        } successfully!`
+      );
+      setCodeList((prev) =>
+        prev.map((c) => (c.id !== res.data.id ? c : res.data))
+      );
+    })
+    .catch((err) => {
+      toast.error(
+        `Error ${
+          status === CODE_STATUS.ACTIVE ? "activating" : "deactivating"
+        } code`
+      );
+    });
+  }
 
   const generateBody = () => {
     if (codeList.length === 0) {
@@ -37,9 +59,23 @@ const ViewCode = () => {
           <Table.Cell>{code.code}</Table.Cell>
           <Table.Cell>{code.description}</Table.Cell>
           <Table.Cell className="flex gap-2 justify-center">
-            <Button size="sm">View</Button>
-            <EditButton size="sm" />
-            <DeleteButton size="sm">Deactivate</DeleteButton>
+            <Button
+              size="sm"
+              onClick={() => navigate(`./${PATHS.VIEW_CODE}/${code.id}`)}
+            >
+              View
+            </Button>
+            <EditButton
+              size="sm"
+              onClick={() => {
+                navigate(`./${PATHS.EDIT_CODE}/${code.id}`);
+              }}
+            />
+            {code.status === CODE_STATUS.ACTIVE ? (
+              <DeactivateButton size="sm" onClick={() => updateStatus(code, CODE_STATUS.INACTIVE)} />
+            ) : (
+              <ActivateButton size="sm" onClick={() => updateStatus(code, CODE_STATUS.ACTIVE)} />
+            )}
           </Table.Cell>
         </Table.Row>
       );
