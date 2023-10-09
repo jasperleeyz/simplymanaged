@@ -6,13 +6,11 @@ const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const upload = multer();
-const bcrypt = require("bcryptjs");
-const salt = bcrypt.genSaltSync(10);
-// const hash = bcrypt.hashSync("B4c0/\/", salt);
 const jwt = require("jsonwebtoken");
 const auth = require("./middleware/auth");
 
 import { routes } from "./routes/index";
+import { checkPassword, generateSalt, hashPassword } from "./utils/security";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -67,7 +65,7 @@ app.post(`/api/login`, async (req, res) => {
 
     const user = {
       email: "abcdef@email.com",
-      password: bcrypt.hashSync("password", salt),
+      password: hashPassword("password", generateSalt()),
       role: "SA",
       fullname: "Gojo Satoru",
       id: 0,
@@ -86,7 +84,7 @@ app.post(`/api/login`, async (req, res) => {
       preferences: [],
     };
 
-    if(user && bcrypt.compareSync(password, user.password)) {
+    if(user && checkPassword(password, user.password)) {
       const token = jwt.sign({ email: user.email, name: user.fullname, role: user.role }, process.env.JWT_SECRET, {
         expiresIn: '1d', // expires in 24 hours
       });
