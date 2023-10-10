@@ -17,29 +17,34 @@ const ViewCode = () => {
   const [loading, setLoading] = React.useState(true);
 
   const [codeList, setCodeList] = React.useState<IApplicationCode[]>([]);
+  const [actionLoading, setActionLoading] = React.useState<number[]>([]);
 
   const navigate = useNavigate();
 
   const updateStatus = (code: IApplicationCode, status: string) => {
-    createUpdateCodes({...code, status })
-    .then((res) => {
-      toast.success(
-        `Code ${
-          status === CODE_STATUS.ACTIVE ? "activated" : "deactivated"
-        } successfully!`
-      );
-      setCodeList((prev) =>
-        prev.map((c) => (c.id !== res.data.id ? c : res.data))
-      );
-    })
-    .catch((err) => {
-      toast.error(
-        `Error ${
-          status === CODE_STATUS.ACTIVE ? "activating" : "deactivating"
-        } code`
-      );
-    });
-  }
+    setActionLoading((prev) => [...prev, code.id]);
+    createUpdateCodes({ ...code, status })
+      .then((res) => {
+        toast.success(
+          `Code ${
+            status === CODE_STATUS.ACTIVE ? "activated" : "deactivated"
+          } successfully!`
+        );
+        setCodeList((prev) =>
+          prev.map((c) => (c.id !== res.data.id ? c : res.data))
+        );
+      })
+      .catch((err) => {
+        toast.error(
+          `Error ${
+            status === CODE_STATUS.ACTIVE ? "activating" : "deactivating"
+          } code`
+        );
+      })
+      .finally(() => {
+        setActionLoading((prev) => prev.filter((id) => id !== code.id));
+      });
+  };
 
   const generateBody = () => {
     if (codeList.length === 0) {
@@ -72,9 +77,27 @@ const ViewCode = () => {
               }}
             />
             {code.status === CODE_STATUS.ACTIVE ? (
-              <DeactivateButton size="sm" onClick={() => updateStatus(code, CODE_STATUS.INACTIVE)} />
+              <DeactivateButton
+                size="sm"
+                disabled={
+                  actionLoading.find((val) => val === code.id) !== undefined
+                }
+                isProcessing={
+                  actionLoading.find((val) => val === code.id) !== undefined
+                }
+                onClick={() => updateStatus(code, CODE_STATUS.INACTIVE)}
+              />
             ) : (
-              <ActivateButton size="sm" onClick={() => updateStatus(code, CODE_STATUS.ACTIVE)} />
+              <ActivateButton
+                size="sm"
+                disabled={
+                  actionLoading.find((val) => val === code.id) !== undefined
+                }
+                isProcessing={
+                  actionLoading.find((val) => val === code.id) !== undefined
+                }
+                onClick={() => updateStatus(code, CODE_STATUS.ACTIVE)}
+              />
             )}
           </Table.Cell>
         </Table.Row>

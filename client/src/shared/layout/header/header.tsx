@@ -8,7 +8,7 @@ import {
   Navbar,
 } from "flowbite-react";
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { GlobalStateContext, InitialGlobalState } from "../../../configs/global-state-provider";
 import { PATHS } from "../../../configs/constants";
 import { capitalizeString, getHomeLink } from "../../../configs/utils";
@@ -35,10 +35,13 @@ const customHeaderTheme: CustomFlowbiteTheme = {
 const Header = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const location = useLocation();
+  const navigate = useNavigate();
   
   const signOut = () => {
-    sessionStorage.removeItem("bearerToken");
+    location.state = undefined;
     setGlobalState((prevState) => (InitialGlobalState));
+    sessionStorage.removeItem("bearerToken");
+    navigate("/login", { replace: true });
   }
 
   return (

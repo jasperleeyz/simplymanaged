@@ -7,6 +7,7 @@ import { IRequest } from "../shared/model/request.model";
 type GlobalState = {
   user?: IUser;
   isAuthenticated: boolean;
+  sessionFetched: boolean;
   workShifts?: any[];
   locations?: string[];
   schedule?: IUserSchedule[];
@@ -18,6 +19,7 @@ type GlobalState = {
 export const InitialGlobalState: GlobalState = {
   user: {} as IUser,
   isAuthenticated: false,
+  sessionFetched: false,
   workShifts: [],
   locations: [],
   schedule: [],
@@ -60,6 +62,7 @@ const GlobalStateProvider: React.FC<{ children: React.ReactNode }> = ({
     //   preferences: [],
     // },
     isAuthenticated: false,
+    sessionFetched: false,
     // workShifts: ["AM", "PM", "FULL"],
     // locations: ["Toa Payoh", "Ang Mo Kio"],
     // roster: [

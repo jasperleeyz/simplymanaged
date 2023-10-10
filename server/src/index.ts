@@ -11,7 +11,8 @@ const auth = require("./middleware/auth");
 
 import { routes } from "./routes/index";
 import { checkPassword, generateSalt, hashPassword } from "./utils/security";
-import { sendRegistrationEmail } from "./utils/email";
+import { sendApprovedEmail, sendRegistrationEmail, sendRejectedEmail } from "./utils/email";
+import { USER_STATUS } from "./utils/constants";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -52,9 +53,20 @@ app.use("/api", routes);
 app.post(`/test/email`, async (req, res) => {
   // console.info("In " + req.path);
   try {
-    await sendRegistrationEmail("jasperleejk@gmail.com", "Jasper Lee", "SIM Global Education");
+    await sendRejectedEmail(
+      "jasperleejk@gmail.com",
+      "Jasper Lee",
+      "SIM Global Education",
+      // {username: "jasperleejk@gmail.com", password: "password"}
+    ).then(() => {
+      res.status(200).send("Email sent");
+    }).catch((error) => {
+      console.error(error);
+      res.status(400).send("Error sending email.");
+    });
   } catch (error) {
     console.error(error);
+    res.status(400).send("Error sending email.");
   }
 });
 
@@ -67,36 +79,55 @@ app.post(`/api/login`, async (req, res) => {
       throw new Error("Both email and password are required");
     }
 
-    // const user = await prisma.user.findUnique({
-    //   where: {
-    //     email: email,
-    //   },
-    // });
-
-    const user = {
-      email: "abcdef@email.com",
-      password: hashPassword("password", generateSalt()),
-      role: "SA",
-      fullname: "Gojo Satoru",
-      id: 0,
-      companyId: 0,
-      contactNo: "99999999",
-      position: "STORE MANAGER",
-      status: "A",
-      employmentDetails: {
-        userId: 0,
-        userCompanyId: 0,
-        workingHours: 8,
-        employmentType: "FULL-TIME",
-      },
-      profileImage:
-        "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
-      preferences: [],
+    // TODO: to remove after testing
+    const getRole = (email: string) => {
+      if (email === "superadmin@email.com") return "SA";
+      else if (email === "systemadmin@email.com") return "A";
+      else if (email === "manager@email.com") return "M";
+      else return "E";
     };
+    // TODO: to remove if else after testing
+    let user = undefined;
+    if (
+      [
+        "superadmin@email.com",
+        "systemadmin@email.com",
+        "manager@email.com",
+        "employee@email.com",
+      ].includes(email)
+    ) {
+      user = {
+        email: email,
+        password: hashPassword("password", generateSalt()),
+        role: getRole(email),
+        fullname: "Gojo Satoru",
+        id: 0,
+        company_id: 0,
+        contact_no: "99999999",
+        position: "STORE MANAGER",
+        status: "A",
+        employment_details: {
+          user_id: 0,
+          user_company_id: 0,
+          working_hours: 8,
+          employment_type: "FULL-TIME",
+        },
+        profile_image:
+          "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
+        preferences: [],
+      };
+    } else {
+      user = await prisma.user.findFirst({
+        where: {
+          email: email,
+          status: USER_STATUS.ACTIVE,
+        },
+      });
+    }
 
     if (user && checkPassword(password, user.password)) {
       const token = jwt.sign(
-        { email: user.email, name: user.fullname, role: user.role },
+        { company_id: user.company_id, email: user.email, name: user.fullname, role: user.role },
         process.env.JWT_SECRET,
         {
           expiresIn: "1d", // expires in 24 hours

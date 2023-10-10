@@ -181,8 +181,8 @@ model User {
   id                   Int
   company_id           Int
   fullname             String
-  email                String             @unique
-  contact_no           Int                @unique
+  email                String             
+  contact_no           Int                
   role                 String
   position             String
   department_id        Int?
@@ -202,6 +202,7 @@ model User {
 
   @@id([id, company_id])
   @@index([company_id, department_id])
+  @@unique([email, company_id])
 }
 
 model UserPreference {

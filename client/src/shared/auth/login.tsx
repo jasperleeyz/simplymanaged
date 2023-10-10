@@ -48,6 +48,7 @@ const Login = () => {
             setGlobalState((prevState) => ({
               isAuthenticated: true,
               user: { ...data.user },
+              sessionFetched: true,
             }));
 
             return Promise.resolve();
@@ -65,8 +66,9 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
+      console.log(location.state);
       navigate(
-        location.state['from'] || 
+        location.state?.from || 
         getHomeLink(globalState?.user?.role || ""), { replace: true });
     }
   }, [isAuthenticated]);

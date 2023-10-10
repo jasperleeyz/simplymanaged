@@ -28,8 +28,12 @@ const RegistrationDetails = () => {
   const [industryCodes, setIndustryCodes] = React.useState<IApplicationCode[]>(
     []
   );
+  const [loading, setLoading] = React.useState(false);
+  const [processing, setProcessing] = React.useState("");
 
   const updateStatus = (req: IRegistration, status: string) => {
+    setLoading(true);
+    setProcessing(status);
     updateRegistration({ ...req, approve_status: status })
       .then((res) => {
         toast.success(
@@ -45,6 +49,10 @@ const RegistrationDetails = () => {
             status === REGISTRATION_STATUS.APPROVED ? "approving" : "rejecting"
           } registration`
         );
+      })
+      .finally(() => {
+        setLoading(false);
+        setProcessing("");
       });
   };
 
@@ -138,17 +146,21 @@ const RegistrationDetails = () => {
         />
       </div>
       <div className="flex mt-8 gap-3">
-        <BackButton size="sm" />
+        <BackButton size="sm" disabled={loading} />
         {registration?.approve_status === REGISTRATION_STATUS.PENDING && (
           <>
             <ApproveButton
               size="sm"
+              disabled={loading}
+              isProcessing={processing === REGISTRATION_STATUS.APPROVED}
               onClick={() =>
                 updateStatus(registration, REGISTRATION_STATUS.APPROVED)
               }
             />
             <RejectButton
               size="sm"
+              disabled={loading}
+              isProcessing={processing === REGISTRATION_STATUS.REJECTED}
               onClick={() =>
                 updateStatus(registration, REGISTRATION_STATUS.REJECTED)
               }

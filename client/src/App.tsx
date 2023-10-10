@@ -27,6 +27,7 @@ function App() {
               ...prevState,
               isAuthenticated: true,
               user: {...prevState.user, ...data.user},
+              sessionFetched: true,
             }));
           });
         }

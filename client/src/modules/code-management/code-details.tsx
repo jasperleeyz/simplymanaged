@@ -18,8 +18,10 @@ const CodeDetails = () => {
   const [code, setCode] = React.useState<IApplicationCode | undefined>(
     undefined
   );
+  const [loading, setLoading] = React.useState(false);
 
   const updateStatus = (c: IApplicationCode, status: string) => {
+    setLoading(true);
     createUpdateCodes({ ...c, status })
       .then((res) => {
         toast.success(
@@ -35,6 +37,9 @@ const CodeDetails = () => {
             status === CODE_STATUS.ACTIVE ? "activating" : "deactivating"
           } code`
         );
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
@@ -81,9 +86,10 @@ const CodeDetails = () => {
         />
       </div>
       <div className="flex mt-8 gap-3">
-        <BackButton size="sm" />
+        <BackButton size="sm" disabled={loading}/>
         <EditButton
           size="sm"
+          disabled={loading}
           onClick={() => {
             navigate(`/${PATHS.CODE}/${PATHS.EDIT_CODE}/${id}`);
           }}
@@ -91,12 +97,16 @@ const CodeDetails = () => {
         {code?.status === CODE_STATUS.ACTIVE && (
           <DeactivateButton
             size="sm"
+            disabled={loading}
+            isProcessing={loading}
             onClick={() => updateStatus(code, CODE_STATUS.INACTIVE)}
           />
         )}
         {code?.status === CODE_STATUS.INACTIVE && (
           <ActivateButton
             size="sm"
+            disabled={loading}
+            isProcessing={loading}
             onClick={() => updateStatus(code, CODE_STATUS.ACTIVE)}
           />
         )}

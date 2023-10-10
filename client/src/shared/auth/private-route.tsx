@@ -13,6 +13,7 @@ interface IOwnProps extends PathRouteProps {
 export const PrivateRoute = ({ children, hasAnyRoles = [], ...rest }: IOwnProps) => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
   const isAuthenticated = React.useContext(GlobalStateContext).globalState?.isAuthenticated;
+  const sessionFetched = React.useContext(GlobalStateContext).globalState?.sessionFetched;
   const isAuthorized = hasAnyRole(user?.role, hasAnyRoles);
   const location = useLocation();
 
@@ -20,9 +21,9 @@ export const PrivateRoute = ({ children, hasAnyRoles = [], ...rest }: IOwnProps)
     throw new Error(`A component needs to be specified for private route for path ${(rest as any).path}`);
   }
 
-  // if (!sessionHasBeenFetched) {
-  //   return <div></div>;
-  // }
+  if (!sessionFetched) {
+    return <div></div>;
+  }
 
   if (isAuthenticated) {
     if (isAuthorized) {

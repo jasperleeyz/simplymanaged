@@ -26,6 +26,7 @@ const ViewRegistration = () => {
     IRegistration[]
   >([]);
   const [codeList, setCodeList] = React.useState<IApplicationCode[]>([]);
+  const [actionLoading, setActionLoading] = React.useState([]);
 
   const updateStatus = (req: IRegistration, status: string) => {
     updateRegistration({ ...req, approve_status: status })
@@ -65,7 +66,7 @@ const ViewRegistration = () => {
           <Table.Cell>{registration.company_name}</Table.Cell>
           <Table.Cell>{registration.industry}</Table.Cell>
           <Table.Cell>
-            {codeList.find(
+          {codeList.find(
               (code) => Number(code.code) === registration.no_of_employees
             )?.description || registration.no_of_employees}
           </Table.Cell>
