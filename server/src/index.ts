@@ -11,6 +11,7 @@ const auth = require("./middleware/auth");
 
 import { routes } from "./routes/index";
 import { checkPassword, generateSalt, hashPassword } from "./utils/security";
+import { sendRegistrationEmail } from "./utils/email";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -48,11 +49,20 @@ app.use(auth);
 // use master router
 app.use("/api", routes);
 
+app.post(`/test/email`, async (req, res) => {
+  // console.info("In " + req.path);
+  try {
+    await sendRegistrationEmail("jasperleejk@gmail.com", "Jasper Lee", "SIM Global Education");
+  } catch (error) {
+    console.error(error);
+  }
+});
+
 app.post(`/api/login`, async (req, res) => {
   console.info("In " + req.path);
   try {
     const { email, password } = req.body;
-    if(!email || !password) {
+    if (!email || !password) {
       res.status(400).send("Both email and password are required");
       throw new Error("Both email and password are required");
     }
@@ -77,17 +87,21 @@ app.post(`/api/login`, async (req, res) => {
         userId: 0,
         userCompanyId: 0,
         workingHours: 8,
-        employmentType: "FULL-TIME"
+        employmentType: "FULL-TIME",
       },
       profileImage:
         "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
       preferences: [],
     };
 
-    if(user && checkPassword(password, user.password)) {
-      const token = jwt.sign({ email: user.email, name: user.fullname, role: user.role }, process.env.JWT_SECRET, {
-        expiresIn: '1d', // expires in 24 hours
-      });
+    if (user && checkPassword(password, user.password)) {
+      const token = jwt.sign(
+        { email: user.email, name: user.fullname, role: user.role },
+        process.env.JWT_SECRET,
+        {
+          expiresIn: "1d", // expires in 24 hours
+        }
+      );
 
       jwt.verify(token, process.env.JWT_SECRET);
 
@@ -97,10 +111,9 @@ app.post(`/api/login`, async (req, res) => {
         user: userWithoutPassword,
         bearerToken: token,
       });
-    } else { 
+    } else {
       res.status(400).send("Invalid email or password");
     }
-
   } catch (error) {
     console.error(error);
   }
@@ -228,11 +241,15 @@ app.post(`/api/login`, async (req, res) => {
 
 app.get("*", (req, res) => {
   // res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'))
-  res.redirect(process.env.WEBPAGE_URL+"/");
+  res.redirect(process.env.WEBPAGE_URL + "/");
 });
 
 const server = app.listen(PORT, () =>
   console.log(`
-🚀 Server ready at: ${process.env.NODE_ENV !== "production" ? `http://localhost:${PORT}` : `https://simplymanaged-server.onrender.com`}
+🚀 Server ready at: ${
+    process.env.NODE_ENV !== "production"
+      ? `http://localhost:${PORT}`
+      : `https://simplymanaged-server.onrender.com`
+  }
 ⭐️ See sample requests: http://pris.ly/e/ts/rest-express#3-using-the-rest-api`)
 );
