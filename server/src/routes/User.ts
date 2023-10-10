@@ -1,11 +1,10 @@
-import { PrismaClient } from '@prisma/client';
-import express from 'express'
-import { generateSalt, hashPassword } from '../utils/security';
-
+import { PrismaClient } from "@prisma/client";
+import express from "express";
+import { generateSalt, hashPassword } from "../utils/security";
 
 export const userRouter = express.Router();
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
 // userRouter.get("/", (req, res) => {
 //   res.send("Hello World!");
@@ -13,9 +12,8 @@ const prisma = new PrismaClient()
 
 userRouter.get("/info", async (req, res) => {
   try {
-    
     const logged_in_user = req.headers?.["x-access-user"] as any;
-    
+
     // TODO: to remove after testing
     const getRole = (email: string) => {
       if (email === "superadmin@email.com") return "SA";
@@ -62,12 +60,17 @@ userRouter.get("/info", async (req, res) => {
       });
     }
 
-    const { password, ...userWithoutPassword } = user;
+    if (user) {
+      const { password, ...userWithoutPassword } = user;
 
-    res.status(200).json({
-      user: userWithoutPassword,
-    });
+      res.status(200).json({
+        user: userWithoutPassword,
+      });
+    } else {
+      res.status(400).send("Error getting user info");
+    }
   } catch (error) {
     console.error(error);
+    res.status(400).send("Error getting user info");
   }
 });
