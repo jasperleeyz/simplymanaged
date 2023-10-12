@@ -20,15 +20,19 @@ const extractFilterObject = (filter: string) => {
   let filterObject = {};
   if (filter) {
     // split filter by comma
-    const filterArray = filter.split(",");
+    const filterArray = filter.split("),");
 
     filterArray.forEach((filterItem) => {
       // remove last ')' character
       filterItem = filterItem.replace(")", "");
-      // split order and sort info by '('
+      // split filter info by '('
       const filterItemArray = filterItem.split("(");
+
+      const filterPair = filterItemArray[1].split(",");
+
+
       // add to sort object
-      filterObject = { ...filterObject, [filterItemArray[0]]: filterItemArray[1].toLocaleUpperCase() };
+      filterObject = { ...filterObject, [filterPair[0]]: { [filterItemArray[0]]: filterPair[1].toLocaleUpperCase() } };
     });
   }
   return filterObject;

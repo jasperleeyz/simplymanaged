@@ -10,8 +10,8 @@ const SysAdminRoutes = () => {
         <Routes>
             <Route path="/" element={<EmployeesPage />} />
             <Route path={`/${PATHS.ADD_EMPLOYEE}`} element={<EmployeesAddPage />} />
-            <Route path={`/${PATHS.EDIT_PROFILE}`} element={<EmployeesEditPage />} />
-            <Route path={`/${PATHS.VIEW_EMPLOYEE}`} element={<EmployeesViewPage />} />
+            <Route path={`/${PATHS.EDIT_PROFILE}/:id`} element={<EmployeesEditPage />} />
+            <Route path={`/${PATHS.VIEW_EMPLOYEE}/:id`} element={<EmployeesViewPage />} />
 
         </Routes>
     );

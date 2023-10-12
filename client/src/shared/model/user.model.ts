@@ -4,23 +4,23 @@ import { IUserSchedule } from "./schedule.model";
 
 interface IUser {
     id: number;
-    companyId: number;
+    company_id: number;
     fullname: string;
     email: string;
-    contactNo: string;
+    contact_no: string;
     role: string;
     position: string;
-    profileImage?: string;
+    profile_image?: string;
     status?: string;
-    createdBy?: string;
-    createdDate?: Date;
-    updatedBy?: string;
-    updatedDate?: Date;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
     preferences?: IUserPreference[]; 
     department?: IDepartment;
     company?: ICompany;
-    headOfDepartment?: IDepartment;
-    employmentDetails?: IEmployementDetails;
+    head_of_department?: IDepartment;
+    employment_details?: IEmployementDetails;
     schedules?: IUserSchedule[];
     requests?: IRequest[];
 }
@@ -30,19 +30,19 @@ export default IUser;
 
 export interface IUserPreference {
     id: number;
-    userId: number;
-    userCompanyId: number;
+    user_id: number;
+    user_company_id: number;
     module: string;
     preference: string;
-    createdBy?: string;
-    createdDate?: Date;
-    updatedBy?: string;
-    updatedDate?: Date;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
 }
 
 export interface IEmployementDetails {
-    userId: number;
-    userCompanyId: number;
-    workingHours: number;
-    employmentType: string;
+    user_id: number;
+    user_company_id: number;
+    working_hours: number;
+    employment_type: string;
 }

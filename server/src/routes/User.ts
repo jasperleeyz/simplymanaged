@@ -1,14 +1,12 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateSalt, hashPassword } from "../utils/security";
+import { generateFindObject, generateResultJson } from "../utils/utils";
 
 export const userRouter = express.Router();
 
 const prisma = new PrismaClient();
 
-// userRouter.get("/", (req, res) => {
-//   res.send("Hello World!");
-// });
 
 userRouter.get("/info", async (req, res) => {
   try {
@@ -72,5 +70,29 @@ userRouter.get("/info", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(400).send("Error getting user info");
+  }
+});
+
+userRouter.get("/:company_id", async (req, res) => {
+  const { company_id } = req.params;
+  const { page, size, sort, filter } = req.query;
+
+  try {
+    const findObject = generateFindObject(page, size, sort, filter);
+    findObject.where = { ...findObject.where, company_id: Number(company_id) };
+
+    const users = await prisma.$transaction([
+      prisma.user.count(...findObject.where),
+      prisma.user.findMany(findObject),
+    ]);
+
+    const usersWithoutPassword = users[1].map((user) => {
+      const { password, ...userWithoutPassword } = user;
+      return userWithoutPassword;
+    });
+
+    res.status(200).json(generateResultJson(usersWithoutPassword, users[0], page, size));
+  } catch (error) {
+    res.status(400).send("Error getting users.");
   }
 });

@@ -15,7 +15,7 @@ registrationRouter.get("/", async (req, res) => {
   const findObject = generateFindObject(page, size, sort, filter);
 
   const registrations = await prisma.$transaction([
-    prisma.registration.count(),
+    prisma.registration.count(...findObject.where),
     prisma.registration.findMany(findObject),
   ]);
 

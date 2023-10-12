@@ -1,4 +1,10 @@
-import { Button, Pagination, Spinner, Table } from "flowbite-react";
+import {
+  Button,
+  CustomFlowbiteTheme,
+  Pagination,
+  Spinner,
+  Table,
+} from "flowbite-react";
 import React from "react";
 import { IRegistration } from "../../../shared/model/company.model";
 import { IApplicationCode } from "../../../shared/model/application.model";
@@ -13,12 +19,25 @@ import {
 import { getAllCodes } from "../../../shared/api/code.api";
 import { toast } from "react-toastify";
 
+const customTableTheme: CustomFlowbiteTheme["table"] = {
+  root: {
+    base: "min-w-full text-left text-sm text-gray-500 dark:text-gray-400",
+    shadow:
+      "absolute bg-white dark:bg-black h-full top-0 left-0 rounded-lg drop-shadow-md -z-10",
+    wrapper: "relative",
+  },
+};
+
 const ViewRegistration = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
-  const [currentPage, setCurrentPage] = React.useState(location?.state?.page || 1);
-  const [sizePerPage, setSizePerPage] = React.useState(location?.state?.sizePerPage || 10);
+
+  const [currentPage, setCurrentPage] = React.useState(
+    location?.state?.page || 1
+  );
+  const [sizePerPage, setSizePerPage] = React.useState(
+    location?.state?.sizePerPage || 10
+  );
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
@@ -66,7 +85,7 @@ const ViewRegistration = () => {
           <Table.Cell>{registration.company_name}</Table.Cell>
           <Table.Cell>{registration.industry}</Table.Cell>
           <Table.Cell>
-          {codeList.find(
+            {codeList.find(
               (code) => Number(code.code) === registration.no_of_employees
             )?.description || registration.no_of_employees}
           </Table.Cell>
@@ -74,7 +93,9 @@ const ViewRegistration = () => {
             <Button
               size="sm"
               onClick={() => {
-                navigate(`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}/${registration.id}`);
+                navigate(
+                  `/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}/${registration.id}`
+                );
               }}
             >
               View
@@ -112,7 +133,7 @@ const ViewRegistration = () => {
         undefined,
         undefined,
         undefined,
-        "code_type(no_of_employees)"
+        "equals(code_type,no_of_employees)"
       ).then((res) => {
         setCodeList(res.data);
       }),
@@ -120,7 +141,10 @@ const ViewRegistration = () => {
   }, []);
 
   React.useEffect(() => {
-    if (currentPage !== location?.state?.page || sizePerPage !== location?.state?.sizePerPage) {
+    if (
+      currentPage !== location?.state?.page ||
+      sizePerPage !== location?.state?.sizePerPage
+    ) {
       location.state = {
         ...location.state,
         page: currentPage,
@@ -132,25 +156,27 @@ const ViewRegistration = () => {
   return (
     <div id="registration-main">
       <p className="header">Registrations</p>
-      <Table striped>
-        <Table.Head>
-          <Table.HeadCell>Company</Table.HeadCell>
-          <Table.HeadCell>Industry</Table.HeadCell>
-          <Table.HeadCell>No. of Employees</Table.HeadCell>
-          <Table.HeadCell></Table.HeadCell>
-        </Table.Head>
-        <Table.Body>
-          {loading ? (
-            <Table.Row>
-              <Table.Cell colSpan={4} className="text-center">
-                <Spinner size="xl" />
-              </Table.Cell>
-            </Table.Row>
-          ) : (
-            generateBody()
-          )}
-        </Table.Body>
-      </Table>
+      <div className="overflow-x-auto">
+        <Table striped theme={customTableTheme}>
+          <Table.Head>
+            <Table.HeadCell>Company</Table.HeadCell>
+            <Table.HeadCell>Industry</Table.HeadCell>
+            <Table.HeadCell>No. of Employees</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body>
+            {loading ? (
+              <Table.Row>
+                <Table.Cell colSpan={4} className="text-center">
+                  <Spinner size="xl" />
+                </Table.Cell>
+              </Table.Row>
+            ) : (
+              generateBody()
+            )}
+          </Table.Body>
+        </Table>
+      </div>
       <div className="flex mt-4 text-center justify-center items-center">
         <Pagination
           currentPage={currentPage}

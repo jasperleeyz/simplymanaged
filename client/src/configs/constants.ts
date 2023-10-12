@@ -39,6 +39,7 @@ export const PATHS = {
   EMPLOYEES: "employees",
   ADD_EMPLOYEE: "add",
   VIEW_EMPLOYEE: "view",
+  EDIT_EMPLOYEE: "edit",
 
   CODE: "code",
   VIEW_CODE: "view",
@@ -72,6 +73,13 @@ export const REGISTRATION_STATUS = {
 };
 
 export const CODE_STATUS = {
+  ACTIVE: "A",
+  INACTIVE: "I",
+  A: "ACTIVE",
+  I: "INACTIVE",
+};
+
+export const USER_STATUS = {
   ACTIVE: "A",
   INACTIVE: "I",
   A: "ACTIVE",

@@ -9,7 +9,7 @@ import { DATE, PATHS } from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import ApproveButton from "../../shared/layout/buttons/approve-button";
 import RejectButton from "../../shared/layout/buttons/reject-button";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 const Requests = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -32,7 +32,7 @@ const Requests = () => {
       requests: prev.requests?.map((r) => (r.id === req.id ? req : r)),
     }));
 
-    toast.success(`Successfully ${status} request`)
+    toast.success(`Successfully ${status} request`);
   };
 
   // load initial request data TODO: replace with API call
@@ -137,16 +137,16 @@ const Requests = () => {
             )}
           </Table.Body>
         </Table>
-        <div className="flex mt-4 text-center justify-center items-center">
-          <Pagination
-            currentPage={1}
-            onPageChange={(page) => {
-              setCurrentPage(page);
-            }}
-            showIcons
-            totalPages={1}
-          />
-        </div>
+      </div>
+      <div className="flex mt-4 text-center justify-center items-center">
+        <Pagination
+          currentPage={1}
+          onPageChange={(page) => {
+            setCurrentPage(page);
+          }}
+          showIcons
+          totalPages={1}
+        />
       </div>
     </div>
   );
