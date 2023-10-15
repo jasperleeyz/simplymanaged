@@ -3,13 +3,12 @@
 import React from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Avatar, Button, FileInput, Label, TextInput } from "flowbite-react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Avatar, Button, FileInput, Label } from "flowbite-react";
+import { useNavigate, useParams } from "react-router-dom";
 import { MAX_PROFILE_IMAGE_SIZE, PATHS } from "../../configs/constants";
 import LabeledTextInput from "../../shared/layout/form/labeled-text-input";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import { toast } from "react-toastify";
-import { createUpdateCodes, getCodeById } from "../../shared/api/code.api";
 import BackButton from "../../shared/layout/buttons/back-button";
 import { ICompanyCode } from "../../shared/model/company.model";
 import { GlobalStateContext } from "../../configs/global-state-provider";
@@ -17,7 +16,11 @@ import { addEmployee, getAllEmployees } from "../../shared/api/user.api";
 import { getAllCompanyCodes } from "../../shared/api/company-code.api";
 import IUser from "../../shared/model/user.model";
 
-const UserSchema = (roleList: ICompanyCode[], positionList: ICompanyCode[], employmentTypeList: ICompanyCode[]) =>
+const UserSchema = (
+  roleList: ICompanyCode[],
+  positionList: ICompanyCode[],
+  employmentTypeList: ICompanyCode[]
+) =>
   Yup.object().shape({
     fullname: Yup.string().required("Field is required"),
     email: Yup.string()
@@ -27,35 +30,46 @@ const UserSchema = (roleList: ICompanyCode[], positionList: ICompanyCode[], empl
       .matches(/^\d{8}$/, "Contact number must be 8 digits")
       .required("Field is required"),
     role: Yup.string()
-      .test("within-list", "Invalid role", (value) => 
-        roleList.find((role) => role.code === value) ? true : false)
+      .test("within-list", "Invalid role", (value) =>
+        roleList.find((role) => role.code === value) ? true : false
+      )
       .required("Field is required"),
     position: Yup.string()
       .test("within-list", "Invalid position", (value) =>
-        positionList.find((position) => position.code === value) ? true : false)
+        positionList.find((position) => position.code === value) ? true : false
+      )
       .required("Field is required"),
     status: Yup.string().required("Field is required"),
-    profile_image: Yup.mixed(),
     employment_details: Yup.object().shape({
       employment_type: Yup.string()
         .test("within-list", "Invalid employment type", (value) =>
-          employmentTypeList.find((employmentType) => employmentType.code === value) ? true : false)
-        .required("Field is required"),
+          employmentTypeList.find(
+            (employmentType) => employmentType.code === value
+          )
+            ? true
+            : false
+        )
+        .required("Field is required")
+        .nonNullable(),
       working_hours: Yup.string()
-        .matches(/^\d{1,2}(\.\d{1,2})?$/, "Please enter valid number (eg. 42, 42.5)")
-        .required("Field is required"),
+        .matches(
+          /^\d{1,2}(\.\d{1,2})?$/,
+          "Please enter valid number (eg. 42, 42.5)"
+        )
+        .required("Field is required")
+        .nonNullable(),
     }),
   });
 
 const AddOrEditUser = () => {
-  const { globalState } = React.useContext(GlobalStateContext);
+  const loggedin_user = React.useContext(GlobalStateContext).globalState?.user;
   const navigate = useNavigate();
   const id = useParams()?.id;
 
   const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
   const [initialValues, setInitialValues] = React.useState<IUser>({
     id: 0,
-    company_id: globalState?.user?.company_id || 0,
+    company_id: loggedin_user?.company_id || 0,
     fullname: "",
     email: "",
     contact_no: "",
@@ -65,7 +79,7 @@ const AddOrEditUser = () => {
     profile_image: undefined,
     employment_details: {
       user_id: 0,
-      user_company_id: globalState?.user?.company_id || 0,
+      user_company_id: loggedin_user?.company_id || 0,
       employment_type: "",
       working_hours: "",
     },
@@ -73,7 +87,7 @@ const AddOrEditUser = () => {
 
   React.useEffect(() => {
     getAllCompanyCodes(
-      globalState?.user?.company_id || 0,
+      loggedin_user?.company_id || 0,
       undefined,
       undefined,
       undefined,
@@ -88,14 +102,22 @@ const AddOrEditUser = () => {
 
     if (id) {
       getAllEmployees(
-        globalState?.user?.company_id || 0,
+        loggedin_user?.company_id || 0,
         undefined,
         undefined,
         undefined,
         `equals(id,${id})`
       )
         .then((res) => {
-          setInitialValues(res.data);
+          if(res.data[0].employment_details === null) {
+            res.data[0].employment_details = {
+              user_id: res.data[0].id,
+              user_company_id: res.data[0].company_id,
+              employment_type: "",
+              working_hours: "",
+            };
+          }
+          setInitialValues(res.data[0]);
         })
         .catch((err) => {
           toast.error(err, { toastId: id });
@@ -113,7 +135,6 @@ const AddOrEditUser = () => {
         onSubmit={async (values, { setSubmitting }) => {
           setSubmitting(true);
           try {
-            console.log(values);
             await addEmployee(values).then(() => {
               toast.success(
                 `Employee ${!id ? "created" : "details updated"} successfully`
@@ -131,9 +152,10 @@ const AddOrEditUser = () => {
           }
         }}
         validationSchema={UserSchema(
-          codeList.filter((code) => code.code_type === "role") || [], 
-          codeList.filter((code) => code.code_type === "position") || [], 
-          codeList.filter((code) => code.code_type === "employment_type") || [])}
+          codeList.filter((code) => code.code_type === "role") || [],
+          codeList.filter((code) => code.code_type === "position") || [],
+          codeList.filter((code) => code.code_type === "employment_type") || []
+        )}
       >
         {(props) => (
           <form onSubmit={props.handleSubmit} className="md:w-1/2 mx-auto">
@@ -155,15 +177,12 @@ const AddOrEditUser = () => {
                             MAX_PROFILE_IMAGE_SIZE / (1024 * 1024)
                           }MB`
                         );
-                        console.log(props.errors.profile_image);
-                        console.log(props.touched.profile_image);
                         return;
                       }
 
                       if (
                         !e.target.files[0].type.match(/image\/(png|jpg|jpeg)/)
                       ) {
-                        console.log("HELLO");
                         props.setFieldError(
                           "profile_image",
                           `File type should be png, jpg or jpeg`
@@ -173,7 +192,6 @@ const AddOrEditUser = () => {
 
                       const reader = new FileReader();
                       reader.onload = (evt) => {
-                        console.log("hello");
                         props.setFieldValue(
                           "profile_image",
                           evt.target?.result
@@ -277,13 +295,15 @@ const AddOrEditUser = () => {
                 }
               >
                 <option value="" />
-                {codeList.filter((code) => code.code_type === "role").map((code, idx) => {
-                  return (
-                    <option key={idx} value={code.code}>
-                      {code.description}
-                    </option>
-                  );
-                })}
+                {codeList
+                  .filter((code) => code.code_type === "role")
+                  .map((code, idx) => {
+                    return (
+                      <option key={idx} value={code.code}>
+                        {code.description}
+                      </option>
+                    );
+                  })}
               </LabeledSelect>
               <LabeledSelect
                 id="position"
@@ -304,13 +324,15 @@ const AddOrEditUser = () => {
                 }
               >
                 <option value="" />
-                {codeList.filter((code) => code.code_type === "position").map((code, idx) => {
-                  return (
-                    <option key={idx} value={code.code}>
-                      {code.description}
-                    </option>
-                  );
-                })}
+                {codeList
+                  .filter((code) => code.code_type === "position")
+                  .map((code, idx) => {
+                    return (
+                      <option key={idx} value={code.code}>
+                        {code.description}
+                      </option>
+                    );
+                  })}
                 <option value="other">Other</option>
               </LabeledSelect>
               <LabeledSelect
@@ -338,13 +360,15 @@ const AddOrEditUser = () => {
                 }
               >
                 <option value="" />
-                {codeList.filter((code) => code.code_type === "employment_type").map((code, idx) => {
-                  return (
-                    <option key={idx} value={code.code}>
-                      {code.description}
-                    </option>
-                  );
-                })}
+                {codeList
+                  .filter((code) => code.code_type === "employment_type")
+                  .map((code, idx) => {
+                    return (
+                      <option key={idx} value={code.code}>
+                        {code.description}
+                      </option>
+                    );
+                  })}
                 <option value="other">Other</option>
               </LabeledSelect>
               <LabeledTextInput

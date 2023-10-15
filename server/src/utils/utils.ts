@@ -30,14 +30,22 @@ const extractFilterObject = (filter: string) => {
       // split filter pair by first ','
       const [filterColumn, ...filterCriteria] = filterCriteriaString.split(",");
       const filterCriterias = filterCriteria.map((filterCriteria) => {
-        filterCriteria = filterCriteria.replace("[", "").replace("]", "").toLocaleUpperCase();
+        filterCriteria = filterCriteria
+          .replace("[", "")
+          .replace("]", "")
+          .toLocaleUpperCase();
         return filterCriteria;
       });
       // add to sort object
       filterObject = {
         ...filterObject,
         [filterColumn]: {
-          [filterCondition]: (filterCondition === "in" || filterCondition === "notIn") ? filterCriterias : filterCriterias[0],
+          [filterCondition]:
+            filterCondition === "in" || filterCondition === "notIn"
+              ? filterCriterias
+              : filterColumn === "id"
+              ? Number(filterCriterias[0])
+              : filterCriterias[0],
         },
       };
     });

@@ -81,6 +81,7 @@ userRouter.get("/:company_id", async (req, res) => {
   try {
     const findObject = generateFindObject(page, size, sort, filter);
     findObject.where = { ...findObject.where, company_id: Number(company_id) };
+    findObject.include = { employment_details: true, preferences: true };
 
     const users = await prisma.$transaction([
       prisma.user.count(...findObject.where),
@@ -89,7 +90,7 @@ userRouter.get("/:company_id", async (req, res) => {
 
     const usersWithoutPassword = users[1].map((user) => {
       const { password, ...userWithoutPassword } = user;
-      userWithoutPassword.profile_image = userWithoutPassword?.profile_image?.toString() as any;
+      userWithoutPassword.profile_image = userWithoutPassword?.profile_image?.toString() as any || null;
       return userWithoutPassword;
     });
 
@@ -97,6 +98,7 @@ userRouter.get("/:company_id", async (req, res) => {
       .status(200)
       .json(generateResultJson(usersWithoutPassword, users[0], page, size));
   } catch (error) {
+    console.error(error);
     res.status(400).send("Error getting users.");
   }
 });
