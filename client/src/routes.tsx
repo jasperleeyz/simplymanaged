@@ -6,12 +6,12 @@ import ScheduleRoutes from "./modules/schedule";
 import RequestRoutes from "./modules/request";
 import PageNotFound from "./shared/error/page-not-found";
 import ProfileRoutes from "./modules/profile";
-import SysAdminRoutes from "./modules/sysadmin";
 import { PATHS, ROLES } from "./configs/constants";
 import PrivateRoute from "./shared/auth/private-route";
 import Login from "./shared/auth/login";
 import RegistrationRoutes from "./modules/registration";
 import CodeManagementRoutes from "./modules/code-management";
+import EmployeeManagementRoutes from "./modules/employee-management";
 
 const AppRoutes = () => {
   return (
@@ -64,7 +64,7 @@ const AppRoutes = () => {
             path={`/${PATHS.EMPLOYEES}/*`}
             element={
               <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
-                <SysAdminRoutes />
+                <EmployeeManagementRoutes />
               </PrivateRoute>
             }
           />

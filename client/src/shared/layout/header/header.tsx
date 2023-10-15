@@ -62,7 +62,7 @@ const Header = () => {
                 label={
                   <Avatar
                     alt="User settings"
-                    img={globalState?.user?.profileImage}
+                    img={globalState?.user?.profile_image}
                     rounded
                     className="mr-3"
                   />

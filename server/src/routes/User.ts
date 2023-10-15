@@ -7,7 +7,6 @@ export const userRouter = express.Router();
 
 const prisma = new PrismaClient();
 
-
 userRouter.get("/info", async (req, res) => {
   try {
     const logged_in_user = req.headers?.["x-access-user"] as any;
@@ -56,9 +55,11 @@ userRouter.get("/info", async (req, res) => {
           email: logged_in_user?.email,
         },
       });
+
     }
 
     if (user) {
+      user.profile_image = user.profile_image?.toString() as string;
       const { password, ...userWithoutPassword } = user;
 
       res.status(200).json({
@@ -88,11 +89,151 @@ userRouter.get("/:company_id", async (req, res) => {
 
     const usersWithoutPassword = users[1].map((user) => {
       const { password, ...userWithoutPassword } = user;
+      userWithoutPassword.profile_image = userWithoutPassword?.profile_image?.toString() as any;
       return userWithoutPassword;
     });
 
-    res.status(200).json(generateResultJson(usersWithoutPassword, users[0], page, size));
+    res
+      .status(200)
+      .json(generateResultJson(usersWithoutPassword, users[0], page, size));
   } catch (error) {
     res.status(400).send("Error getting users.");
+  }
+});
+
+userRouter.post("/create", async (req, res) => {
+  try {
+    const logged_in_user = req.headers?.["x-access-user"] as any;
+
+    // generate password
+    const password = "password"; // TODO: to replace with random password generator
+    const hashedPassword = hashPassword(password, generateSalt());
+
+    const {
+      email,
+      fullname,
+      contact_no,
+      position,
+      role,
+      status,
+      employment_details,
+      profile_image,
+      company_id,
+    } = req.body;
+
+    const user = await prisma.$transaction(async (tx) => {
+      const existingUser = await tx.user.findFirst({
+        where: {
+          company_id: company_id,
+        },
+        orderBy: {
+          id: "desc",
+        },
+        select: { id: true },
+      });
+
+      return await tx.user.create({
+        data: {
+          id: existingUser ? existingUser.id + 1 : 1,
+          company_id: company_id,
+          email: email,
+          password: hashedPassword,
+          role: role,
+          fullname: fullname,
+          contact_no: Number(contact_no),
+          position: position,
+          status: status,
+          employment_details: {
+            connectOrCreate: {
+              where: {
+                user_id_user_company_id: {
+                  user_id: existingUser ? existingUser.id + 1 : 1,
+                  user_company_id: company_id,
+                },
+                employment_type: employment_details.employment_type,
+                working_hours: Number(employment_details.working_hours),
+              },
+              create: {
+                working_hours: Number(employment_details.working_hours),
+                employment_type: employment_details.employment_type,
+              },
+            },
+          },
+          profile_image: Buffer.from(profile_image),
+          created_by: logged_in_user["name"],
+          updated_by: logged_in_user["name"],
+        },
+      });
+    });
+
+    const { password: userPassword, ...userWithoutPassword } = user;
+
+    res.status(200).json({
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error creating user.");
+  }
+});
+
+userRouter.post("/update", async (req, res) => {
+  const {
+    number: id,
+    number: company_id,
+    string: email,
+    string: fullname,
+    string: contact_no,
+    string: position,
+    string: role,
+    string: status,
+    any: employment_details,
+    any: preferences,
+    string: profile_image,
+  } = req.body;
+
+  const logged_in_user = req.headers?.["x-access-user"] as any;
+
+  try {
+    // if(employment_details) {
+    //   await prisma.user.update({
+    //     where: {
+    //       id: id,
+    //       id_company_id: company_id,
+    //     },
+    //     data: {
+    //       employment_details: employment_details,
+    //     },
+    // });
+
+    const user = await prisma.user.update({
+      where: {
+        id: id,
+        id_company_id: company_id,
+      },
+      data: {
+        id: id,
+        company_id: company_id,
+        email: email,
+        role: role,
+        fullname: fullname,
+        contact_no: Number(contact_no),
+        position: position,
+        status: status,
+        profile_image: profile_image,
+        employment_details: employment_details,
+        preferences: preferences,
+        updated_by: logged_in_user["name"],
+      },
+    });
+
+    const { password: userPassword, ...userWithoutPassword } = user;
+
+    res.status(200).json({
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error updating user.");
   }
 });

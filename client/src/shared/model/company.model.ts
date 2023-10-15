@@ -22,81 +22,81 @@ export interface ICompany {
     id: number;
     uen: string;
     name: string;
-    contactNo: string;
+    contact_no: string;
     email: string;
     address: string;
     industry: string;
-    noOfEmployees: number;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    no_of_employees: number;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
     subscriptions?: ISubscription[];
-    roleBasedAccessControls?: IRoleBasedAccessControl[];
+    role_based_access_controls?: IRoleBasedAccessControl[];
     departments?: IDepartment[];
     locations?: ICompanyLocation[];
-    rosterTemplates?: IRosterTemplate[];
+    roster_templates?: IRosterTemplate[];
     rosters?: IRoster[]; 
 }
 
 export interface ISubscription {
     id: number;
-    companyId: number;
+    company_id: number;
     type: string;
-    startDate: Date;
-    endDate: Date;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    start_date: Date;
+    end_date?: Date;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
 }
 
 export interface IDepartment {
     id: number;
-    companyId: number;
+    company_id: number;
     name: string;
-    departmentHead?: IUser;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    department_head?: IUser;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
     employees?: IUser[];
     rosters?: IRoster[];
 }
 
 export interface ICompanyCode {
     id: number;
-    companyId: number;
-    codeType: string;
+    company_id: number;
+    code_type: string;
     code: string;
     description: string;
     status: string;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
 }
 
 export interface ICompanyLocation {
     id: number;
-    companyId: number;
+    company_id: number;
     name: string;
     address: string;
-    postalCode?: string;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    postal_code?: string;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
 }
 
 export interface IRoleBasedAccessControl {
     id: number;
-    companyId: number;
+    company_id: number;
     role: string;
     module: string;
-    accessType: string;
-    createdBy: string;
-    createdDate: Date;
-    updatedBy: string;
-    updatedDate: Date;
+    access_type: string;
+    created_by: string;
+    created_date: Date;
+    updated_by: string;
+    updated_date: Date;
 }

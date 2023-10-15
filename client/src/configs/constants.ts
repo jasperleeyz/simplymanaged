@@ -85,3 +85,5 @@ export const USER_STATUS = {
   A: "ACTIVE",
   I: "INACTIVE",
 };
+
+export const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB

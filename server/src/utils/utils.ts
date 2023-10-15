@@ -26,19 +26,31 @@ const extractFilterObject = (filter: string) => {
       // remove last ')' character
       filterItem = filterItem.replace(")", "");
       // split filter info by '('
-      const filterItemArray = filterItem.split("(");
-
-      const filterPair = filterItemArray[1].split(",");
-
-
+      const [filterCondition, filterCriteriaString] = filterItem.split("(");
+      // split filter pair by first ','
+      const [filterColumn, ...filterCriteria] = filterCriteriaString.split(",");
+      const filterCriterias = filterCriteria.map((filterCriteria) => {
+        filterCriteria = filterCriteria.replace("[", "").replace("]", "").toLocaleUpperCase();
+        return filterCriteria;
+      });
       // add to sort object
-      filterObject = { ...filterObject, [filterPair[0]]: { [filterItemArray[0]]: filterPair[1].toLocaleUpperCase() } };
+      filterObject = {
+        ...filterObject,
+        [filterColumn]: {
+          [filterCondition]: (filterCondition === "in" || filterCondition === "notIn") ? filterCriterias : filterCriterias[0],
+        },
+      };
     });
   }
   return filterObject;
-}
+};
 
-export const generateFindObject = (page: any, size: any, sort: any, filter: any) => {
+export const generateFindObject = (
+  page: any,
+  size: any,
+  sort: any,
+  filter: any
+) => {
   const sortObject = extractSortObject(sort as string);
 
   const findObject = {
@@ -55,10 +67,14 @@ export const generateFindObject = (page: any, size: any, sort: any, filter: any)
   }
 
   return findObject;
-}
+};
 
-
-export const generateResultJson = (data: any, total?: any, page?: any, size?: any) => {
+export const generateResultJson = (
+  data: any,
+  total?: any,
+  page?: any,
+  size?: any
+) => {
   const result = {
     data: data,
   } as any;
@@ -70,4 +86,4 @@ export const generateResultJson = (data: any, total?: any, page?: any, size?: an
   }
 
   return result;
-}
+};

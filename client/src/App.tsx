@@ -5,7 +5,7 @@ import AppRoutes from "./routes";
 import Footer from "./shared/layout/footer/footer";
 import Header from "./shared/layout/header/header";
 import React from "react";
-import { GlobalStateContext } from "./configs/global-state-provider";
+import { GlobalStateContext, InitialGlobalState } from "./configs/global-state-provider";
 import "./configs/fetch-interceptor.js";
 
 function App() {
@@ -31,6 +31,16 @@ function App() {
             }));
           });
         }
+        else if (res.status === 401 || res.status === 403) {
+          sessionStorage.removeItem("bearerToken");
+          setGlobalState((prevState) => InitialGlobalState);
+          window.location.href = "/login";
+        }
+      })
+      .catch((err) => {
+        sessionStorage.removeItem("bearerToken");
+        setGlobalState((prevState) => InitialGlobalState);
+        window.location.href = "/login";
       });
     }
     

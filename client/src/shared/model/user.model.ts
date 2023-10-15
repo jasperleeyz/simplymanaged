@@ -43,6 +43,6 @@ export interface IUserPreference {
 export interface IEmployementDetails {
     user_id: number;
     user_company_id: number;
-    working_hours: number;
+    working_hours: string;
     employment_type: string;
 }

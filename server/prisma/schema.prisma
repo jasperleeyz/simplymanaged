@@ -188,6 +188,7 @@ model User {
   department_id        Int?
   password             String
   status               String
+  profile_image        Bytes?
   created_by           String
   created_date         DateTime           @default(now())
   updated_by           String
@@ -215,7 +216,7 @@ model UserPreference {
   created_date    DateTime @default(now())
   updated_by      String
   updated_date    DateTime @updatedAt
-  user            User     @relation("user_preferences", fields: [user_id, user_company_id], references: [id, company_id])
+  user            User     @relation("user_preferences", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@index([user_id, user_company_id])
 }
@@ -223,9 +224,9 @@ model UserPreference {
 model EmploymentDetails {
   user_id         Int
   user_company_id Int
-  working_hours   Int
+  working_hours   Decimal @db.Decimal(2, 2)
   employment_type String
-  user            User   @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id])
+  user            User   @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@id([user_id, user_company_id])
   @@index([user_id, user_company_id])

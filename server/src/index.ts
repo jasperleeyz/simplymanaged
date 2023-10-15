@@ -70,6 +70,17 @@ app.post(`/test/email`, async (req, res) => {
   }
 });
 
+app.post(`/test/encoding`, async (req, res) => {
+  try {
+    const buf = Buffer.from(req.body.profile_image);
+
+    res.status(200).send(buf.toString());
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error encoding.");
+  }
+});
+
 app.post(`/api/login`, async (req, res) => {
   console.info("In " + req.path);
   try {
@@ -136,6 +147,7 @@ app.post(`/api/login`, async (req, res) => {
 
       jwt.verify(token, process.env.JWT_SECRET);
 
+      user.profile_image = user?.profile_image?.toString() as string;
       const { password, ...userWithoutPassword } = user;
 
       res.status(200).json({

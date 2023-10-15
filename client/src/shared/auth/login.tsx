@@ -66,7 +66,6 @@ const Login = () => {
 
   React.useEffect(() => {
     if (isAuthenticated) {
-      console.log(location.state);
       navigate(
         location.state?.from || 
         getHomeLink(globalState?.user?.role || ""), { replace: true });
