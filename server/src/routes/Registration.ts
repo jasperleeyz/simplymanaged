@@ -2,7 +2,11 @@ import { PrismaClient, Registration } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { generateSalt, hashPassword } from "../utils/security";
-import { sendApprovedEmail, sendRegistrationEmail, sendRejectedEmail } from "../utils/email";
+import {
+  sendApprovedEmail,
+  sendRegistrationEmail,
+  sendRejectedEmail,
+} from "../utils/email";
 import { REGISTRATION_STATUS } from "../utils/constants";
 
 export const registrationRouter = express.Router();
@@ -12,40 +16,50 @@ const prisma = new PrismaClient();
 registrationRouter.get("/", async (req, res) => {
   const { page, size, sort, filter, cursor } = req.query;
 
-  const findObject = generateFindObject(page, size, sort, filter);
+  try {
+    const findObject = generateFindObject(page, size, sort, filter);
 
-  const registrations = await prisma.$transaction([
-    prisma.registration.count(...findObject.where),
-    prisma.registration.findMany(findObject),
-  ]);
+    const registrations = await prisma.$transaction([
+      prisma.registration.count(...findObject.where),
+      prisma.registration.findMany(findObject),
+    ]);
 
-  // create result object
-  const result = generateResultJson(
-    registrations[1],
-    registrations[0],
-    page,
-    size
-  );
+    // create result object
+    const result = generateResultJson(
+      registrations[1],
+      registrations[0],
+      page,
+      size
+    );
 
-  res.status(200).json(result);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error getting registrations.");
+  }
 });
 
 registrationRouter.get("/:id", async (req, res) => {
   const { id } = req.params;
 
-  const registration = await prisma.registration
-    .findFirstOrThrow({
-      where: {
-        id: Number(id),
-      },
-    })
-    .catch((error) => {
-      res.status(404).json({
-        message: `Registration details with ID ${id} does not exist in the database`,
+  try {
+    const registration = await prisma.registration
+      .findFirstOrThrow({
+        where: {
+          id: Number(id),
+        },
+      })
+      .catch((error) => {
+        res.status(404).json({
+          message: `Registration details with ID ${id} does not exist in the database`,
+        });
       });
-    });
 
-  res.status(200).json(generateResultJson(registration));
+    res.status(200).json(generateResultJson(registration));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error getting registration.");
+  }
 });
 
 registrationRouter.post("/", async (req, res) => {
@@ -67,7 +81,11 @@ registrationRouter.post("/", async (req, res) => {
     });
 
     // send registration email to registrant
-    await sendRegistrationEmail(registration_details.email, registration_details.registrant_name, registration_details.company_name);
+    await sendRegistrationEmail(
+      registration_details.email,
+      registration_details.registrant_name,
+      registration_details.company_name
+    );
 
     res.status(200).json(generateResultJson(new_registration));
   } catch (error) {
@@ -100,34 +118,44 @@ registrationRouter.post("/update", async (req, res) => {
     });
 
     // check if is approving registration
-    if (pending_registration && registration_details.approve_status === REGISTRATION_STATUS.APPROVED) {
+    if (
+      pending_registration &&
+      registration_details.approve_status === REGISTRATION_STATUS.APPROVED
+    ) {
       console.info(
         "Approving registration... creating company details and system admin account..."
       );
-      await approveRegistration(registration_details).then((res) => {
-        sendApprovedEmail(
-          res.username,
-          res.user,
-          res.company,
-          { username: res.username, password: res.password }
-        );
-      }).catch((error) => {
-        // revert registration status to pending
-        updated_registration.approve_status = REGISTRATION_STATUS.PENDING;
-        prisma.registration.update({
-          where: {
-            id: registration_details.id,
-          },
-          data: updated_registration,
-        });
+      await approveRegistration(registration_details)
+        .then((res) => {
+          sendApprovedEmail(res.username, res.user, res.company, {
+            username: res.username,
+            password: res.password,
+          });
+        })
+        .catch((error) => {
+          // revert registration status to pending
+          updated_registration.approve_status = REGISTRATION_STATUS.PENDING;
+          prisma.registration.update({
+            where: {
+              id: registration_details.id,
+            },
+            data: updated_registration,
+          });
 
-        res.status(400).send(error);
-        return;
-      });
-    } 
+          res.status(400).send(error);
+          return;
+        });
+    }
     // check if is rejecting registration
-    else if (pending_registration && registration_details.approve_status === REGISTRATION_STATUS.REJECTED) {
-      await sendRejectedEmail(registration_details.email, registration_details.registrant_name, registration_details.company_name);
+    else if (
+      pending_registration &&
+      registration_details.approve_status === REGISTRATION_STATUS.REJECTED
+    ) {
+      await sendRejectedEmail(
+        registration_details.email,
+        registration_details.registrant_name,
+        registration_details.company_name
+      );
     }
 
     res.status(200).json(generateResultJson(updated_registration));
@@ -147,10 +175,10 @@ const approveRegistration = async (registration_details: Registration) => {
     });
 
     // throw error if company already exists
-    if(existing_company) {
+    if (existing_company) {
       throw new Error("Company already exists");
     }
-    
+
     // create new company
     const new_company = {
       uen: registration_details.uen_id,

@@ -9,15 +9,20 @@ const prisma = new PrismaClient();
 codeTypeRouter.get("/", async (req, res) => {
   const { page, size, sort, filter, cursor } = req.query;
 
-  const findObject = generateFindObject(page, size, sort, filter);
+  try {
+    const findObject = generateFindObject(page, size, sort, filter);
 
-  const codeTypes = await prisma.$transaction([
-    prisma.codeType.count(...findObject.where),
-    prisma.codeType.findMany(findObject),
-  ]);
+    const codeTypes = await prisma.$transaction([
+      prisma.codeType.count(...findObject.where),
+      prisma.codeType.findMany(findObject),
+    ]);
 
-  // create result object
-  const result = generateResultJson(codeTypes[1], codeTypes[0], page, size);
+    // create result object
+    const result = generateResultJson(codeTypes[1], codeTypes[0], page, size);
 
-  res.status(200).json(result);
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving code types.");
+  }
 });
