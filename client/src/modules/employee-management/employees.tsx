@@ -13,7 +13,10 @@ import { HiUserAdd } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PATHS, USER_STATUS } from "../../configs/constants";
 import IUser from "../../shared/model/user.model";
-import { getAllEmployees } from "../../shared/api/user.api";
+import { getAllEmployees, updateEmployee } from "../../shared/api/user.api";
+import DeactivateButton from "../../shared/layout/buttons/deactivate-button";
+import EditButton from "../../shared/layout/buttons/edit-button";
+import ActivateButton from "../../shared/layout/buttons/activate-button";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -66,22 +69,22 @@ const EmployeesPage = () => {
     // setFilteredEmployees(filtered);
     // setCurrentPage(1);
     // if (searchTerm !== "") {
-      setLoading((prev) => true);
-      getAllEmployees(
-        globalState?.user?.company_id || 0,
-        1,
-        sizePerPage,
-        undefined,
-        searchTerm ? `contains(fullname,${searchTerm})` : undefined
-      )
-        .then((res) => {
-          setEmployeeList(res.data);
-          setTotalPages(res.totalPages);
-          setCurrentPage((prev) => 1);
-        })
-        .finally(() => {
-          setLoading((prev) => false);
-        });
+    setLoading((prev) => true);
+    getAllEmployees(
+      globalState?.user?.company_id || 0,
+      1,
+      sizePerPage,
+      undefined,
+      searchTerm ? `contains(fullname,${searchTerm})` : undefined
+    )
+      .then((res) => {
+        setEmployeeList(res.data);
+        setTotalPages(res.totalPages);
+        setCurrentPage((prev) => 1);
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+      });
     // }
   }, [searchTerm]);
 
@@ -97,6 +100,31 @@ const EmployeesPage = () => {
       };
     }
   }, [currentPage, sizePerPage]);
+
+  const updateStatus = (employee: IUser, status: string) => {
+    // setActionLoading((prev) => [...prev, employee.id]);
+    updateEmployee({ ...employee, status })
+      .then((res) => {
+        toast.success(
+          `Employee ${
+            status === USER_STATUS.ACTIVE ? "activated" : "deactivated"
+          } successfully!`
+        );
+        setEmployeeList((prev) =>
+          prev.map((c) => ((c.id === res.data.id && c.company_id === res.data.company_id) ? res.data : c))
+        );
+      })
+      .catch((err) => {
+        toast.error(
+          `Error ${
+            status === USER_STATUS.ACTIVE ? "activating" : "deactivating"
+          } employee`
+        );
+      })
+      .finally(() => {
+        // setActionLoading((prev) => prev.filter((id) => id !== code.id));
+      });
+  };
 
   const generateBody = () => {
     if (employeeList.length === 0) {
@@ -133,21 +161,22 @@ const EmployeesPage = () => {
           <Button
             size="sm"
             onClick={() => {
-              navigate(`/${PATHS.EMPLOYEES}/${PATHS.EDIT_EMPLOYEE}/${emp.id}`);
-              localStorage.setItem("editEmployee", JSON.stringify(emp));
-            }}
-          >
-            Edit
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
               navigate(`/${PATHS.EMPLOYEES}/${PATHS.VIEW_EMPLOYEE}/${emp.id}`);
-              localStorage.setItem("viewEmployee", JSON.stringify(emp));
             }}
           >
             View
           </Button>
+          <EditButton
+            size="sm"
+            onClick={() => {
+              navigate(`/${PATHS.EMPLOYEES}/${PATHS.EDIT_EMPLOYEE}/${emp.id}`);
+            }}
+          />
+          {emp.status === USER_STATUS.ACTIVE ? (
+            <DeactivateButton size="sm" onClick={() => updateStatus(emp, USER_STATUS.INACTIVE)} />
+          ) : (
+            <ActivateButton size="sm" onClick={() => updateStatus(emp, USER_STATUS.ACTIVE)} />
+          )}
         </Table.Cell>
       </Table.Row>
     ));

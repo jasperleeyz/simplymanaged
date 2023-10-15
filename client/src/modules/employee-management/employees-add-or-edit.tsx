@@ -10,16 +10,17 @@ import LabeledTextInput from "../../shared/layout/form/labeled-text-input";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import { toast } from "react-toastify";
 import BackButton from "../../shared/layout/buttons/back-button";
-import { ICompanyCode } from "../../shared/model/company.model";
+import { ICompanyCode, IDepartment } from "../../shared/model/company.model";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { addEmployee, getAllEmployees } from "../../shared/api/user.api";
+import { addEmployee, getAllEmployees, updateEmployee } from "../../shared/api/user.api";
 import { getAllCompanyCodes } from "../../shared/api/company-code.api";
 import IUser from "../../shared/model/user.model";
 
 const UserSchema = (
   roleList: ICompanyCode[],
   positionList: ICompanyCode[],
-  employmentTypeList: ICompanyCode[]
+  employmentTypeList: ICompanyCode[],
+  departmentList: IDepartment[]
 ) =>
   Yup.object().shape({
     fullname: Yup.string().required("Field is required"),
@@ -40,6 +41,11 @@ const UserSchema = (
       )
       .required("Field is required"),
     status: Yup.string().required("Field is required"),
+    department_id: Yup.string()
+      .test("within-list", "Invalid department", (value) =>
+        departmentList.find((department) => department.id === Number(value)) ? true : false
+      )
+      .required("Field is required"),
     employment_details: Yup.object().shape({
       employment_type: Yup.string()
         .test("within-list", "Invalid employment type", (value) =>
@@ -67,6 +73,7 @@ const AddOrEditUser = () => {
   const id = useParams()?.id;
 
   const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
+  const [departmentList, setDepartmentList] = React.useState<IDepartment[]>([]);
   const [initialValues, setInitialValues] = React.useState<IUser>({
     id: 0,
     company_id: loggedin_user?.company_id || 0,
@@ -77,6 +84,7 @@ const AddOrEditUser = () => {
     position: "",
     status: "A",
     profile_image: undefined,
+    department_id: 0,
     employment_details: {
       user_id: 0,
       user_company_id: loggedin_user?.company_id || 0,
@@ -135,12 +143,22 @@ const AddOrEditUser = () => {
         onSubmit={async (values, { setSubmitting }) => {
           setSubmitting(true);
           try {
+            if(!id) {
             await addEmployee(values).then(() => {
               toast.success(
-                `Employee ${!id ? "created" : "details updated"} successfully`
+                `Employee created successfully`
               );
               navigate(`..`);
             });
+            } else {
+              console.log(values);
+              await updateEmployee(values).then(() => {
+                toast.success(
+                  `Employee details updated successfully`
+                );
+                navigate(`..`);
+              });
+            }
           } catch (err) {
             toast.error(
               `Error ${
@@ -154,7 +172,8 @@ const AddOrEditUser = () => {
         validationSchema={UserSchema(
           codeList.filter((code) => code.code_type === "role") || [],
           codeList.filter((code) => code.code_type === "position") || [],
-          codeList.filter((code) => code.code_type === "employment_type") || []
+          codeList.filter((code) => code.code_type === "employment_type") || [],
+          departmentList || []
         )}
       >
         {(props) => (
@@ -333,7 +352,34 @@ const AddOrEditUser = () => {
                       </option>
                     );
                   })}
-                <option value="other">Other</option>
+              </LabeledSelect>
+              <LabeledSelect
+                id="department"
+                name="department_id"
+                labelValue="Department"
+                value={props.values.department_id}
+                onChange={props.handleChange}
+                onBlur={props.handleBlur}
+                color={
+                  props.errors.department_id && props.touched.department_id
+                    ? "failure"
+                    : "gray"
+                }
+                helperText={
+                  props.errors.department_id && props.touched.department_id ? (
+                    <>{props.errors.department_id}</>
+                  ) : null
+                }
+              >
+                <option value="" />
+                {departmentList
+                  .map((dept, idx) => {
+                    return (
+                      <option key={idx} value={dept.id}>
+                        {dept.name}
+                      </option>
+                    );
+                  })}
               </LabeledSelect>
               <LabeledSelect
                 id="employment-type"
@@ -369,7 +415,6 @@ const AddOrEditUser = () => {
                       </option>
                     );
                   })}
-                <option value="other">Other</option>
               </LabeledSelect>
               <LabeledTextInput
                 id="working-hours"

@@ -17,6 +17,7 @@ interface IUser {
     updated_by?: string;
     updated_date?: Date;
     preferences?: IUserPreference[]; 
+    department_id?: number;
     department?: IDepartment;
     company?: ICompany;
     head_of_department?: IDepartment;

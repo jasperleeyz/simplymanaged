@@ -9,10 +9,10 @@ const EmployeesViewPage = () => {
   const [auth, setAuth] = useState(false);
   const [viewEmployee, setViewEmployee] = useState<IUser>({
     id: 0,
-    companyId: 0,
+    company_id: 0,
     fullname: '',
     email: '',
-    contactNo: '',
+    contact_no: '',
     role: ROLES.EMPLOYEE,
     position: '',
     // employmentType: {},
@@ -25,14 +25,14 @@ const EmployeesViewPage = () => {
       const data = JSON.parse(tempData)
       const tempEmployee: IUser = {
         id: data.id,
-        companyId: data.companyId,
+        company_id: data.company_id,
         fullname: data.fullname,
         email: data.email,
-        contactNo: data.contactNo,
+        contact_no: data.contact_no,
         role: data.role,
         position: data.position,
         // employmentType: data.employmentType,
-        profileImage: data.profileImage,
+        profile_image: data.profile_image,
         status: data.status,
       };
       setViewEmployee(tempEmployee);
@@ -52,7 +52,7 @@ const EmployeesViewPage = () => {
           <div id="profile-section" className="md:flex">
             <div className="w-full mb-6 md:m-auto md:w-2/5">
               <Avatar
-                img={viewEmployee.profileImage}
+                img={viewEmployee.profile_image}
                 size="xl"
                 rounded
                 alt="Profile image"
@@ -65,7 +65,7 @@ const EmployeesViewPage = () => {
               <Label htmlFor="user-email" value="Email" />
               <p id="user-email">{viewEmployee.email}</p>
               <Label htmlFor="user-phone-no" value="Phone No." />
-              <p id="user-phone-no">{viewEmployee.contactNo}</p>
+              <p id="user-phone-no">{viewEmployee.contact_no}</p>
             </div>
           </div>
           <hr className="w-full my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />

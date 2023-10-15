@@ -53,3 +53,17 @@ export const addEmployee = async (
     })
     .catch((err) => Promise.reject(err));
 }
+
+export const updateEmployee = async (
+  user: IUser
+): Promise<any> => {
+  return await fetch(`/user/update`, {
+    method: "POST",
+    body: JSON.stringify(user),
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+}

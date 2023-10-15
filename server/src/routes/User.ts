@@ -118,6 +118,7 @@ userRouter.post("/create", async (req, res) => {
       position,
       role,
       status,
+      department_id,
       employment_details,
       profile_image,
       company_id,
@@ -181,41 +182,29 @@ userRouter.post("/create", async (req, res) => {
 
 userRouter.post("/update", async (req, res) => {
   const {
-    number: id,
-    number: company_id,
-    string: email,
-    string: fullname,
-    string: contact_no,
-    string: position,
-    string: role,
-    string: status,
-    any: employment_details,
-    any: preferences,
-    string: profile_image,
+    id,
+    company_id,
+    email,
+    fullname,
+    contact_no,
+    position,
+    department_id,
+    role,
+    status,
+    employment_details,
+    preferences,
+    profile_image,
   } = req.body;
 
   const logged_in_user = req.headers?.["x-access-user"] as any;
 
   try {
-    // if(employment_details) {
-    //   await prisma.user.update({
-    //     where: {
-    //       id: id,
-    //       id_company_id: company_id,
-    //     },
-    //     data: {
-    //       employment_details: employment_details,
-    //     },
-    // });
-
     const user = await prisma.user.update({
       where: {
         id: id,
         id_company_id: company_id,
       },
       data: {
-        id: id,
-        company_id: company_id,
         email: email,
         role: role,
         fullname: fullname,
@@ -223,6 +212,12 @@ userRouter.post("/update", async (req, res) => {
         position: position,
         status: status,
         profile_image: profile_image,
+        department: {
+          connect: {
+            id: department_id,
+            company_id_id: company_id,
+          }
+        },
         employment_details: employment_details,
         preferences: preferences,
         updated_by: logged_in_user["name"],
