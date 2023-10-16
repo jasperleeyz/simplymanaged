@@ -9,7 +9,10 @@ import {
 } from "flowbite-react";
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { GlobalStateContext, InitialGlobalState } from "../../../configs/global-state-provider";
+import {
+  GlobalStateContext,
+  InitialGlobalState,
+} from "../../../configs/global-state-provider";
 import { PATHS } from "../../../configs/constants";
 import { capitalizeString, getHomeLink } from "../../../configs/utils";
 import { ROLES } from "../../../configs/constants";
@@ -36,18 +39,24 @@ const Header = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   const signOut = () => {
     location.state = undefined;
-    setGlobalState((prevState) => (InitialGlobalState));
+    setGlobalState((prevState) => InitialGlobalState);
     sessionStorage.removeItem("bearerToken");
     navigate("/login", { replace: true });
-  }
+  };
 
   return (
     <Flowbite theme={{ theme: customHeaderTheme }}>
       <Navbar fluid rounded className="border-b">
-        <Navbar.Brand href={globalState?.isAuthenticated ? getHomeLink(globalState?.user?.role || "") : "/login"}>
+        <Navbar.Brand
+          href={
+            globalState?.isAuthenticated
+              ? getHomeLink(globalState?.user?.role || "")
+              : "/login"
+          }
+        >
           <img alt="SiM Logo" className="mr-3 h-12 sm:h-14" src="/logo.png" />
           {/* <span className="self-center whitespace-nowrap text-xl font-semibold dark:text-white">
           SimplyManaged
@@ -84,7 +93,9 @@ const Header = () => {
                   My profile
                 </Dropdown.Item>
                 <Dropdown.Divider />
-                <Dropdown.Item onClick={() => signOut()}>Sign out</Dropdown.Item>
+                <Dropdown.Item onClick={() => signOut()}>
+                  Sign out
+                </Dropdown.Item>
               </Dropdown>
               <Navbar.Toggle />
             </div>
@@ -93,7 +104,9 @@ const Header = () => {
               {globalState?.user?.role == ROLES.SUPERADMIN && (
                 <>
                   <Navbar.Link
-                    active={location.pathname.startsWith("/" + PATHS.REGISTRATION)}
+                    active={location.pathname.startsWith(
+                      "/" + PATHS.REGISTRATION
+                    )}
                     to={`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`}
                     as={Link}
                   >
@@ -111,17 +124,40 @@ const Header = () => {
 
               {/*SYSADMIN HEADER*/}
               {globalState?.user?.role == ROLES.SYSADMIN && (
-                <Navbar.Link
-                  active={location.pathname.startsWith("/" + PATHS.EMPLOYEES)}
-                  to={`/${PATHS.EMPLOYEES}`}
-                  as={Link}
-                >
-                  People
-                </Navbar.Link>
+                <>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.EMPLOYEES)}
+                    to={`/${PATHS.EMPLOYEES}`}
+                    as={Link}
+                  >
+                    Employees
+                  </Navbar.Link>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.DEPARTMENT)}
+                    to={`/${PATHS.DEPARTMENT}`}
+                    as={Link}
+                  >
+                    Departments
+                  </Navbar.Link>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.LOCATION)}
+                    to={`/${PATHS.LOCATION}`}
+                    as={Link}
+                  >
+                    Locations
+                  </Navbar.Link>
+                  <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.COMPANY_CODE)}
+                    to={`/${PATHS.COMPANY_CODE}`}
+                    as={Link}
+                  >
+                    Code Management
+                  </Navbar.Link>
+                </>
               )}
 
               {/* EMPLOYEE & MANAGER HEADER*/}
-              {(globalState?.user?.role == ROLES.SCHEDULER ||
+              {(globalState?.user?.role == ROLES.MANAGER ||
                 globalState?.user?.role == ROLES.EMPLOYEE) && (
                 <>
                   <Navbar.Link

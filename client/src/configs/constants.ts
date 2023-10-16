@@ -19,7 +19,7 @@ export const MONTHS = [
 
 export const ROLES = {
   SUPERADMIN: "SA",
-  SCHEDULER: "S",
+  MANAGER: "M",
   EMPLOYEE: "E",
   SYSADMIN: "A",
 };
@@ -48,6 +48,21 @@ export const PATHS = {
 
   REGISTRATION: "registration",
   VIEW_REGISTRATION: "view",
+
+  DEPARTMENT: "department",
+  VIEW_DEPARTMENT: "view",
+  ADD_DEPARTMENT: "add",
+  EDIT_DEPARTMENT: "edit",
+
+  COMPANY_CODE: "company-code",
+  VIEW_COMPANY_CODE: "view",
+  ADD_COMPANY_CODE: "add",
+  EDIT_COMPANY_CODE: "edit",
+
+  LOCATION: "location",
+  VIEW_LOCATION: "view",
+  ADD_LOCATION: "add",
+  EDIT_LOCATION: "edit",
 };
 
 export const DATE = {

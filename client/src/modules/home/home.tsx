@@ -52,7 +52,7 @@ const Home = () => {
   const pendingRequests = globalState?.requests?.filter(
     (req) =>
       req.status === "pending" &&
-      (globalState?.user?.role === ROLES.SCHEDULER
+      (globalState?.user?.role === ROLES.MANAGER
         ? req.type !== "swap"
         : req.type === "swap")
   );
@@ -138,7 +138,7 @@ const Home = () => {
             const usr = globalState?.user;
             if (usr) {
               usr.id = 1;
-              usr.role = ROLES.SCHEDULER;
+              usr.role = ROLES.MANAGER;
             }
             setGlobalState((prev) => ({ ...prev, user: usr }));
           }}

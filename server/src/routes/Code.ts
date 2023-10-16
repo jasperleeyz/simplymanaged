@@ -98,10 +98,10 @@ codeRouter.post("/create-update", async (req, res) => {
   const user = req.headers["x-access-user"] as any;
 
   // convert all to uppercase
-  code.code_type = code.code_type.toUpperCase();
-  code.status = code.status.toUpperCase();
-  code.description = code.description.toUpperCase();
-  code.code = code.code.toUpperCase();
+  code.code_type = code.code_type.toUpperCase().trim();
+  code.status = code.status.toUpperCase().trim();
+  code.description = code.description.toUpperCase().trim();
+  code.code = code.code.toUpperCase().trim();
 
   try {
     if (code.code_type === "OTHER") {

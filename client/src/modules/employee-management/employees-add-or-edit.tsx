@@ -12,9 +12,14 @@ import { toast } from "react-toastify";
 import BackButton from "../../shared/layout/buttons/back-button";
 import { ICompanyCode, IDepartment } from "../../shared/model/company.model";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { addEmployee, getAllEmployees, updateEmployee } from "../../shared/api/user.api";
+import {
+  addEmployee,
+  getAllEmployees,
+  updateEmployee,
+} from "../../shared/api/user.api";
 import { getAllCompanyCodes } from "../../shared/api/company-code.api";
 import IUser from "../../shared/model/user.model";
+import { getAllDepartments } from "../../shared/api/department.api";
 
 const UserSchema = (
   roleList: ICompanyCode[],
@@ -41,9 +46,12 @@ const UserSchema = (
       )
       .required("Field is required"),
     status: Yup.string().required("Field is required"),
-    department_id: Yup.string()
+    department_id: Yup.number()
+      .test("is-zero", "Field is required", (value) => value !== 0)
       .test("within-list", "Invalid department", (value) =>
-        departmentList.find((department) => department.id === Number(value)) ? true : false
+        departmentList.find((department) => department.id === value)
+          ? true
+          : false
       )
       .required("Field is required"),
     employment_details: Yup.object().shape({
@@ -94,19 +102,24 @@ const AddOrEditUser = () => {
   });
 
   React.useEffect(() => {
-    getAllCompanyCodes(
-      loggedin_user?.company_id || 0,
-      undefined,
-      undefined,
-      undefined,
-      "in(code_type,[position,role,employment_type])"
-    )
-      .then((res) => {
-        setCodeList(res.data);
-      })
-      .catch((err) => {
-        toast.error("Error encountered. Please try again later");
-      });
+    Promise.all([
+      getAllCompanyCodes(
+        loggedin_user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        "in(code_type,[position,role,employment_type])"
+      )
+        .then((res) => {
+          setCodeList(res.data);
+        }),
+      getAllDepartments(loggedin_user?.company_id || 0)
+        .then((res) => {
+          setDepartmentList(res.data);
+        }),
+    ]).catch((err) => {
+      toast.error("Error encountered. Please try again later", { toastId: "add-edit-employee" });
+    });
 
     if (id) {
       getAllEmployees(
@@ -117,7 +130,7 @@ const AddOrEditUser = () => {
         `equals(id,${id})`
       )
         .then((res) => {
-          if(res.data[0].employment_details === null) {
+          if (res.data[0].employment_details === null) {
             res.data[0].employment_details = {
               user_id: res.data[0].id,
               user_company_id: res.data[0].company_id,
@@ -129,7 +142,7 @@ const AddOrEditUser = () => {
         })
         .catch((err) => {
           toast.error(err, { toastId: id });
-          navigate(`/${PATHS.CODE}`);
+          navigate(`/${PATHS.EMPLOYEES}`);
         });
     }
   }, []);
@@ -143,19 +156,15 @@ const AddOrEditUser = () => {
         onSubmit={async (values, { setSubmitting }) => {
           setSubmitting(true);
           try {
-            if(!id) {
-            await addEmployee(values).then(() => {
-              toast.success(
-                `Employee created successfully`
-              );
-              navigate(`..`);
-            });
+            if (!id) {
+              await addEmployee(values).then(() => {
+                toast.success(`Employee created successfully`);
+                navigate(`..`);
+              });
             } else {
               console.log(values);
               await updateEmployee(values).then(() => {
-                toast.success(
-                  `Employee details updated successfully`
-                );
+                toast.success(`Employee details updated successfully`);
                 navigate(`..`);
               });
             }
@@ -249,7 +258,7 @@ const AddOrEditUser = () => {
                 id="fullname"
                 name="fullname"
                 labelValue="Full Name"
-                value={props.values.fullname}
+                value={props.values.fullname?.toLocaleUpperCase()}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
                 color={
@@ -267,7 +276,7 @@ const AddOrEditUser = () => {
                 id="email"
                 name="email"
                 labelValue="E-mail"
-                value={props.values.email}
+                value={props.values.email?.toLocaleUpperCase()}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
                 color={
@@ -301,7 +310,7 @@ const AddOrEditUser = () => {
                 id="role"
                 name="role"
                 labelValue="Role"
-                value={props.values.role}
+                value={props.values.role?.toLocaleUpperCase()}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
                 color={
@@ -328,7 +337,7 @@ const AddOrEditUser = () => {
                 id="position"
                 name="position"
                 labelValue="Position"
-                value={props.values.position}
+                value={props.values.position?.toLocaleUpperCase()}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
                 color={
@@ -371,15 +380,14 @@ const AddOrEditUser = () => {
                   ) : null
                 }
               >
-                <option value="" />
-                {departmentList
-                  .map((dept, idx) => {
-                    return (
-                      <option key={idx} value={dept.id}>
-                        {dept.name}
-                      </option>
-                    );
-                  })}
+                <option value={0} />
+                {departmentList.map((dept, idx) => {
+                  return (
+                    <option key={idx} value={dept.id}>
+                      {dept.department_name}
+                    </option>
+                  );
+                })}
               </LabeledSelect>
               <LabeledSelect
                 id="employment-type"

@@ -114,14 +114,14 @@ const AddOrEditCode = () => {
                     </option>
                   );
                 })}
-                <option value="other">Other</option>
+                <option value="OTHER">Other</option>
               </LabeledSelect>
-              {props.values.code_type === "other" ? (
+              {props.values.code_type === "OTHER" ? (
                 <TextInput
                   id="code-type-other"
                   name="code_type_other"
                   type="text"
-                  value={props.values.code_type_other}
+                  value={props.values.code_type_other?.toLocaleUpperCase()}
                   onChange={props.handleChange}
                   onBlur={props.handleBlur}
                   color={
@@ -143,7 +143,7 @@ const AddOrEditCode = () => {
                 id="code"
                 name="code"
                 labelValue="Code"
-                value={props.values.code}
+                value={props.values.code?.toLocaleUpperCase()}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
                 color={
@@ -159,7 +159,7 @@ const AddOrEditCode = () => {
                 id="description"
                 name="description"
                 labelValue="Description"
-                value={props.values.description}
+                value={props.values.description?.toLocaleUpperCase()}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
                 color={

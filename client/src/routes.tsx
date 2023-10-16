@@ -12,6 +12,9 @@ import Login from "./shared/auth/login";
 import RegistrationRoutes from "./modules/registration";
 import CodeManagementRoutes from "./modules/code-management";
 import EmployeeManagementRoutes from "./modules/employee-management";
+import DepartmentManagementRoutes from "./modules/department-management";
+import LocationManagementRoutes from "./modules/location-management";
+import CompanyCodeManagementRoutes from "./modules/company-code-management";
 
 const AppRoutes = () => {
   return (
@@ -47,7 +50,7 @@ const AppRoutes = () => {
           <Route
             path={`/${PATHS.SCHEDULE}/*`}
             element={
-              <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER, ROLES.EMPLOYEE]}>
+              <PrivateRoute hasAnyRoles={[ROLES.MANAGER, ROLES.EMPLOYEE]}>
                 <ScheduleRoutes />
               </PrivateRoute>
             }
@@ -55,7 +58,7 @@ const AppRoutes = () => {
           <Route
             path={`/${PATHS.REQUESTS}/*`}
             element={
-              <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER, ROLES.EMPLOYEE]}>
+              <PrivateRoute hasAnyRoles={[ROLES.MANAGER, ROLES.EMPLOYEE]}>
                 <RequestRoutes />
               </PrivateRoute>
             }
@@ -65,6 +68,30 @@ const AppRoutes = () => {
             element={
               <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
                 <EmployeeManagementRoutes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={`/${PATHS.DEPARTMENT}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
+                <DepartmentManagementRoutes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={`/${PATHS.LOCATION}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
+                <LocationManagementRoutes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={`/${PATHS.COMPANY_CODE}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
+                <CompanyCodeManagementRoutes />
               </PrivateRoute>
             }
           />

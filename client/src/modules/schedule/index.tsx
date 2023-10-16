@@ -16,7 +16,7 @@ const ScheduleRoutes = () => {
       <Route
         path={`/${PATHS.CREATE_SCHEDULE}`}
         element={
-          <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER]}>
+          <PrivateRoute hasAnyRoles={[ROLES.MANAGER]}>
             <AddSchedule />
           </PrivateRoute>
         }
@@ -24,7 +24,7 @@ const ScheduleRoutes = () => {
       <Route
         path={`/${PATHS.EDIT_SCHEDULE}`}
         element={
-          <PrivateRoute hasAnyRoles={[ROLES.SCHEDULER]}>
+          <PrivateRoute hasAnyRoles={[ROLES.MANAGER]}>
             <AddSchedule />
           </PrivateRoute>
         }

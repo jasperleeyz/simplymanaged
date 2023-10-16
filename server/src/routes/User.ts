@@ -139,13 +139,13 @@ userRouter.post("/create", async (req, res) => {
         data: {
           id: existingUser ? existingUser.id + 1 : 1,
           company_id: company_id,
-          email: email,
+          email: email.toLocaleUpperCase().trim(),
           password: hashedPassword,
-          role: role,
-          fullname: fullname,
+          role: role.toLocaleUpperCase().trim(),
+          fullname: fullname.toLocaleUpperCase().trim(),
           contact_no: Number(contact_no),
-          position: position,
-          status: status,
+          position: position.toLocaleUpperCase().trim(),
+          status: status.toLocaleUpperCase().trim(),
           employment_details: {
             connectOrCreate: {
               where: {
@@ -205,11 +205,11 @@ userRouter.post("/update", async (req, res) => {
         id_company_id: company_id,
       },
       data: {
-        email: email,
-        role: role,
-        fullname: fullname,
+        email: email.toLocaleUpperCase().trim(),
+        role: role.toLocaleUpperCase().trim(),
+        fullname: fullname.toLocaleUpperCase().trim(),
         contact_no: Number(contact_no),
-        position: position,
+        position: position.toLocaleUpperCase().trim(),
         status: status,
         profile_image: profile_image,
         department: {

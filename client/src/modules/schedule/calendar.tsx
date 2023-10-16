@@ -140,7 +140,7 @@ const Calendar = () => {
               ))}
             </Select>
           </div>
-          {user?.role === ROLES.SCHEDULER && (
+          {user?.role === ROLES.MANAGER && (
             <div className="ms-auto mt-3 flex">
               <Button size="sm" onClick={() => setIsPersonal((prev) => !prev)}>
                 {!isPersonal ? "View Personal Schedule" : "View All Schedules"}

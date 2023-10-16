@@ -54,12 +54,13 @@ export interface ISubscription {
 export interface IDepartment {
     id: number;
     company_id: number;
-    name: string;
+    department_name: string;
+    department_head_id?: number;
     department_head?: IUser;
-    created_by: string;
-    created_date: Date;
-    updated_by: string;
-    updated_date: Date;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
     employees?: IUser[];
     rosters?: IRoster[];
 }
