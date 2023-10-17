@@ -1,4 +1,10 @@
-import { Button, Pagination, Spinner, Table } from "flowbite-react";
+import {
+  Button,
+  CustomFlowbiteTheme,
+  Pagination,
+  Spinner,
+  Table,
+} from "flowbite-react";
 import React from "react";
 import { IApplicationCode } from "../../shared/model/application.model";
 import CreateButton from "../../shared/layout/buttons/create-button";
@@ -9,6 +15,15 @@ import { createUpdateCodes, getAllCodes } from "../../shared/api/code.api";
 import DeactivateButton from "../../shared/layout/buttons/deactivate-button";
 import ActivateButton from "../../shared/layout/buttons/activate-button";
 import { toast } from "react-toastify";
+
+const customTableTheme: CustomFlowbiteTheme["table"] = {
+  root: {
+    base: "min-w-full text-left text-sm text-gray-500 dark:text-gray-400",
+    shadow:
+      "absolute bg-white dark:bg-black h-full top-0 left-0 rounded-lg drop-shadow-md -z-10",
+    wrapper: "relative",
+  },
+};
 
 const ViewCode = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -127,25 +142,27 @@ const ViewCode = () => {
           }}
         />
       </div>
-      <Table striped>
-        <Table.Head>
-          <Table.HeadCell>Code Type</Table.HeadCell>
-          <Table.HeadCell>Code</Table.HeadCell>
-          <Table.HeadCell>Description</Table.HeadCell>
-          <Table.HeadCell></Table.HeadCell>
-        </Table.Head>
-        <Table.Body>
-          {loading ? (
-            <Table.Row>
-              <Table.Cell colSpan={4} className="text-center">
-                <Spinner size="xl" />
-              </Table.Cell>
-            </Table.Row>
-          ) : (
-            generateBody()
-          )}
-        </Table.Body>
-      </Table>
+      <div id="code-section" className="mt-4 overflow-x-auto">
+        <Table theme={customTableTheme}>
+          <Table.Head>
+            <Table.HeadCell>Code Type</Table.HeadCell>
+            <Table.HeadCell>Code</Table.HeadCell>
+            <Table.HeadCell>Description</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body>
+            {loading ? (
+              <Table.Row>
+                <Table.Cell colSpan={4} className="text-center">
+                  <Spinner size="xl" />
+                </Table.Cell>
+              </Table.Row>
+            ) : (
+              generateBody()
+            )}
+          </Table.Body>
+        </Table>
+      </div>
       <div className="flex mt-4 text-center justify-center items-center">
         <Pagination
           currentPage={currentPage}

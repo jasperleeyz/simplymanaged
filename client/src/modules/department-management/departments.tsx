@@ -150,7 +150,7 @@ const DepartmentsPage = () => {
           value={"Add Department"}
         />
       </div>
-      <div id="people-section" className="mt-4 overflow-x-auto">
+      <div id="department-section" className="mt-4 overflow-x-auto">
         <Table theme={customTableTheme}>
           <Table.Head>
             <Table.HeadCell>Department</Table.HeadCell>

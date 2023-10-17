@@ -22,7 +22,6 @@ import IUser from "../../shared/model/user.model";
 import { getAllDepartments } from "../../shared/api/department.api";
 
 const UserSchema = (
-  roleList: ICompanyCode[],
   positionList: ICompanyCode[],
   employmentTypeList: ICompanyCode[],
   departmentList: IDepartment[]
@@ -36,9 +35,6 @@ const UserSchema = (
       .matches(/^\d{8}$/, "Contact number must be 8 digits")
       .required("Field is required"),
     role: Yup.string()
-      .test("within-list", "Invalid role", (value) =>
-        roleList.find((role) => role.code === value) ? true : false
-      )
       .required("Field is required"),
     position: Yup.string()
       .test("within-list", "Invalid position", (value) =>
@@ -108,7 +104,7 @@ const AddOrEditUser = () => {
         undefined,
         undefined,
         undefined,
-        "in(code_type,[position,role,employment_type])"
+        "in(code_type,[position,employment_type])"
       )
         .then((res) => {
           setCodeList(res.data);
@@ -162,7 +158,6 @@ const AddOrEditUser = () => {
                 navigate(`..`);
               });
             } else {
-              console.log(values);
               await updateEmployee(values).then(() => {
                 toast.success(`Employee details updated successfully`);
                 navigate(`..`);
@@ -179,7 +174,6 @@ const AddOrEditUser = () => {
           }
         }}
         validationSchema={UserSchema(
-          codeList.filter((code) => code.code_type === "role") || [],
           codeList.filter((code) => code.code_type === "position") || [],
           codeList.filter((code) => code.code_type === "employment_type") || [],
           departmentList || []
@@ -323,8 +317,7 @@ const AddOrEditUser = () => {
                 }
               >
                 <option value="" />
-                {codeList
-                  .filter((code) => code.code_type === "role")
+                {[{code: "A", description: "SYSTEM ADMIN"}, {code: "M", description: "MANAGER"}, {code: "E", description: "EMPLOYEE"}]
                   .map((code, idx) => {
                     return (
                       <option key={idx} value={code.code}>

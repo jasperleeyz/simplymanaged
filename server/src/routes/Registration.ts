@@ -196,6 +196,32 @@ const approveRegistration = async (registration_details: Registration) => {
       data: new_company,
     });
 
+    // TODO: create new subscription
+
+    // create new code types for company
+    const code_types = [
+      {
+        id: 1,
+        company_id: company.id,
+        code_type: "POSITION",        
+        status: "A",
+        created_by: "SYSTEM",
+        updated_by: "SYSTEM",
+      },
+      {
+        id: 2,
+        company_id: company.id,
+        code_type: "EMPLOYMENT_TYPE",        
+        status: "A",
+        created_by: "SYSTEM",
+        updated_by: "SYSTEM",
+      },
+    ];
+
+    await prisma.companyCodeType.createMany({
+      data: code_types,
+    });
+
     // create new system admin account
     const new_system_admin = {
       id: 1,
