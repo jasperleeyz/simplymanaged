@@ -1,5 +1,4 @@
-"use client";
-
+import { useContext, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import BackButton from "../../../shared/layout/buttons/back-button";
 import {
@@ -8,7 +7,7 @@ import {
   Label,
   Modal,
   Select,
-  TextInput,
+  TextInput, 
 } from "flowbite-react";
 import { HiUserGroup } from "react-icons/hi";
 import React from "react";
@@ -23,15 +22,42 @@ import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
 import { capitalizeString } from "../../../configs/utils";
 import LabeledField from "../../../shared/layout/fields/labeled-field";
+import { getAllEmployees} from "../../../shared/api/user.api";
 
 const AddSchedule = () => {
-  const location = useLocation();
+  // TODO: can retrieve schedule templates from global state to populate dropdownlist
+  const { globalState } = useContext(GlobalStateContext);
   const navigate = useNavigate();
+  const location = useLocation();
+
   const date: Date = location.state?.date;
   const isEdit = location.pathname.endsWith(PATHS.EDIT_SCHEDULE);
 
-  // TODO: can retrieve schedule templates from global state to populate dropdownlist
-  const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
+  const [currentPage, setCurrentPage] = useState(location?.state?.page || 1);
+  const [sizePerPage, setSizePerPage] = useState(
+    location?.state?.sizePerPage || 10
+  );
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  const [employeeList, setEmployeeList] = useState<IUser[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      // get employees based on company id of current system admin logged in
+      getAllEmployees(
+        globalState?.user?.company_id || 0,
+        currentPage,
+        sizePerPage
+      ).then((res) => {
+        setEmployeeList(res.data);
+        setTotalPages(res.totalPages);
+      }),
+    ]).finally(() => {
+      setLoading((prev) => false);
+    });
+  }, []);
+
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<IRoster>(() => {
