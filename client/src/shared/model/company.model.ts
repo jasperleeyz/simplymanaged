@@ -45,10 +45,10 @@ export interface ISubscription {
     type: string;
     start_date: Date;
     end_date?: Date;
-    created_by: string;
-    created_date: Date;
-    updated_by: string;
-    updated_date: Date;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
 }
 
 export interface IDepartment {
@@ -83,11 +83,10 @@ export interface ICompanyLocation {
     company_id: number;
     name: string;
     address: string;
-    postal_code?: string;
-    created_by: string;
-    created_date: Date;
-    updated_by: string;
-    updated_date: Date;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
 }
 
 export interface IRoleBasedAccessControl {
@@ -96,8 +95,8 @@ export interface IRoleBasedAccessControl {
     role: string;
     module: string;
     access_type: string;
-    created_by: string;
-    created_date: Date;
-    updated_by: string;
-    updated_date: Date;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
 }

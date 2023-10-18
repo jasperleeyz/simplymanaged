@@ -141,6 +141,7 @@ const Requests = () => {
       <div className="flex mt-4 text-center justify-center items-center">
         <Pagination
           currentPage={1}
+          layout="pagination"
           onPageChange={(page) => {
             setCurrentPage(page);
           }}
