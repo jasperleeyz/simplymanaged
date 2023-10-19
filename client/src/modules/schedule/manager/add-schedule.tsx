@@ -5,24 +5,38 @@ import {
   Button,
   Checkbox,
   Label,
+  Table,
   Modal,
   Select,
-  TextInput, 
+  Spinner,
+  TextInput,
+  CustomFlowbiteTheme,
+  Pagination,
 } from "flowbite-react";
-import { HiUserGroup } from "react-icons/hi";
+import { HiUserGroup, HiTicket, HiX } from "react-icons/hi";
 import React from "react";
 import moment from "moment";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import IUser from "../../../shared/model/user.model";
-import {
-  IUserSchedule,
-  IRoster,
-} from "../../../shared/model/schedule.model";
+import { IUserSchedule, IRoster } from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
 import { capitalizeString } from "../../../configs/utils";
 import LabeledField from "../../../shared/layout/fields/labeled-field";
-import { getAllEmployees} from "../../../shared/api/user.api";
+import { getAllEmployees } from "../../../shared/api/user.api";
+import EditButton from "../../../shared/layout/buttons/edit-button";
+import ActivateButton from "../../../shared/layout/buttons/activate-button";
+import DeactivateButton from "../../../shared/layout/buttons/deactivate-button";
+import { USER_STATUS } from "../../../configs/constants";
+
+const customTableTheme: CustomFlowbiteTheme["table"] = {
+  root: {
+    base: "min-w-300 text-left text-sm text-gray-500 dark:text-gray-400",
+    shadow:
+      "absolute bg-white dark:bg-black h-full top-0 left-0 rounded-lg drop-shadow-md -z-10",
+    wrapper: "relative",
+  },
+};
 
 const AddSchedule = () => {
   // TODO: can retrieve schedule templates from global state to populate dropdownlist
@@ -42,6 +56,24 @@ const AddSchedule = () => {
 
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredEmployees, setFilteredEmployees] = useState<IUser[]>([]);
+
+  //TEMP VARIABLE
+  const temporaryPostitions = ["Programmer", "Manager", "Designer"];
+  const temporaryUsers = [
+    { id: 1, name: "John Doe", position: "Manager" },
+    { id: 2, name: "Jane Smith", position: "Manager" },
+    { id: 3, name: "Emily Davis", position: "Designer" },
+    { id: 4, name: "David Anderson", position: "Designer" },
+    { id: 5, name: "Sarah Lee", position: "Programmer" },
+    { id: 6, name: "Brian Brown", position: "Programmer" },
+    { id: 7, name: "Jessica Clark", position: "Programmer" },
+    { id: 8, name: "Andrew Wilson", position: "Designer" },
+    { id: 9, name: "Laura Taylor", position: "Manager" },
+  ];
+
+  //UNTIL API
   useEffect(() => {
     Promise.all([
       // get employees based on company id of current system admin logged in
@@ -58,6 +90,66 @@ const AddSchedule = () => {
     });
   }, []);
 
+  useEffect(() => {
+    // When the searchTerm changes, update the filteredEmployees state.
+    // const filtered = employeeList.filter((emp) =>
+    //   emp.fullname.toLowerCase().includes(searchTerm.toLowerCase())
+    // );
+    // setFilteredEmployees(filtered);
+    // setCurrentPage(1);
+    // if (searchTerm !== "") {
+    setLoading((prev) => true);
+    getAllEmployees(
+      globalState?.user?.company_id || 0,
+      1,
+      sizePerPage,
+      undefined,
+      searchTerm ? `contains(position,${searchTerm})` : undefined
+    )
+      .then((res) => {
+        setEmployeeList(res.data);
+        setTotalPages(res.totalPages);
+        setCurrentPage((prev) => 1);
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+      });
+    // }
+  }, [searchTerm]);
+
+  const generateBody = () => {
+    if (employeeList.length === 0) {
+      return (
+        <Table.Row>
+          <Table.Cell colSpan={2} className="text-center">
+            No employees found
+          </Table.Cell>
+        </Table.Row>
+      );
+    }
+
+    return employeeList.map((emp, idx) => (
+      <Table.Row
+        key={idx}
+        className="bg-white dark:border-gray-700 dark:bg-gray-800"
+      >
+        <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+          {emp.fullname}
+        </Table.Cell>
+        <Table.Cell>
+          <label>{emp.position}</label>
+        </Table.Cell>
+        <Button
+                color="success"
+                className="w-full mr-3"
+                size="sm"
+                onClick={() => autoAssignPersonnel()}
+              >
+                Add
+              </Button>
+      </Table.Row>
+    ));
+  };
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<IRoster>(() => {
@@ -157,7 +249,6 @@ const AddSchedule = () => {
   //  TODO: to invoke API to create schedule
   const createSchedule = () => {
     if (isEdit) {
-      
       // setGlobalState((prev) => ({
       //   ...prev,
       //   schedule: prev.schedule.map((s) => {
@@ -206,7 +297,8 @@ const AddSchedule = () => {
         </Button>
       </div>
       <form>
-        {/* Schedule Template/Type */}
+        {/*
+        {/* Schedule Template/Type }
         <div className="mb-3">
           <Label htmlFor="schedule-template" value="Template" />
           <Select
@@ -220,15 +312,17 @@ const AddSchedule = () => {
             }
             disabled
           >
-            {/* TODO: populate templates  */}
+            {/* TODO: populate templates  }
           </Select>
           <div>
             <p>Employees needed: 2</p>
             <p></p>
           </div>
         </div>
+        */}
+
         {/* Schedule Location */}
-        <div className="mb-3">
+        {/*<div className="mb-3">
           <Label htmlFor="schedule-location" value="Location" />
           <Select
             id="schedule-location"
@@ -247,7 +341,120 @@ const AddSchedule = () => {
             ))}
           </Select>
         </div>
+        */}
         {/* Schedule Date */}
+        <div className="flex">
+          <div className="mr-5">
+            <Label htmlFor="start-date" value="Start Date" />
+            <TextInput
+              id="start-date"
+              type="date"
+              min={moment(new Date()).add(1, "days").format("yyyy-MM-DD")}
+              value={moment(scheduleDetailsState.startDate).format(
+                "yyyy-MM-DD"
+              )}
+              helperText={
+                <span className="error-message">{errorMessage.date}</span>
+              }
+              onChange={(e) => {
+                if (moment(e.target.value).isBefore(moment(new Date()))) {
+                  setErrorMessage((prev) => ({
+                    ...prev,
+                    startDate: "Start date cannot be before today",
+                  }));
+                } else {
+                  setErrorMessage((prev) => ({
+                    ...prev,
+                    startDate: "",
+                  }));
+                }
+                setScheduleDetailsState((prev) => ({
+                  ...prev,
+                  startDate: new Date(e.target.value),
+                }));
+              }}
+            />
+          </div>
+          <div className="mr-5">
+            <Label htmlFor="end-date" value="End Date" />
+            <TextInput
+              id="end-date"
+              type="date"
+              min={moment(scheduleDetailsState.startDate)
+                .add(1, "days")
+                .format("yyyy-MM-DD")}
+              value={moment(scheduleDetailsState.endDate).format("yyyy-MM-DD")}
+              helperText={
+                <span className="error-message">{errorMessage.date}</span>
+              }
+              onChange={(e) => {
+                if (
+                  moment(e.target.value).isBefore(
+                    moment(scheduleDetailsState.startDate)
+                  )
+                ) {
+                  setErrorMessage((prev) => ({
+                    ...prev,
+                    endDate: "End date cannot be before the start date",
+                  }));
+                } else {
+                  setErrorMessage((prev) => ({
+                    ...prev,
+                    endDate: "",
+                  }));
+                }
+                setScheduleDetailsState((prev) => ({
+                  ...prev,
+                  endDate: new Date(e.target.value),
+                }));
+              }}
+            />
+          </div>
+        </div>
+        <div className="mb-3">
+          <Label htmlFor="schedule-employees" value="Employees Available" />
+          <div className="flex justify-between">
+            <TextInput
+              placeholder="Search Position..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          <div id="people-section" className="mt-4 overflow-x-auto">
+            <Table theme={customTableTheme}>
+              <Table.Head>
+                <Table.HeadCell>Employee</Table.HeadCell>
+                <Table.HeadCell>Position</Table.HeadCell>
+                <Table.HeadCell></Table.HeadCell>
+              </Table.Head>
+              <Table.Body className="divide-y">
+                {loading ? (
+                  <Table.Row>
+                    <Table.Cell colSpan={6} className="text-center">
+                      <Spinner size="xl" />
+                    </Table.Cell>
+                  </Table.Row>
+                ) : (
+                  generateBody()
+                )}
+              </Table.Body>
+            </Table>
+          </div>
+
+          <div className="mx-10">
+            <Pagination
+              currentPage={currentPage}
+              // layout="pagination"
+              onPageChange={(page) => {
+                setCurrentPage(page);
+              }}
+              showIcons
+              totalPages={totalPages}
+            />
+          </div>
+        </div>
+
         <div className="mb-3">
           <Label htmlFor="schedule-date" value="Date" />
           <TextInput
