@@ -77,6 +77,18 @@ const AddSchedule = () => {
   const newStartDate = "2023-10-20"; // Replace with your desired start date
   const newEndDate = "2023-10-21";   // Replace with your desired end date
 
+  const [addedUsers, setAddedUsers] = useState<IUser[]>([]); // Store added users separately
+
+  const handleAddOrRemoveUser = (user: IUser) => {
+    if (addedUsers.some((addedUser) => addedUser.id === user.id)) {
+      // User is already added, remove them
+      setAddedUsers((prevUsers) => prevUsers.filter((addedUser) => addedUser.id !== user.id));
+    } else {
+      // User is not added, add them
+      setAddedUsers((prevUsers) => [...prevUsers, user]);
+    }
+  };
+
   useEffect(() => {
     setLoading((prev) => true);
     getAllUserSchedule(
@@ -86,15 +98,15 @@ const AddSchedule = () => {
       undefined,
       undefined,
       undefined,
-      undefined,
+      searchTerm ? `contains(position,${searchTerm})` : undefined
     )
       .then((res) => {
-        console.log(res.data)
+        setEmployeeList(res.data);
       })
       .finally(() => {
         setLoading((prev) => false);
       });
-  });
+    }, [searchTerm]);
 
   /*useEffect(() => {
     setLoading((prev) => true);
@@ -116,6 +128,8 @@ const AddSchedule = () => {
     // }
   }, [searchTerm]);
 */
+
+
   const generateBody = () => {
     if (employeeList.length === 0) {
       return (
@@ -295,6 +309,30 @@ const AddSchedule = () => {
           <HiUserGroup className="ml-2 my-auto" />
         </Button>
       </div>
+      <div>
+      <input
+        type="text"
+        placeholder="Search by position..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      <ul>
+        {employeeList.map((user) => (
+          <li key={user.id}>
+            {user.fullname} - {user.position}
+            <button onClick={() => handleAddOrRemoveUser(user)}>
+              {addedUsers.some((addedUser) => addedUser.id === user.id) ? 'Remove' : 'Add'}
+            </button>
+          </li>
+        ))}
+      </ul>
+      <h2>Added Users</h2>
+      <ul>
+        {addedUsers.map((addedUser) => (
+          <li key={addedUser.id}>{addedUser.fullname} - {addedUser.position}</li>
+        ))}
+      </ul>
+    </div>
       <form>
         {/*
         {/* Schedule Template/Type }

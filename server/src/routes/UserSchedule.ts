@@ -7,7 +7,7 @@ export const UserScheduleRouter = express.Router();
 const prisma = new PrismaClient();
 
 UserScheduleRouter.get("/:user_company_id/:user_id", async (req, res) => {
-  const { page, size, sort, filter, cursor } = req.query;
+  const { page, size, sort, filter } = req.query;
   const { user_company_id, user_id } = req.params;
 
   try {
@@ -39,25 +39,25 @@ UserScheduleRouter.get("/:user_company_id/:user_id", async (req, res) => {
 });
 
 UserScheduleRouter.get("/:user_company_id/:start_date/:end_date", async (req, res) => {
-    const { page, size, sort, filter, cursor } = req.query;
+    const { page, size, sort, filter } = req.query;
     const { user_company_id, start_date, end_date } = req.params;
   
     try {
         const findObject = generateFindObject(page, size, sort, filter);
         findObject.where = {
-            user_company_id: Number(user_company_id),
+            ...findObject.where,
+            company_id: Number(user_company_id),
         };
 
         // Fetch schedules that do not conflict with the specified date range
         const nonConflictingSchedules = await prisma.$transaction([
             prisma.userSchedule.findMany({
-                ...findObject,
                 where: {
                     user_company_id: Number(user_company_id),
                     OR: [
                         {
                             start_date: { lt: new Date(end_date) }, // Start date is before the end date
-                            end_date: { gt: new Date(start_date) },   // End date is after the start date
+                            end_date: { gt: new Date(start_date) }, // End date is after the start date
                         }
                     ]
                 }
@@ -65,11 +65,7 @@ UserScheduleRouter.get("/:user_company_id/:start_date/:end_date", async (req, re
         ]);
 
         const nonConflictingUserIds = nonConflictingSchedules[0].map(schedule => schedule.user_id);
-        const allUsers = await prisma.user.findMany({
-            where: {
-                company_id: Number(user_company_id)
-            }
-        });
+        const allUsers = await prisma.user.findMany(findObject);
 
         // Filter out users with non-conflicting schedules
         const usersWithoutConflicts = allUsers.filter(user => !nonConflictingUserIds.includes(user.id));
