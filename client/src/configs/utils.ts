@@ -29,7 +29,7 @@ export const getHomeLink = (role: string) => {
   if (role == ROLES.SUPERADMIN) {
     return `/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`;
   } else if (role == ROLES.SYSADMIN) {
-    return `/${PATHS.EMPLOYEES}`;
+    return `/${PATHS.COMPANY}`;
   } else {
     return "/";
   }

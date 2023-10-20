@@ -126,6 +126,13 @@ const Header = () => {
               {globalState?.user?.role == ROLES.SYSADMIN && (
                 <>
                   <Navbar.Link
+                    active={location.pathname.startsWith("/" + PATHS.COMPANY)}
+                    to={`/${PATHS.COMPANY}`}
+                    as={Link}
+                  >
+                    Home
+                  </Navbar.Link>
+                  <Navbar.Link
                     active={location.pathname.startsWith("/" + PATHS.EMPLOYEES)}
                     to={`/${PATHS.EMPLOYEES}`}
                     as={Link}
@@ -165,7 +172,7 @@ const Header = () => {
                     to="/"
                     as={Link}
                   >
-                    <p>Dashboard</p>
+                    Dashboard
                   </Navbar.Link>
                   <Navbar.Link
                     active={location.pathname.startsWith("/" + PATHS.SCHEDULE)}

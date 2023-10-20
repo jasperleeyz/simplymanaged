@@ -196,7 +196,25 @@ const approveRegistration = async (registration_details: Registration) => {
       data: new_company,
     });
 
-    // TODO: create new subscription
+    const start_date = new Date();
+    const end_date = new Date(start_date.setMonth(start_date.getMonth() + 1)); // TODO: get from subscription
+
+    // create new subscription
+    const new_subscription = {
+      company_id: company.id,
+      type: "PREMIUM", // TODO: get from subscription
+      status: "A",
+      employee_quantity: 100, //TODO: get from subscription
+      start_date: start_date,
+      end_date: end_date, 
+      created_by: "SYSTEM",
+      updated_by: "SYSTEM",
+    };
+
+    const subscription = await prisma.subscription.create({
+      data: new_subscription,
+    });
+
 
     // create new code types for company
     const code_types = [

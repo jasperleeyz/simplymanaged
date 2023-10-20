@@ -37,12 +37,16 @@ export interface ICompany {
     locations?: ICompanyLocation[];
     roster_templates?: IRosterTemplate[];
     rosters?: IRoster[]; 
+    employees?: IUser[];
+    actual_no_of_employees?: number;
 }
 
 export interface ISubscription {
     id: number;
     company_id: number;
     type: string;
+    employee_quantity: number;
+    status: string;
     start_date: Date;
     end_date?: Date;
     created_by?: string;
