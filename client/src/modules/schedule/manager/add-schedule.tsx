@@ -28,6 +28,7 @@ import EditButton from "../../../shared/layout/buttons/edit-button";
 import ActivateButton from "../../../shared/layout/buttons/activate-button";
 import DeactivateButton from "../../../shared/layout/buttons/deactivate-button";
 import { USER_STATUS } from "../../../configs/constants";
+import { getAllUserSchedule } from "../../../shared/api/user-schedule.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -73,31 +74,29 @@ const AddSchedule = () => {
     { id: 9, name: "Laura Taylor", position: "Manager" },
   ];
 
-  //UNTIL API
-  useEffect(() => {
-    Promise.all([
-      // get employees based on company id of current system admin logged in
-      getAllEmployees(
-        globalState?.user?.company_id || 0,
-        currentPage,
-        sizePerPage
-      ).then((res) => {
-        setEmployeeList(res.data);
-        setTotalPages(res.totalPages);
-      }),
-    ]).finally(() => {
-      setLoading((prev) => false);
-    });
-  }, []);
+  const newStartDate = "2023-10-20"; // Replace with your desired start date
+  const newEndDate = "2023-10-21";   // Replace with your desired end date
 
   useEffect(() => {
-    // When the searchTerm changes, update the filteredEmployees state.
-    // const filtered = employeeList.filter((emp) =>
-    //   emp.fullname.toLowerCase().includes(searchTerm.toLowerCase())
-    // );
-    // setFilteredEmployees(filtered);
-    // setCurrentPage(1);
-    // if (searchTerm !== "") {
+    setLoading((prev) => true);
+    getAllUserSchedule(
+      0,
+      newStartDate,
+      newEndDate,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+    )
+      .then((res) => {
+        console.log(res.data)
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+      });
+  });
+
+  /*useEffect(() => {
     setLoading((prev) => true);
     getAllEmployees(
       globalState?.user?.company_id || 0,
@@ -116,7 +115,7 @@ const AddSchedule = () => {
       });
     // }
   }, [searchTerm]);
-
+*/
   const generateBody = () => {
     if (employeeList.length === 0) {
       return (

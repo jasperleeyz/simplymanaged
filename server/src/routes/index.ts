@@ -9,6 +9,7 @@ import { companyCodeRouter } from "./CompanyCode";
 import { departmentRouter } from "./Department";
 import { locationRouter } from "./Location";
 import { companyCodeTypeRouter } from "./CompanyCodeType";
+import { UserScheduleRouter } from "./UserSchedule";
 
 
 export const routes = express.Router();
@@ -22,3 +23,4 @@ routes.use('/company-code', companyCodeRouter);
 routes.use('/company-code-type', companyCodeTypeRouter);
 routes.use('/department', departmentRouter);
 routes.use('/location', locationRouter);
+routes.use('/user-schedule', UserScheduleRouter)
