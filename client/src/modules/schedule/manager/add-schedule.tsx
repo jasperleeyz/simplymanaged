@@ -74,8 +74,22 @@ const AddSchedule = () => {
     { id: 9, name: "Laura Taylor", position: "Manager" },
   ];
 
-  const newStartDate = "2023-10-20"; // Replace with your desired start date
-  const newEndDate = "2023-10-21";   // Replace with your desired end date
+  const [scheduleDetailsState, setScheduleDetailsState] =
+    React.useState<IRoster>(() => {
+      if (location.state?.schedule) {
+        return location.state.schedule;
+      } else {
+        return {
+          id: 0,
+          scheduleTemplate: "",
+          date: date || moment(new Date()).add(1, "days").toDate(),
+          employeesSelected: [],
+          location: "Toa Payoh",
+          startDate: moment(new Date()).add(1, "days").toDate(),
+          endDate: moment(new Date()).add(1, "days").toDate()
+        };
+      }
+    });
 
   const [addedUsers, setAddedUsers] = useState<IUser[]>([]); // Store added users separately
 
@@ -93,8 +107,8 @@ const AddSchedule = () => {
     setLoading((prev) => true);
     getAllUserSchedule(
       0,
-      newStartDate,
-      newEndDate,
+      scheduleDetailsState.startDate.toString(),
+      scheduleDetailsState.endDate.toString(),
       undefined,
       undefined,
       undefined,
@@ -106,7 +120,7 @@ const AddSchedule = () => {
       .finally(() => {
         setLoading((prev) => false);
       });
-    }, [searchTerm]);
+    }, [searchTerm, scheduleDetailsState.startDate, scheduleDetailsState.endDate]);
 
   /*useEffect(() => {
     setLoading((prev) => true);
@@ -130,7 +144,7 @@ const AddSchedule = () => {
 */
 
 
-  const generateBody = () => {
+  const generateEmployeeList = () => {
     if (employeeList.length === 0) {
       return (
         <Table.Row>
@@ -152,32 +166,62 @@ const AddSchedule = () => {
         <Table.Cell>
           <label>{emp.position}</label>
         </Table.Cell>
-        <Button
-                color="success"
-                className="w-full mr-3"
-                size="sm"
-                onClick={() => autoAssignPersonnel()}
-              >
-                Add
-              </Button>
+        <Table.Cell>
+        <div className="inline-block"> {/* Create a container for the button */}
+      
+      {addedUsers.some((addedUser) => addedUser.id === emp.id) ? <Button
+        color="failure"
+        className="w-full"
+        size="sm"
+        onClick={() => handleAddOrRemoveUser(emp)}
+      >
+        Remove
+      </Button> : <Button
+        color="success"
+        className="w-full"
+        size="sm"
+        onClick={() => handleAddOrRemoveUser(emp)}
+      >
+        Add
+      </Button>}
+      
+      </div>
+    </Table.Cell>
       </Table.Row>
     ));
   };
 
-  const [scheduleDetailsState, setScheduleDetailsState] =
-    React.useState<IRoster>(() => {
-      if (location.state?.schedule) {
-        return location.state.schedule;
-      } else {
-        return {
-          id: 0,
-          scheduleTemplate: "",
-          date: date || moment(new Date()).add(1, "days").toDate(),
-          employeesSelected: [],
-          location: "Toa Payoh",
-        };
-      }
-    });
+  const generateSelectedEmployeeList = () => {
+    if (addedUsers.length > 0) {
+      return (
+        <Table theme={customTableTheme}>
+          <Table.Head>
+            <Table.HeadCell>Employee</Table.HeadCell>
+            <Table.HeadCell>Position</Table.HeadCell>
+            <Table.HeadCell>Shift</Table.HeadCell>
+            <Table.HeadCell></Table.HeadCell>
+          </Table.Head>
+          <Table.Body className="divide-y">
+            {addedUsers.map((emp, idx) => (
+              <Table.Row
+                key={idx}
+                className="bg-white dark:border-gray-700 dark.bg-gray-800"
+              >
+                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
+                  {emp.fullname}
+                </Table.Cell>
+                <Table.Cell>
+                  <label>{emp.position}</label>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      );
+    }
+  };
+
+  
 
   const [errorMessage, setErrorMessage] = React.useState(() => {
     return {
@@ -309,30 +353,6 @@ const AddSchedule = () => {
           <HiUserGroup className="ml-2 my-auto" />
         </Button>
       </div>
-      <div>
-      <input
-        type="text"
-        placeholder="Search by position..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-      />
-      <ul>
-        {employeeList.map((user) => (
-          <li key={user.id}>
-            {user.fullname} - {user.position}
-            <button onClick={() => handleAddOrRemoveUser(user)}>
-              {addedUsers.some((addedUser) => addedUser.id === user.id) ? 'Remove' : 'Add'}
-            </button>
-          </li>
-        ))}
-      </ul>
-      <h2>Added Users</h2>
-      <ul>
-        {addedUsers.map((addedUser) => (
-          <li key={addedUser.id}>{addedUser.fullname} - {addedUser.position}</li>
-        ))}
-      </ul>
-    </div>
       <form>
         {/*
         {/* Schedule Template/Type }
@@ -381,7 +401,7 @@ const AddSchedule = () => {
         */}
         {/* Schedule Date */}
         <div className="flex">
-          <div className="mr-5">
+          <div className="mr-5" >
             <Label htmlFor="start-date" value="Start Date" />
             <TextInput
               id="start-date"
@@ -408,6 +428,7 @@ const AddSchedule = () => {
                 setScheduleDetailsState((prev) => ({
                   ...prev,
                   startDate: new Date(e.target.value),
+                  endDate: new Date(e.target.value)
                 }));
               }}
             />
@@ -418,7 +439,6 @@ const AddSchedule = () => {
               id="end-date"
               type="date"
               min={moment(scheduleDetailsState.startDate)
-                .add(1, "days")
                 .format("yyyy-MM-DD")}
               value={moment(scheduleDetailsState.endDate).format("yyyy-MM-DD")}
               helperText={
@@ -473,7 +493,7 @@ const AddSchedule = () => {
                     </Table.Cell>
                   </Table.Row>
                 ) : (
-                  generateBody()
+                  generateEmployeeList()
                 )}
               </Table.Body>
             </Table>
@@ -525,7 +545,7 @@ const AddSchedule = () => {
         <div className="mb-3">
           <Label htmlFor="schedule-employees" value="Employees Available" />
           <div id="schedule-employees">
-            {employees.map((emp, idx) => {
+            {employeeList.map((emp, idx) => {
               return (
                 <div key={idx}>
                   <Checkbox
@@ -571,7 +591,8 @@ const AddSchedule = () => {
             htmlFor="schedule-employees-details"
             value="Employees' Schedule Details"
           />
-          <div id="schedule-employees-details">
+          <div id="schedule-employees-details" className="mt-4 overflow-x-auto">
+                  {generateSelectedEmployeeList()}
             {/* {scheduleDetailsState.employeesSelected.map((emp, idx) => {
               return (
                 <div key={idx} className="flex items-center mb-3">

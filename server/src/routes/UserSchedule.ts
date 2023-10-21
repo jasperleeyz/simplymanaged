@@ -56,8 +56,8 @@ UserScheduleRouter.get("/:user_company_id/:start_date/:end_date", async (req, re
                     user_company_id: Number(user_company_id),
                     OR: [
                         {
-                            start_date: { lt: new Date(end_date) }, // Start date is before the end date
-                            end_date: { gt: new Date(start_date) }, // End date is after the start date
+                            start_date: { lte: new Date(end_date) }, // Start date is before the end date
+                            end_date: { gte: new Date(start_date) }, // End date is after the start date
                         }
                     ]
                 }
@@ -70,7 +70,6 @@ UserScheduleRouter.get("/:user_company_id/:start_date/:end_date", async (req, re
         // Filter out users with non-conflicting schedules
         const usersWithoutConflicts = allUsers.filter(user => !nonConflictingUserIds.includes(user.id));
 
-        // Create a result object if needed
         const result = generateResultJson(usersWithoutConflicts, page, size);
 
         res.status(200).json(result);
