@@ -8,7 +8,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-// System Tables for Registration
 model CodeType {
   id           Int      @id @default(autoincrement())
   code_type    String   @unique
@@ -38,9 +37,8 @@ model Registration {
   uen_id          String
   company_name    String
   registrant_name String
-  contact_no      Int      
-  email           String   
-  address         String
+  contact_no      Int
+  email           String
   industry        String
   no_of_employees Int
   approve_status  String
@@ -48,9 +46,9 @@ model Registration {
   created_date    DateTime @default(now())
   updated_by      String
   updated_date    DateTime @updatedAt
+  address         String
 }
 
-// System Tables for Subscribed Companies
 model Company {
   id                        Int                      @id @default(autoincrement())
   uen                       String                   @unique
@@ -93,7 +91,7 @@ model Subscription {
 }
 
 model CompanyCodeType {
-  id           Int      
+  id           Int
   company_id   Int
   code_type    String
   status       String
@@ -104,8 +102,8 @@ model CompanyCodeType {
   company      Company  @relation("company_code_types", fields: [company_id], references: [id])
 
   @@id([id, company_id])
-  @@index([company_id])
   @@unique([company_id, code_type])
+  @@index([company_id])
 }
 
 model CompanyCode {
@@ -122,8 +120,8 @@ model CompanyCode {
   company      Company  @relation("company_codes", fields: [company_id], references: [id])
 
   @@id([company_id, id])
-  @@index([company_id])
   @@unique([company_id, code_type, code])
+  @@index([company_id])
 }
 
 model CompanyLocation {
@@ -176,23 +174,22 @@ model Department {
   @@index([company_id])
 }
 
-// System Tables for Users/Employees
 model User {
   id                   Int
+  email                String
   company_id           Int
-  fullname             String
-  email                String             
-  contact_no           Int                
-  role                 String
-  position             String
-  department_id        Int?
-  password             String
-  status               String
-  profile_image        Bytes?
+  contact_no           Int
   created_by           String
   created_date         DateTime           @default(now())
+  department_id        Int?
+  fullname             String
+  position             String
+  role                 String
+  status               String
   updated_by           String
   updated_date         DateTime           @updatedAt
+  password             String
+  profile_image        Bytes?
   preferences          UserPreference[]   @relation("user_preferences")
   company              Company            @relation("company_employees", fields: [company_id], references: [id])
   department           Department?        @relation("user_department", fields: [company_id, department_id], references: [company_id, id])
@@ -202,8 +199,8 @@ model User {
   requests             Request[]          @relation("user_requests")
 
   @@id([id, company_id])
-  @@index([company_id, department_id])
   @@unique([email, company_id])
+  @@index([company_id, department_id])
 }
 
 model UserPreference {
@@ -226,7 +223,7 @@ model EmploymentDetails {
   user_company_id Int
   working_hours   Decimal @db.Decimal(2, 2)
   employment_type String
-  user            User   @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
+  user            User    @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@id([user_id, user_company_id])
   @@index([user_id, user_company_id])
@@ -304,7 +301,6 @@ model SwapRequest {
   @@index([request_id])
 }
 
-// System Tables for Rostering
 model Roster {
   id            Int
   company_id    Int

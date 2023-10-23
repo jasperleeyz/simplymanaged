@@ -120,7 +120,7 @@ const AddSchedule = () => {
       .finally(() => {
         setLoading((prev) => false);
       });
-    }, [searchTerm, scheduleDetailsState.startDate, scheduleDetailsState.endDate]);
+  }, [searchTerm, scheduleDetailsState.startDate, scheduleDetailsState.endDate]);
 
   /*useEffect(() => {
     setLoading((prev) => true);
@@ -167,26 +167,26 @@ const AddSchedule = () => {
           <label>{emp.position}</label>
         </Table.Cell>
         <Table.Cell>
-        <div className="inline-block"> {/* Create a container for the button */}
-      
-      {addedUsers.some((addedUser) => addedUser.id === emp.id) ? <Button
-        color="failure"
-        className="w-full"
-        size="sm"
-        onClick={() => handleAddOrRemoveUser(emp)}
-      >
-        Remove
-      </Button> : <Button
-        color="success"
-        className="w-full"
-        size="sm"
-        onClick={() => handleAddOrRemoveUser(emp)}
-      >
-        Add
-      </Button>}
-      
-      </div>
-    </Table.Cell>
+          <div className="inline-block"> {/* Create a container for the button */}
+
+            {addedUsers.some((addedUser) => addedUser.id === emp.id) ? <Button
+              color="failure"
+              className="w-full"
+              size="sm"
+              onClick={() => handleAddOrRemoveUser(emp)}
+            >
+              Remove
+            </Button> : <Button
+              color="success"
+              className="w-full"
+              size="sm"
+              onClick={() => handleAddOrRemoveUser(emp)}
+            >
+              Add
+            </Button>}
+
+          </div>
+        </Table.Cell>
       </Table.Row>
     ));
   };
@@ -198,7 +198,7 @@ const AddSchedule = () => {
           <Table.Head>
             <Table.HeadCell>Employee</Table.HeadCell>
             <Table.HeadCell>Position</Table.HeadCell>
-            <Table.HeadCell>Shift</Table.HeadCell>
+            <Table.HeadCell className="text-center">Shift</Table.HeadCell>
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
@@ -213,6 +213,58 @@ const AddSchedule = () => {
                 <Table.Cell>
                   <label>{emp.position}</label>
                 </Table.Cell>
+                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '0 10px' }}>AM</td>
+                        <td style={{ padding: '0 10px' }}>PM</td>
+                        <td style={{ padding: '0 10px' }}>FULL</td>
+                      </tr>
+                      <tr>
+                        <td style={{ padding: '0 12px' }}>
+                          <Checkbox
+                            value={emp.id}
+                            checked={isEmpSelected(emp)}
+                            onChange={(e) => {
+                              if (e.currentTarget.checked) {
+                                // Handle the change for AM shift
+                              } else {
+                                // Handle the change for AM shift
+                              }
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '0 12px' }}>
+                          <Checkbox
+                            value={emp.id}
+                            checked={isEmpSelected(emp)}
+                            onChange={(e) => {
+                              if (e.currentTarget.checked) {
+                                // Handle the change for PM shift
+                              } else {
+                                // Handle the change for PM shift
+                              }
+                            }}
+                          />
+                        </td>
+                        <td style={{ padding: '0 15px' }}>
+                          <Checkbox
+                            value={emp.id}
+                            checked={isEmpSelected(emp)}
+                            onChange={(e) => {
+                              if (e.currentTarget.checked) {
+                                // Handle the change for FULL shift
+                              } else {
+                                // Handle the change for FULL shift
+                              }
+                            }}
+                          />
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
@@ -221,7 +273,7 @@ const AddSchedule = () => {
     }
   };
 
-  
+
 
   const [errorMessage, setErrorMessage] = React.useState(() => {
     return {
@@ -302,6 +354,10 @@ const AddSchedule = () => {
     // );
     return false;
   };
+
+  const selectEmployeeShift = (employee: IUser, shift: string) => {
+    return addedUsers.find((emp) => emp.id === employee.id) 
+  }
 
   //  TODO: to invoke API to create schedule
   const createSchedule = () => {
@@ -592,7 +648,7 @@ const AddSchedule = () => {
             value="Employees' Schedule Details"
           />
           <div id="schedule-employees-details" className="mt-4 overflow-x-auto">
-                  {generateSelectedEmployeeList()}
+            {generateSelectedEmployeeList()}
             {/* {scheduleDetailsState.employeesSelected.map((emp, idx) => {
               return (
                 <div key={idx} className="flex items-center mb-3">
