@@ -32,7 +32,7 @@ export interface IRoster {
   createdDate: Date;
   updatedBy: string;
   updatedDate: Date;
-  employees?: IUser[];
+  employees: IUser[];
   location?: ICompanyLocation;
 }
 

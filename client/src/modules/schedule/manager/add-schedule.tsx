@@ -60,20 +60,6 @@ const AddSchedule = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEmployees, setFilteredEmployees] = useState<IUser[]>([]);
 
-  //TEMP VARIABLE
-  const temporaryPostitions = ["Programmer", "Manager", "Designer"];
-  const temporaryUsers = [
-    { id: 1, name: "John Doe", position: "Manager" },
-    { id: 2, name: "Jane Smith", position: "Manager" },
-    { id: 3, name: "Emily Davis", position: "Designer" },
-    { id: 4, name: "David Anderson", position: "Designer" },
-    { id: 5, name: "Sarah Lee", position: "Programmer" },
-    { id: 6, name: "Brian Brown", position: "Programmer" },
-    { id: 7, name: "Jessica Clark", position: "Programmer" },
-    { id: 8, name: "Andrew Wilson", position: "Designer" },
-    { id: 9, name: "Laura Taylor", position: "Manager" },
-  ];
-
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<IRoster>(() => {
       if (location.state?.schedule) {
@@ -83,7 +69,7 @@ const AddSchedule = () => {
           id: 0,
           scheduleTemplate: "",
           date: date || moment(new Date()).add(1, "days").toDate(),
-          employeesSelected: [],
+          employees: [],
           location: "Toa Payoh",
           startDate: moment(new Date()).add(1, "days").toDate(),
           endDate: moment(new Date()).add(1, "days").toDate()
@@ -91,15 +77,53 @@ const AddSchedule = () => {
       }
     });
 
-  const [addedUsers, setAddedUsers] = useState<IUser[]>([]); // Store added users separately
+  const [employeesSchedules, setEmployeesSchedules] = React.useState<IUserSchedule[]>([]);
 
-  const handleAddOrRemoveUser = (user: IUser) => {
-    if (addedUsers.some((addedUser) => addedUser.id === user.id)) {
-      // User is already added, remove them
-      setAddedUsers((prevUsers) => prevUsers.filter((addedUser) => addedUser.id !== user.id));
+
+  const handleAddOrRemoveEmployee = (user: IUser) => {
+    setScheduleDetailsState((prevState) => {
+      const updatedEmployees = [...prevState.employees];
+      const userIndex = updatedEmployees.findIndex((emp) => emp.id === user.id);
+
+      if (userIndex !== -1) {
+        // User is already in the employees array, remove them
+        updatedEmployees.splice(userIndex, 1);
+      } else {
+        // User is not in the employees array, add them
+        updatedEmployees.push(user);
+      }
+
+      return {
+        ...prevState,
+        employees: updatedEmployees,
+      };
+    });
+
+    // Handle IUserSchedule association outside of the IRoster state
+    const scheduleIndex = employeesSchedules.findIndex((schedule) => schedule.userId === user.id);
+    if (scheduleIndex !== -1) {
+      // Remove the associated IUserSchedule
+      setEmployeesSchedules((prevSchedules) =>
+        prevSchedules.filter((schedule) => schedule.userId !== user.id)
+      );
     } else {
-      // User is not added, add them
-      setAddedUsers((prevUsers) => [...prevUsers, user]);
+      // Create an associated IUserSchedule
+      setEmployeesSchedules((prevSchedules) => [
+        ...prevSchedules,
+        {
+          id: 1,
+          userId: user.id,
+          userCompanyId: 0,
+          rosterId: 0,
+          startDate: scheduleDetailsState.startDate,
+          endDate: scheduleDetailsState.endDate,
+          shift: "FULL",
+          createdBy: "string",
+          createdDate: scheduleDetailsState.startDate,
+          updatedBy: "string",
+          updatedDate: scheduleDetailsState.startDate
+        },
+      ]);
     }
   };
 
@@ -144,6 +168,8 @@ const AddSchedule = () => {
 */
 
 
+
+
   const generateEmployeeList = () => {
     if (employeeList.length === 0) {
       return (
@@ -169,18 +195,18 @@ const AddSchedule = () => {
         <Table.Cell>
           <div className="inline-block"> {/* Create a container for the button */}
 
-            {addedUsers.some((addedUser) => addedUser.id === emp.id) ? <Button
+            {scheduleDetailsState.employees.some((employees) => employees.id === emp.id) ? <Button
               color="failure"
               className="w-full"
               size="sm"
-              onClick={() => handleAddOrRemoveUser(emp)}
+              onClick={() => handleAddOrRemoveEmployee(emp)}
             >
               Remove
             </Button> : <Button
               color="success"
               className="w-full"
               size="sm"
-              onClick={() => handleAddOrRemoveUser(emp)}
+              onClick={() => handleAddOrRemoveEmployee(emp)}
             >
               Add
             </Button>}
@@ -192,7 +218,7 @@ const AddSchedule = () => {
   };
 
   const generateSelectedEmployeeList = () => {
-    if (addedUsers.length > 0) {
+    if (scheduleDetailsState.employees.length > 0) {
       return (
         <Table theme={customTableTheme}>
           <Table.Head>
@@ -202,7 +228,7 @@ const AddSchedule = () => {
             <Table.HeadCell></Table.HeadCell>
           </Table.Head>
           <Table.Body className="divide-y">
-            {addedUsers.map((emp, idx) => (
+            {scheduleDetailsState.employees.map((emp, idx) => (
               <Table.Row
                 key={idx}
                 className="bg-white dark:border-gray-700 dark.bg-gray-800"
@@ -225,40 +251,22 @@ const AddSchedule = () => {
                         <td style={{ padding: '0 12px' }}>
                           <Checkbox
                             value={emp.id}
-                            checked={isEmpSelected(emp)}
-                            onChange={(e) => {
-                              if (e.currentTarget.checked) {
-                                // Handle the change for AM shift
-                              } else {
-                                // Handle the change for AM shift
-                              }
-                            }}
+                            checked={selectEmployeeShift(emp, "AM")}
+                            onChange={() =>handleEmployeeShiftChange(emp, "AM")}
                           />
                         </td>
                         <td style={{ padding: '0 12px' }}>
                           <Checkbox
                             value={emp.id}
-                            checked={isEmpSelected(emp)}
-                            onChange={(e) => {
-                              if (e.currentTarget.checked) {
-                                // Handle the change for PM shift
-                              } else {
-                                // Handle the change for PM shift
-                              }
-                            }}
+                            checked={selectEmployeeShift(emp, "PM")}
+                            onChange={() =>handleEmployeeShiftChange(emp, "PM")}
                           />
                         </td>
                         <td style={{ padding: '0 15px' }}>
                           <Checkbox
                             value={emp.id}
-                            checked={isEmpSelected(emp)}
-                            onChange={(e) => {
-                              if (e.currentTarget.checked) {
-                                // Handle the change for FULL shift
-                              } else {
-                                // Handle the change for FULL shift
-                              }
-                            }}
+                            checked={selectEmployeeShift(emp, "FULL")}
+                            onChange={() =>handleEmployeeShiftChange(emp, "FULL")}
                           />
                         </td>
                       </tr>
@@ -356,8 +364,28 @@ const AddSchedule = () => {
   };
 
   const selectEmployeeShift = (employee: IUser, shift: string) => {
-    return addedUsers.find((emp) => emp.id === employee.id) 
-  }
+    // First, find the corresponding IUserSchedule for the user
+    const userSchedule = employeesSchedules.find(
+      (schedule) => schedule.userId === employee.id
+    );
+
+    // Check if the user has a schedule and if their schedule shift matches the specified shift
+    return !!userSchedule && userSchedule.shift === shift;
+  };
+
+  const handleEmployeeShiftChange = (employee: IUser, shift: string) => {
+    // Find the corresponding IUserSchedule for the user
+    const userSchedule = employeesSchedules.find((schedule) => schedule.userId === employee.id);
+  
+    if (userSchedule) {
+      // Update the shift for the user
+      userSchedule.shift = shift;
+  
+      // Create a new array with the updated schedule
+      const updatedSchedules = [...employeesSchedules];
+      setEmployeesSchedules(updatedSchedules);
+    }
+  };
 
   //  TODO: to invoke API to create schedule
   const createSchedule = () => {
