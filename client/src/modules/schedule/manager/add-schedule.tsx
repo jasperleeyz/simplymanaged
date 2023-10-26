@@ -67,18 +67,26 @@ const AddSchedule = () => {
       } else {
         return {
           id: 0,
-          scheduleTemplate: "",
-          date: date || moment(new Date()).add(1, "days").toDate(),
+          companyId: globalState?.user?.company_id,
+          locationId: 0,
+          departmentId: globalState?.user?.department_id,
+          date: date,
+          location: '',
+          startDate: moment(new Date()).add(1, 'days').toDate(),
+          endDate: moment(new Date()).add(1, 'days').toDate(),
+          type: '',
+          createdBy: globalState?.user?.fullname,
+          createdDate: date,
+          updatedBy: globalState?.user?.fullname,
+          updatedDate: date,
           employees: [],
-          location: "Toa Payoh",
-          startDate: moment(new Date()).add(1, "days").toDate(),
-          endDate: moment(new Date()).add(1, "days").toDate()
         };
       }
     });
 
-  const [employeesSchedules, setEmployeesSchedules] = React.useState<IUserSchedule[]>([]);
-
+  const [employeesSchedules, setEmployeesSchedules] = React.useState<
+    IUserSchedule[]
+  >([]);
 
   const handleAddOrRemoveEmployee = (user: IUser) => {
     setScheduleDetailsState((prevState) => {
@@ -100,7 +108,9 @@ const AddSchedule = () => {
     });
 
     // Handle IUserSchedule association outside of the IRoster state
-    const scheduleIndex = employeesSchedules.findIndex((schedule) => schedule.userId === user.id);
+    const scheduleIndex = employeesSchedules.findIndex(
+      (schedule) => schedule.userId === user.id
+    );
     if (scheduleIndex !== -1) {
       // Remove the associated IUserSchedule
       setEmployeesSchedules((prevSchedules) =>
@@ -111,17 +121,17 @@ const AddSchedule = () => {
       setEmployeesSchedules((prevSchedules) => [
         ...prevSchedules,
         {
-          id: 1,
+          id: 0,
           userId: user.id,
-          userCompanyId: 0,
+          userCompanyId: user.company_id,
           rosterId: 0,
           startDate: scheduleDetailsState.startDate,
           endDate: scheduleDetailsState.endDate,
-          shift: "FULL",
-          createdBy: "string",
+          shift: 'FULL',
+          createdBy: globalState?.user?.fullname || '',
           createdDate: scheduleDetailsState.startDate,
-          updatedBy: "string",
-          updatedDate: scheduleDetailsState.startDate
+          updatedBy: globalState?.user?.fullname || '',
+          updatedDate: scheduleDetailsState.startDate,
         },
       ]);
     }
@@ -143,8 +153,31 @@ const AddSchedule = () => {
       })
       .finally(() => {
         setLoading((prev) => false);
+        
       });
-  }, [searchTerm, scheduleDetailsState.startDate, scheduleDetailsState.endDate]);
+  }, [
+    searchTerm,
+    scheduleDetailsState.startDate,
+    scheduleDetailsState.endDate,
+  ]);
+
+  const setSchedulesToDefault = () => {
+    setScheduleDetailsState({
+      id: 0,
+      companyId: globalState?.user?.company_id || 0,
+      locationId: 0,
+      departmentId: globalState?.user?.department_id || 0,
+      startDate: moment(new Date()).add(1, 'days').toDate(),
+      endDate: moment(new Date()).add(1, 'days').toDate(),
+      type: '',
+      createdBy: globalState?.user?.fullname || '',
+      createdDate: date,
+      updatedBy: globalState?.user?.fullname || '',
+      updatedDate: date,
+      employees: [],
+    });
+    setEmployeesSchedules([]);
+  };
 
   /*useEffect(() => {
     setLoading((prev) => true);
@@ -166,9 +199,6 @@ const AddSchedule = () => {
     // }
   }, [searchTerm]);
 */
-
-
-
 
   const generateEmployeeList = () => {
     if (employeeList.length === 0) {
@@ -193,24 +223,30 @@ const AddSchedule = () => {
           <label>{emp.position}</label>
         </Table.Cell>
         <Table.Cell>
-          <div className="inline-block"> {/* Create a container for the button */}
-
-            {scheduleDetailsState.employees.some((employees) => employees.id === emp.id) ? <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => handleAddOrRemoveEmployee(emp)}
-            >
-              Remove
-            </Button> : <Button
-              color="success"
-              className="w-full"
-              size="sm"
-              onClick={() => handleAddOrRemoveEmployee(emp)}
-            >
-              Add
-            </Button>}
-
+          <div className="inline-block">
+            {" "}
+            {/* Create a container for the button */}
+            {scheduleDetailsState.employees.some(
+              (employees) => employees.id === emp.id
+            ) ? (
+              <Button
+                color="failure"
+                className="w-full"
+                size="sm"
+                onClick={() => handleAddOrRemoveEmployee(emp)}
+              >
+                Remove
+              </Button>
+            ) : (
+              <Button
+                color="success"
+                className="w-full"
+                size="sm"
+                onClick={() => handleAddOrRemoveEmployee(emp)}
+              >
+                Add
+              </Button>
+            )}
           </div>
         </Table.Cell>
       </Table.Row>
@@ -220,6 +256,12 @@ const AddSchedule = () => {
   const generateSelectedEmployeeList = () => {
     if (scheduleDetailsState.employees.length > 0) {
       return (
+        <div className="mb-3">
+          <Label
+            htmlFor="schedule-employees-details"
+            value="Employees' Schedule Details"
+          />
+          <div id="schedule-employees-details" className="mt-4 overflow-x-auto">
         <Table theme={customTableTheme}>
           <Table.Head>
             <Table.HeadCell>Employee</Table.HeadCell>
@@ -243,30 +285,36 @@ const AddSchedule = () => {
                   <table>
                     <tbody>
                       <tr>
-                        <td style={{ padding: '0 10px' }}>AM</td>
-                        <td style={{ padding: '0 10px' }}>PM</td>
-                        <td style={{ padding: '0 10px' }}>FULL</td>
+                        <td style={{ padding: "0 10px" }}>AM</td>
+                        <td style={{ padding: "0 10px" }}>PM</td>
+                        <td style={{ padding: "0 10px" }}>FULL</td>
                       </tr>
                       <tr>
-                        <td style={{ padding: '0 12px' }}>
+                        <td style={{ padding: "0 12px" }}>
                           <Checkbox
                             value={emp.id}
                             checked={selectEmployeeShift(emp, "AM")}
-                            onChange={() =>handleEmployeeShiftChange(emp, "AM")}
+                            onChange={() =>
+                              handleEmployeeShiftChange(emp, "AM")
+                            }
                           />
                         </td>
-                        <td style={{ padding: '0 12px' }}>
+                        <td style={{ padding: "0 12px" }}>
                           <Checkbox
                             value={emp.id}
                             checked={selectEmployeeShift(emp, "PM")}
-                            onChange={() =>handleEmployeeShiftChange(emp, "PM")}
+                            onChange={() =>
+                              handleEmployeeShiftChange(emp, "PM")
+                            }
                           />
                         </td>
-                        <td style={{ padding: '0 15px' }}>
+                        <td style={{ padding: "0 15px" }}>
                           <Checkbox
                             value={emp.id}
                             checked={selectEmployeeShift(emp, "FULL")}
-                            onChange={() =>handleEmployeeShiftChange(emp, "FULL")}
+                            onChange={() =>
+                              handleEmployeeShiftChange(emp, "FULL")
+                            }
                           />
                         </td>
                       </tr>
@@ -277,11 +325,54 @@ const AddSchedule = () => {
             ))}
           </Table.Body>
         </Table>
+        </div>
+        </div>
       );
     }
   };
 
-
+  const submitModal = () => {
+    // Get all unique positions from employees
+    const uniquePositions = [...new Set(scheduleDetailsState.employees.map(employee => employee.position))];
+    // Count employees for each unique position
+    const positionCounts = uniquePositions.map(position => ({
+      position,
+      count: scheduleDetailsState.employees.filter(employee => employee.position === position).length,
+    }));
+    const positionMessages = positionCounts.map(({ position, count }) => `${count} ${position}`);
+    const message = `There are ${positionMessages.join(' and ')} in the current schedule.`;
+  
+    <Modal show={showModal} dismissible onClose={() => setShowModal(false)}>
+          <Modal.Header>Comfirmation</Modal.Header>
+          <Modal.Body>
+            <div>
+              <p>
+              {message}
+              </p>
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="w-full md:w-1/2 ms-auto flex justify-center">
+              <Button
+                color="success"
+                className="w-full mr-3"
+                size="sm"
+                onClick={() => autoAssignPersonnel()}
+              >
+                Yes
+              </Button>
+              <Button
+                color="failure"
+                className="w-full"
+                size="sm"
+                onClick={() => setShowModal(false)}
+              >
+                No
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
+  }
 
   const [errorMessage, setErrorMessage] = React.useState(() => {
     return {
@@ -375,12 +466,14 @@ const AddSchedule = () => {
 
   const handleEmployeeShiftChange = (employee: IUser, shift: string) => {
     // Find the corresponding IUserSchedule for the user
-    const userSchedule = employeesSchedules.find((schedule) => schedule.userId === employee.id);
-  
+    const userSchedule = employeesSchedules.find(
+      (schedule) => schedule.userId === employee.id
+    );
+
     if (userSchedule) {
       // Update the shift for the user
       userSchedule.shift = shift;
-  
+
       // Create a new array with the updated schedule
       const updatedSchedules = [...employeesSchedules];
       setEmployeesSchedules(updatedSchedules);
@@ -485,7 +578,7 @@ const AddSchedule = () => {
         */}
         {/* Schedule Date */}
         <div className="flex">
-          <div className="mr-5" >
+          <div className="mr-5">
             <Label htmlFor="start-date" value="Start Date" />
             <TextInput
               id="start-date"
@@ -498,6 +591,7 @@ const AddSchedule = () => {
                 <span className="error-message">{errorMessage.date}</span>
               }
               onChange={(e) => {
+                setSchedulesToDefault();
                 if (moment(e.target.value).isBefore(moment(new Date()))) {
                   setErrorMessage((prev) => ({
                     ...prev,
@@ -512,7 +606,7 @@ const AddSchedule = () => {
                 setScheduleDetailsState((prev) => ({
                   ...prev,
                   startDate: new Date(e.target.value),
-                  endDate: new Date(e.target.value)
+                  endDate: new Date(e.target.value),
                 }));
               }}
             />
@@ -522,13 +616,13 @@ const AddSchedule = () => {
             <TextInput
               id="end-date"
               type="date"
-              min={moment(scheduleDetailsState.startDate)
-                .format("yyyy-MM-DD")}
+              min={moment(scheduleDetailsState.startDate).format("yyyy-MM-DD")}
               value={moment(scheduleDetailsState.endDate).format("yyyy-MM-DD")}
               helperText={
                 <span className="error-message">{errorMessage.date}</span>
               }
               onChange={(e) => {
+                setSchedulesToDefault();
                 if (
                   moment(e.target.value).isBefore(
                     moment(scheduleDetailsState.startDate)
@@ -595,7 +689,7 @@ const AddSchedule = () => {
             />
           </div>
         </div>
-
+{/*
         <div className="mb-3">
           <Label htmlFor="schedule-date" value="Date" />
           <TextInput
@@ -625,7 +719,7 @@ const AddSchedule = () => {
             }}
           />
         </div>
-        {/* Select Employees */}
+        {/* Select Employees 
         <div className="mb-3">
           <Label htmlFor="schedule-employees" value="Employees Available" />
           <div id="schedule-employees">
@@ -669,14 +763,14 @@ const AddSchedule = () => {
             })}
           </div>
         </div>
-        {/* Select employee schedule details (shifts/working hours) */}
+        {/* Select employee schedule details (shifts/working hours) }
         <div className="mb-3">
           <Label
             htmlFor="schedule-employees-details"
             value="Employees' Schedule Details"
           />
           <div id="schedule-employees-details" className="mt-4 overflow-x-auto">
-            {generateSelectedEmployeeList()}
+            
             {/* {scheduleDetailsState.employeesSelected.map((emp, idx) => {
               return (
                 <div key={idx} className="flex items-center mb-3">
@@ -696,9 +790,12 @@ const AddSchedule = () => {
                   </div>
                 </div>
               );
-            })} */}
+            })} 
           </div>
         </div>
+        */}
+        {generateSelectedEmployeeList()}
+
         <div className="mt-12 flex justify-end">
           <Button onClick={() => createSchedule()} size="sm">
             Submit
