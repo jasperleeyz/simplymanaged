@@ -28,7 +28,7 @@ import EditButton from "../../../shared/layout/buttons/edit-button";
 import ActivateButton from "../../../shared/layout/buttons/activate-button";
 import DeactivateButton from "../../../shared/layout/buttons/deactivate-button";
 import { USER_STATUS } from "../../../configs/constants";
-import { getAllUserSchedule } from "../../../shared/api/user-schedule.api";
+import { getAllUserSchedule, createSchedule as createScheduleAPI } from "../../../shared/api/user-schedule.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -48,17 +48,21 @@ const AddSchedule = () => {
   const date: Date = location.state?.date;
   const isEdit = location.pathname.endsWith(PATHS.EDIT_SCHEDULE);
 
+  const [employeeList, setEmployeeList] = useState<IUser[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredEmployeeList, setFilteredEmployeeList] = useState<IUser[]>([]);
+
   const [currentPage, setCurrentPage] = useState(location?.state?.page || 1);
   const [sizePerPage, setSizePerPage] = useState(
-    location?.state?.sizePerPage || 10
+    location?.state?.sizePerPage || 5
   );
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  const [employeeList, setEmployeeList] = useState<IUser[]>([]);
-
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredEmployees, setFilteredEmployees] = useState<IUser[]>([]);
+  // Calculate the indices for the employees to display based on currentPage and employeesPerPage
+  const startIndex = (currentPage - 1) * sizePerPage;
+  const endIndex = startIndex + sizePerPage;
+  const employeesToDisplay = filteredEmployeeList.slice(startIndex, endIndex);
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<IRoster>(() => {
@@ -72,13 +76,11 @@ const AddSchedule = () => {
           departmentId: globalState?.user?.department_id,
           date: date,
           location: '',
-          startDate: moment(new Date()).add(1, 'days').toDate(),
-          endDate: moment(new Date()).add(1, 'days').toDate(),
+          startDate: moment(new Date()).add(1, 'days').startOf("day").toDate(),
+          endDate: moment(new Date()).add(1, 'days').endOf("day").toDate(),
           type: '',
           createdBy: globalState?.user?.fullname,
-          createdDate: date,
           updatedBy: globalState?.user?.fullname,
-          updatedDate: date,
           employees: [],
         };
       }
@@ -109,29 +111,27 @@ const AddSchedule = () => {
 
     // Handle IUserSchedule association outside of the IRoster state
     const scheduleIndex = employeesSchedules.findIndex(
-      (schedule) => schedule.userId === user.id
+      (schedule) => schedule.user_id === user.id
     );
     if (scheduleIndex !== -1) {
       // Remove the associated IUserSchedule
       setEmployeesSchedules((prevSchedules) =>
-        prevSchedules.filter((schedule) => schedule.userId !== user.id)
+        prevSchedules.filter((schedule) => schedule.user_id !== user.id)
       );
     } else {
       // Create an associated IUserSchedule
       setEmployeesSchedules((prevSchedules) => [
         ...prevSchedules,
         {
-          id: 0,
-          userId: user.id,
-          userCompanyId: user.company_id,
-          rosterId: 0,
-          startDate: scheduleDetailsState.startDate,
-          endDate: scheduleDetailsState.endDate,
+          user_id: user.id,
+          user_company_id: user.company_id,
+          roster_id: 0,
+          start_date: scheduleDetailsState.startDate,
+          end_date: scheduleDetailsState.endDate,
           shift: 'FULL',
-          createdBy: globalState?.user?.fullname || '',
-          createdDate: scheduleDetailsState.startDate,
-          updatedBy: globalState?.user?.fullname || '',
-          updatedDate: scheduleDetailsState.startDate,
+          status: '',
+          created_by: globalState?.user?.fullname || '',
+          updated_by: globalState?.user?.fullname || '',
         },
       ]);
     }
@@ -149,6 +149,7 @@ const AddSchedule = () => {
       searchTerm ? `contains(position,${searchTerm})` : undefined
     )
       .then((res) => {
+        console.log(res.data);
         setEmployeeList(res.data);
       })
       .finally(() => {
@@ -160,6 +161,7 @@ const AddSchedule = () => {
     scheduleDetailsState.startDate,
     scheduleDetailsState.endDate,
   ]);
+  
 
   const setSchedulesToDefault = () => {
     setScheduleDetailsState({
@@ -178,27 +180,6 @@ const AddSchedule = () => {
     });
     setEmployeesSchedules([]);
   };
-
-  /*useEffect(() => {
-    setLoading((prev) => true);
-    getAllEmployees(
-      globalState?.user?.company_id || 0,
-      1,
-      sizePerPage,
-      undefined,
-      searchTerm ? `contains(position,${searchTerm})` : undefined
-    )
-      .then((res) => {
-        setEmployeeList(res.data);
-        setTotalPages(res.totalPages);
-        setCurrentPage((prev) => 1);
-      })
-      .finally(() => {
-        setLoading((prev) => false);
-      });
-    // }
-  }, [searchTerm]);
-*/
 
   const generateEmployeeList = () => {
     if (employeeList.length === 0) {
@@ -242,7 +223,8 @@ const AddSchedule = () => {
                 color="success"
                 className="w-full"
                 size="sm"
-                onClick={() => handleAddOrRemoveEmployee(emp)}
+                onClick={() =>{handleAddOrRemoveEmployee(emp);
+                  createScheduleAPI(employeesSchedules[0])}}
               >
                 Add
               </Button>
@@ -457,7 +439,7 @@ const AddSchedule = () => {
   const selectEmployeeShift = (employee: IUser, shift: string) => {
     // First, find the corresponding IUserSchedule for the user
     const userSchedule = employeesSchedules.find(
-      (schedule) => schedule.userId === employee.id
+      (schedule) => schedule.user_id === employee.id
     );
 
     // Check if the user has a schedule and if their schedule shift matches the specified shift
@@ -467,7 +449,7 @@ const AddSchedule = () => {
   const handleEmployeeShiftChange = (employee: IUser, shift: string) => {
     // Find the corresponding IUserSchedule for the user
     const userSchedule = employeesSchedules.find(
-      (schedule) => schedule.userId === employee.id
+      (schedule) => schedule.user_id === employee.id
     );
 
     if (userSchedule) {

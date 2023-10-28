@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
+import { start } from "repl";
 
 export const UserScheduleRouter = express.Router();
 
@@ -39,42 +40,77 @@ UserScheduleRouter.get("/:user_company_id/:user_id", async (req, res) => {
 });
 
 UserScheduleRouter.get("/:user_company_id/:start_date/:end_date", async (req, res) => {
-    const { page, size, sort, filter } = req.query;
-    const { user_company_id, start_date, end_date } = req.params;
-  
-    try {
-        const findObject = generateFindObject(page, size, sort, filter);
-        findObject.where = {
-            ...findObject.where,
-            company_id: Number(user_company_id),
-        };
+  const { page, size, sort, filter } = req.query;
+  const { user_company_id, start_date, end_date } = req.params;
 
-        // Fetch schedules that do not conflict with the specified date range
-        const nonConflictingSchedules = await prisma.$transaction([
-            prisma.userSchedule.findMany({
-                where: {
-                    user_company_id: Number(user_company_id),
-                    OR: [
-                        {
-                            start_date: { lte: new Date(end_date) }, // Start date is before the end date
-                            end_date: { gte: new Date(start_date) }, // End date is after the start date
-                        }
-                    ]
-                }
-            })
-        ]);
+  try {
+    const findObject = generateFindObject(page, size, sort, filter);
+    findObject.where = {
+      ...findObject.where,
+      company_id: Number(user_company_id),
+    };
 
-        const nonConflictingUserIds = nonConflictingSchedules[0].map(schedule => schedule.user_id);
-        const allUsers = await prisma.user.findMany(findObject);
-
-        // Filter out users with non-conflicting schedules
-        const usersWithoutConflicts = allUsers.filter(user => !nonConflictingUserIds.includes(user.id));
-
-        const result = generateResultJson(usersWithoutConflicts, page, size);
-
-        res.status(200).json(result);
-      } catch (error) {
-        console.error(error);
-        res.status(400).send("Error checking user schedules for conflicts.");
+    // Fetch schedules that do not conflict with the specified date range
+    const nonConflictingSchedules = await prisma.$transaction([
+      prisma.userSchedule.findMany({
+        where: {
+          user_company_id: Number(user_company_id),
+          start_date: { lte: new Date(end_date) }, // Start date is before the end date
+          end_date: { gte: new Date(start_date) } // End date is after the start date
       }
+      })
+    ]);
+    const nonConflictingUserIds = nonConflictingSchedules[0].map(schedule => schedule.user_id);
+    const allUsers = await prisma.user.findMany(findObject);
+
+    // Filter out users with non-conflicting schedules
+    const usersWithoutConflicts = allUsers.filter(user => !nonConflictingUserIds.includes(user.id));
+
+    const result = generateResultJson(usersWithoutConflicts, usersWithoutConflicts.length, page, size);
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error checking user schedules for conflicts.");
+  }
+});
+
+UserScheduleRouter.post("/create", async (req, res) => {
+  try {
+    const logged_in_user = req.headers?.["x-access-user"] as any;
+
+    const {
+      user_id,
+      user_company_id,
+      roster_id,
+      start_date,
+      end_date,
+      shift,
+      status,
+      created_by,
+      updated_by
+    } = req.body;
+    
+    const newSchedule = await prisma.$transaction(async (tx) => {
+      const createdSchedule = await tx.userSchedule.create({
+        data: {
+          user_id,
+          user_company_id,
+          roster_id,
+          start_date,
+          end_date,
+          shift,
+          status,
+          created_by,
+          updated_by
+        }
+      });
+      res.status(200).json({
+        schedule: createdSchedule
+      });
     });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error creating schedule.");
+  }
+});

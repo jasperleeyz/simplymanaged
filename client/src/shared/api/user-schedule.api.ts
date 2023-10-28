@@ -1,6 +1,6 @@
 import { IUserSchedule } from "../model/schedule.model";
 
-export const getAllUserSchedulez = async (
+export const getUserSchedule = async (
   user_company_id: number,
   user_id: number,
   page?: number,
@@ -80,3 +80,17 @@ export const getAllUserSchedule = async (
       })
       .catch((err) => Promise.reject(err));
   };
+
+  export const createSchedule = async (schedule: IUserSchedule) => {
+    const url = `/user-schedule/create`;
+    console.log(schedule)
+    return await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(schedule),
+    })
+      .then((response) => {
+        if (response.ok) return Promise.resolve(response.json());
+        else return response.text().then((text) => Promise.reject(text));
+      })
+      .catch((err) => Promise.reject(err));
+  }

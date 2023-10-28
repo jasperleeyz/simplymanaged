@@ -29,26 +29,27 @@ export interface IRoster {
   endDate: Date;
   type: string;
   createdBy: string;
-  createdDate: Date;
+  createdDate?: Date;
   updatedBy: string;
-  updatedDate: Date;
+  updatedDate?: Date;
   employees: IUser[];
   location?: ICompanyLocation;
 }
 
 export interface IUserSchedule {
-  id: number;
-  userId: number;
-  userCompanyId: number;
-  rosterId: number;
-  startDate: Date;
-  endDate: Date;
+  id?: number;
+  user_id: number;
+  user_company_id: number;
+  roster_id: number;
+  start_date: Date;
+  end_date: Date;
   shift: string;
+  status: string;
   attendance?: string;
-  createdBy: string;
-  createdDate: Date;
-  updatedBy: string;
-  updatedDate: Date;
+  created_by: string;
+  createdDate?: Date;
+  updated_by: string;
+  updatedDate?: Date;
 }
 
 
