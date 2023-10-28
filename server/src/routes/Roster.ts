@@ -3,11 +3,11 @@ import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { start } from "repl";
 
-export const UserScheduleRouter = express.Router();
+export const RosterRouter = express.Router();
 
 const prisma = new PrismaClient();
 
-UserScheduleRouter.get("/get-schedule/:user_company_id/:user_id", async (req, res) => {
+RosterRouter.get("/get-schedule/:user_company_id/:user_id", async (req, res) => {
   const { page, size, sort, filter } = req.query;
   const { user_company_id, user_id } = req.params;
 
@@ -39,58 +39,7 @@ UserScheduleRouter.get("/get-schedule/:user_company_id/:user_id", async (req, re
   }
 });
 
-UserScheduleRouter.get("/get-schedule/:user_company_id/:month/:year", async (req, res) => {
-  const { page, size, sort, filter } = req.query;
-  const { user_company_id, month, year} = req.params;
-
-  try {
-    // Calculate the start and end dates for the selected month and year
-    const startDate = new Date(`${year}-${month}-01`);
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 1);
-  
-    // Fetch user schedules for the specified month and year
-    const userSchedules = await prisma.userSchedule.findMany({
-      where: {
-        user_company_id: Number(user_company_id),
-        start_date: {
-          gte: startDate,
-          lt: endDate,
-        },
-      },
-      select: {
-        user: true, // Include the user data
-        start_date: true,
-      },
-    });
-  
-    // Group user schedules by day
-    const userSchedulesByDay: { [day: number]: Array<string> } = {};
-userSchedules.forEach((schedule) => {
-  const day = schedule.start_date.getDate();
-  if (!userSchedulesByDay[day]) {
-    userSchedulesByDay[day] = [];
-  }
-  userSchedulesByDay[day].push(schedule.user.fullname); // Use the specific property you want (e.g., fullname)
-});
-
-  
-    // Create the result object with users grouped by day
-    const result: { [key: string]: string[] } = {};
-    for (const day in userSchedulesByDay) {
-      const dayString = `${day} - ${month} - ${year}`;
-      result[dayString] = userSchedulesByDay[day].map((fullname) => fullname); // Adjust this based on your user data structure.
-    }
-  
-    const resultz = generateResultJson(result)
-    res.status(200).json(resultz);
-  } catch (error) {
-    console.error(error);
-    res.status(400).send("Error retrieving user schedules.");
-  }
-});
-
-UserScheduleRouter.get("/get-non-conflict-user/:user_company_id/:start_date/:end_date", async (req, res) => {
+RosterRouter.get("/get-non-conflict-user/:user_company_id/:start_date/:end_date", async (req, res) => {
   const { page, size, sort, filter } = req.query;
   const { user_company_id, start_date, end_date } = req.params;
 
@@ -126,41 +75,66 @@ UserScheduleRouter.get("/get-non-conflict-user/:user_company_id/:start_date/:end
   }
 });
 
-UserScheduleRouter.post("/create", async (req, res) => {
+RosterRouter.post("/create/roster-template", async (req, res) => {
   try {
 
     const {
-      user_id,
-      user_company_id,
-      roster_id,
-      start_date,
-      end_date,
-      shift,
-      status,
+      id,
+      company_id,
+      name,
+      no_of_employees,
       created_by,
       updated_by
     } = req.body;
     
     const newSchedule = await prisma.$transaction(async (tx) => {
-      const createdSchedule = await tx.userSchedule.create({
+      const createdSchedule = await tx.rosterTemplate.create({
         data: {
-          user_id,
-          user_company_id,
-          roster_id,
-          start_date,
-          end_date,
-          shift,
-          status,
-          created_by,
-          updated_by
+            id,
+            company_id,
+            name,
+            no_of_employees,
+            created_by,
+            updated_by
         }
       });
-      res.status(200).json({
-        schedule: createdSchedule
+      
       });
+      res.status(200).json({
+        rosterTemplate: ''
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating schedule.");
+    res.status(400).send("Error creating roster template.");
   }
 });
+
+RosterRouter.post("/create/roster-template-position", async (req, res) => {
+    try {
+
+      const {
+        roster_template_id,
+        company_id,
+        position,
+        count
+      } = req.body;
+      
+      const newSchedule = await prisma.$transaction(async (tx) => {
+        const createdSchedule = await tx.rosterTemplatePosition.create({
+          data: {
+            roster_template_id,
+            company_id,
+            position,
+            count
+          }
+        });
+        
+        });
+        res.status(200).json({
+          rosterTemplatePosition: ''
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(400).send("Error creating roster template position.");
+    }
+  });

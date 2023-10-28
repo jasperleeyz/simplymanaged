@@ -28,7 +28,7 @@ import EditButton from "../../../shared/layout/buttons/edit-button";
 import ActivateButton from "../../../shared/layout/buttons/activate-button";
 import DeactivateButton from "../../../shared/layout/buttons/deactivate-button";
 import { USER_STATUS } from "../../../configs/constants";
-import { getAllUserSchedule, createSchedule as createScheduleAPI } from "../../../shared/api/user-schedule.api";
+import { getNonConflictScheduleUser, createSchedule as createScheduleAPI } from "../../../shared/api/user-schedule.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -139,7 +139,7 @@ const AddSchedule = () => {
 
   useEffect(() => {
     setLoading((prev) => true);
-    getAllUserSchedule(
+    getNonConflictScheduleUser(
       0,
       scheduleDetailsState.startDate.toString(),
       scheduleDetailsState.endDate.toString(),
@@ -164,20 +164,10 @@ const AddSchedule = () => {
   
 
   const setSchedulesToDefault = () => {
-    setScheduleDetailsState({
-      id: 0,
-      companyId: globalState?.user?.company_id || 0,
-      locationId: 0,
-      departmentId: globalState?.user?.department_id || 0,
-      startDate: moment(new Date()).add(1, 'days').toDate(),
-      endDate: moment(new Date()).add(1, 'days').toDate(),
-      type: '',
-      createdBy: globalState?.user?.fullname || '',
-      createdDate: date,
-      updatedBy: globalState?.user?.fullname || '',
-      updatedDate: date,
-      employees: [],
-    });
+    setScheduleDetailsState((prev) => ({
+      ...prev,
+      employees: []
+    }));
     setEmployeesSchedules([]);
   };
 
@@ -223,8 +213,7 @@ const AddSchedule = () => {
                 color="success"
                 className="w-full"
                 size="sm"
-                onClick={() =>{handleAddOrRemoveEmployee(emp);
-                  createScheduleAPI(employeesSchedules[0])}}
+                onClick={() =>handleAddOrRemoveEmployee(emp)}
               >
                 Add
               </Button>

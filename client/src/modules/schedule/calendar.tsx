@@ -1,5 +1,5 @@
 "use client";
-
+import { useState, useEffect } from "react";
 import {
   Button,
   CustomFlowbiteTheme,
@@ -13,6 +13,7 @@ import CalendarMonthView from "../../shared/layout/calendar/calendar-month-view"
 import { HiCalendar } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../configs/global-state-provider";
+import { getUserSchedule, getAllUserSchedule } from "../../shared/api/user-schedule.api";
 
 const customCalendarStyle: CustomFlowbiteTheme = {
   buttonGroup: {
@@ -61,6 +62,24 @@ const Calendar = () => {
     if (!ip) return false;
     return ip;
   });
+
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading((prev) => true);
+    getAllUserSchedule(
+      0,
+      month,
+      year
+    )
+      .then((res) => {
+        console.log(res.data);
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+        
+      });
+  }, [month, year]);
 
   const range = (start, stop, step) =>
     Array.from(
