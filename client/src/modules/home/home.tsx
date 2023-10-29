@@ -19,7 +19,7 @@ const Home = () => {
 
   const scheduleForTheDay = globalState?.schedule?.find(
     (val) =>
-      val.startDate?.toLocaleDateString() === new Date().toLocaleDateString()
+      val.start_date?.toLocaleDateString() === new Date().toLocaleDateString()
       // && val.employeesSelected.find((emp) => emp.id === user?.id)
   );
 
@@ -102,48 +102,6 @@ const Home = () => {
         >
           <HiClock className="my-auto mr-2" />
           <p>{clockedIn}</p>
-        </Button>
-        <Button
-          className="mx-auto mt-5"
-          size="sm"
-          onClick={() => {
-            const usr = globalState?.user;
-            if (usr) {
-              usr.id = 0;
-              usr.role = ROLES.SYSADMIN;
-            }
-            setGlobalState((prev) => ({ ...prev, user: usr }));
-          }}
-        >
-          <p>Switch to sysadmin</p>
-        </Button>
-        <Button
-          className="mx-auto mt-5"
-          size="sm"
-          onClick={() => {
-            const usr = globalState?.user;
-            if (usr) {
-              usr.id = 1;
-              usr.role = ROLES.EMPLOYEE;
-            }
-            setGlobalState((prev) => ({ ...prev, user: usr }));
-          }}
-        >
-          <p>Switch to employee</p>
-        </Button>
-        <Button
-          className="mx-auto mt-5"
-          size="sm"
-          onClick={() => {
-            const usr = globalState?.user;
-            if (usr) {
-              usr.id = 1;
-              usr.role = ROLES.MANAGER;
-            }
-            setGlobalState((prev) => ({ ...prev, user: usr }));
-          }}
-        >
-          <p>Switch to manager</p>
         </Button>
       </div>
       <div className="md:w-4/5 md:border-l-2 md:px-5">

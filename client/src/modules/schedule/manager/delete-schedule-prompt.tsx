@@ -20,7 +20,7 @@ const DeleteSchedulePrompt = (props: IProps) => {
     setGlobalState((prev) => ({
       ...prev,
       schedule: prev.schedule?.filter(
-        (schedule) => schedule.startDate !== props.schedule.date
+        (schedule) => schedule.start_date !== props.schedule.date
       ),
     }));
     props.setOpenModal((prev) => false);

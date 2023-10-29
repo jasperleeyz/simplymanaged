@@ -54,8 +54,8 @@ const CalendarMonthView = ({
 
   const scheduleForMonth = scheduleList?.filter(
     (schedule) =>
-      schedule.startDate?.getMonth() === month &&
-      schedule.startDate?.getFullYear() === year 
+      schedule.start_date?.getMonth() === month &&
+      schedule.start_date?.getFullYear() === year 
       // &&
       // schedule.location === location
   );
@@ -78,7 +78,7 @@ const CalendarMonthView = ({
               <Table.Row key={idx}>
                 {week.days.map((day, didx) => {
                   const scheduleForDay = scheduleForMonth?.filter(
-                    (schedule) => schedule.startDate?.getDate() === day.date()
+                    (schedule) => schedule.start_date?.getDate() === day.date()
                   );
 
                   return (

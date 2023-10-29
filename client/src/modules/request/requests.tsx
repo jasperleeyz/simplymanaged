@@ -79,18 +79,18 @@ const Requests = () => {
                       ) : (
                         <>
                           <p>
-                            {`His/Her schedule: ${request.swapRequest?.requesterSchedule.startDate.toLocaleDateString(
+                            {`His/Her schedule: ${request.swapRequest?.requesterSchedule.start_date.toLocaleDateString(
                               DATE.LANGUAGE
-                            )}, ${request.swapRequest?.requesterSchedule.startDate.toLocaleDateString(
+                            )}, ${request.swapRequest?.requesterSchedule.start_date.toLocaleDateString(
                               DATE.LANGUAGE,
                               { weekday: "long" }
                             )},
                             ${request.swapRequest?.requesterSchedule.shift}
                           `}
                           </p>
-                          <p>{`Your schedule: ${request.swapRequest?.requestedSchedule.startDate.toLocaleDateString(
+                          <p>{`Your schedule: ${request.swapRequest?.requestedSchedule.start_date.toLocaleDateString(
                             DATE.LANGUAGE
-                          )}, ${request.swapRequest?.requestedSchedule.startDate.toLocaleDateString(
+                          )}, ${request.swapRequest?.requestedSchedule.start_date.toLocaleDateString(
                             DATE.LANGUAGE,
                             { weekday: "long" }
                           )},
