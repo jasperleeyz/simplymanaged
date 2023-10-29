@@ -49,6 +49,9 @@ export const PATHS = {
   REGISTRATION: "registration",
   VIEW_REGISTRATION: "view",
 
+  COMPANY: "company",
+  EDIT_COMPANY: "edit",
+
   DEPARTMENT: "department",
   VIEW_DEPARTMENT: "view",
   ADD_DEPARTMENT: "add",

@@ -245,7 +245,7 @@ const EmployeesPage = () => {
       <div className="flex mt-4 items-center justify-center text-center">
         <Pagination
           currentPage={currentPage}
-          // layout="pagination"
+          layout="pagination"
           onPageChange={(page) => {
             setCurrentPage(page);
           }}

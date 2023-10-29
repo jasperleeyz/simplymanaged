@@ -89,7 +89,7 @@ const Home = () => {
   return (
     <div className="w-full md:flex">
       <div className="md:w-1/5 text-center">
-        <Avatar rounded size="xl" img={user?.profileImage} />
+        <Avatar rounded size="xl" img={user?.profile_image} />
         <p className="mt-3 font-semibold text-xl">
           {capitalizeString(user?.fullname)}
         </p>

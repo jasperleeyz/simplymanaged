@@ -20,13 +20,13 @@ const ProfilePage = () => {
     return {
       name: "",
       email: "",
-      contactNo: "",
+      contact_no: "",
     };
   });
 
   const [inputColor, setInputColor] = React.useState({
     name: 'gray',
-    contactNo: 'gray',
+    contact_no: 'gray',
     email: 'gray',
   })
 
@@ -43,14 +43,14 @@ const ProfilePage = () => {
     }));
     setErrorMessage(prev => ({
       ...prev,
-      contactNo: '',
+      contact_no: '',
     }));
     setErrorMessage(prev => ({
       ...prev,
       email: '',
     }));
 
-    if (!validName(editUser.fullname) || !isNumber(editUser.contactNo) || (editUser.contactNo.length != 8) || !validEmail(editUser.email)) {
+    if (!validName(editUser.fullname) || !isNumber(editUser.contact_no) || (editUser.contact_no.length != 8) || !validEmail(editUser.email)) {
       if (!validName(editUser.fullname)) {
         setErrorMessage(prev => ({
           ...prev,
@@ -61,14 +61,14 @@ const ProfilePage = () => {
           name: 'failure',
         }));
       }
-      if (!isNumber(editUser.contactNo) || (editUser.contactNo.length != 8)) {
+      if (!isNumber(editUser.contact_no) || (editUser.contact_no.length != 8)) {
         setErrorMessage(prev => ({
           ...prev,
-          contactNo: 'Phone must contain only 8 numbers.',
+          contact_no: 'Phone must contain only 8 numbers.',
         }));
         setInputColor(prev => ({
           ...prev,
-          contactNo: 'failure',
+          contact_no: 'failure',
         }));
       }
       if (!validEmail(editUser.email)) {
@@ -121,7 +121,7 @@ const ProfilePage = () => {
       <div id="profile-section" className="md:flex">
         <div className="w-full mb-6 md:m-auto md:w-2/5">
           <Avatar
-            img={globalState?.user?.profileImage}
+            img={globalState?.user?.profile_image}
             size="xl"
             rounded
             alt="Profile image"
@@ -165,17 +165,17 @@ const ProfilePage = () => {
           )}
           <Label htmlFor="user-phone-no" value="Phone" />
           {!isEdit ? (
-            <p id="user-phone-no">{globalState?.user?.contactNo}</p>
+            <p id="user-phone-no">{globalState?.user?.contact_no}</p>
           ) : (
             <TextInput
               id="user-phone-no"
-              value={editUser?.contactNo}
-              color={inputColor.contactNo}
+              value={editUser?.contact_no}
+              color={inputColor.contact_no}
               required
-              helperText={<span className="error-message">{errorMessage.contactNo}</span>}
+              helperText={<span className="error-message">{errorMessage.contact_no}</span>}
               onChange={(e) => {
-                  setEditUser((prev) => ({ ...prev, contactNo: e.target.value }))
-                  setInputColor(prev => ({ ...prev, contactNo: 'gray'}))
+                  setEditUser((prev) => ({ ...prev, contact_no: e.target.value }))
+                  setInputColor(prev => ({ ...prev, contact_no: 'gray'}))
           
               }}
               autoComplete="off"

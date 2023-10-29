@@ -89,7 +89,7 @@ export const generateResultJson = (
 
   if (page && size) {
     result["page"] = Number(page);
-    result["totalPages"] = Math.ceil(total / Number(size));
+    result["totalPages"] = Math.ceil(total / Number(size)) || 1;
     result["total"] = total;
   }
 

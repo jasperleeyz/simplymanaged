@@ -180,6 +180,7 @@ const ViewRegistration = () => {
       <div className="flex mt-4 text-center justify-center items-center">
         <Pagination
           currentPage={currentPage}
+          layout="pagination"
           onPageChange={(page) => {
             setCurrentPage(page);
           }}

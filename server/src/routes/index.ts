@@ -9,6 +9,7 @@ import { companyCodeRouter } from "./CompanyCode";
 import { departmentRouter } from "./Department";
 import { locationRouter } from "./Location";
 import { companyCodeTypeRouter } from "./CompanyCodeType";
+import { companyRouter } from "./Company";
 import { UserScheduleRouter } from "./UserSchedule";
 
 
@@ -19,6 +20,7 @@ routes.use('/user', userRouter);
 routes.use('/registration', registrationRouter);
 routes.use('/code', codeRouter);
 routes.use('/code-type', codeTypeRouter);
+routes.use('/company', companyRouter);
 routes.use('/company-code', companyCodeRouter);
 routes.use('/company-code-type', companyCodeTypeRouter);
 routes.use('/department', departmentRouter);

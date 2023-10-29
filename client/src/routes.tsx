@@ -15,6 +15,7 @@ import EmployeeManagementRoutes from "./modules/employee-management";
 import DepartmentManagementRoutes from "./modules/department-management";
 import LocationManagementRoutes from "./modules/location-management";
 import CompanyCodeManagementRoutes from "./modules/company-code-management";
+import CompanyManagementRoutes from "./modules/company-management";
 
 const AppRoutes = () => {
   return (
@@ -92,6 +93,14 @@ const AppRoutes = () => {
             element={
               <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
                 <CompanyCodeManagementRoutes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={`/${PATHS.COMPANY}/*`}
+            element={
+              <PrivateRoute hasAnyRoles={[ROLES.SYSADMIN]}>
+                <CompanyManagementRoutes />
               </PrivateRoute>
             }
           />
