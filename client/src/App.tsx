@@ -42,6 +42,12 @@ function App() {
         setGlobalState((prevState) => InitialGlobalState);
         window.location.href = "/login";
       });
+    } else {
+      setGlobalState((prevState) => ({
+        ...prevState,
+        isAuthenticated: false,
+        sessionFetched: true,
+      }));
     }
     
   }, []);
