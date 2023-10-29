@@ -14,6 +14,7 @@ import { HiCalendar } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { getUserSchedule, getAllUserSchedule } from "../../shared/api/user-schedule.api";
+import { getAllLocations } from "../../shared/api/location.api"
 
 const customCalendarStyle: CustomFlowbiteTheme = {
   buttonGroup: {
@@ -32,6 +33,21 @@ const Calendar = () => {
 
   // TODO: to call retrieve schedule api here
   const locationList = ["Toa Payoh", "Ang Mo Kio"];
+
+  useEffect(() => {
+    setLoading((prev) => true);
+    getAllLocations(
+      1
+    )
+      .then((res) => {
+        console.log(res.data);
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+        
+      });
+  }, []);
+  
   const scheduleList =
     React.useContext(GlobalStateContext).globalState?.schedule;
 
