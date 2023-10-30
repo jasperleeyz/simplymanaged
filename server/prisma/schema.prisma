@@ -34,45 +34,60 @@ model Code {
 }
 
 model Registration {
-  id              Int      @id @default(autoincrement())
-  uen_id          String
-  company_name    String
-  registrant_name String
-  contact_no      Int      
-  email           String   
-  address         String
-  industry        String
-  no_of_employees Int
-  approve_status  String
-  created_by      String   @default("SYSTEM")
-  created_date    DateTime @default(now())
-  updated_by      String
-  updated_date    DateTime @updatedAt
+  id                    Int      @id @default(autoincrement())
+  uen_id                String
+  company_name          String
+  registrant_name       String
+  contact_no            Int
+  email                 String
+  address               String
+  industry              String
+  no_of_employees       Int
+  subscription_model_id Int?      
+  approve_status        String
+  created_by            String   @default("SYSTEM")
+  created_date          DateTime @default(now())
+  updated_by            String
+  updated_date          DateTime @updatedAt
+}
+
+// System Tables for Subscription Models
+model SubscriptionModel {
+  id            Int      @id @default(autoincrement())
+  name          String
+  member_limit  Int
+  payment_cycle String
+  price         Decimal  @db.Decimal(5, 2)
+  created_by    String
+  created_date  DateTime @default(now())
+  updated_by    String
+  updated_date  DateTime @updatedAt
+
+  @@unique([name, payment_cycle])
 }
 
 // System Tables for Subscribed Companies
 model Company {
-  id                        Int                      @id @default(autoincrement())
-  uen                       String                   @unique
-  name                      String
-  contact_no                Int                      
-  email                     String                   
-  address                   String
-  industry                  String
-  no_of_employees           Int
-  created_by                String                   @default("SYSTEM")
-  created_date              DateTime                 @default(now())
-  updated_by                String
-  updated_date              DateTime                 @updatedAt
-  subscriptions             Subscription[]           @relation("company_subscriptions")
-  company_code_types        CompanyCodeType[]        @relation("company_code_types")
-  company_codes             CompanyCode[]            @relation("company_codes")
-  role_based_access_control RoleBasedAccessControl[] @relation("company_rbac")
-  employees                 User[]                   @relation("company_employees")
-  departments               Department[]             @relation("company_departments")
-  company_locations         CompanyLocation[]        @relation("company_locations")
-  rosters                   Roster[]                 @relation("company_rosters")
-  roster_templates          RosterTemplate[]         @relation("company_roster_templates")
+  id                 Int               @id @default(autoincrement())
+  uen                String            @unique
+  name               String
+  contact_no         Int
+  email              String
+  address            String
+  industry           String
+  no_of_employees    Int
+  created_by         String            @default("SYSTEM")
+  created_date       DateTime          @default(now())
+  updated_by         String
+  updated_date       DateTime          @updatedAt
+  subscriptions      Subscription[]    @relation("company_subscriptions")
+  company_code_types CompanyCodeType[] @relation("company_code_types")
+  company_codes      CompanyCode[]     @relation("company_codes")
+  employees          User[]            @relation("company_employees")
+  departments        Department[]      @relation("company_departments")
+  company_locations  CompanyLocation[] @relation("company_locations")
+  rosters            Roster[]          @relation("company_rosters")
+  roster_templates   RosterTemplate[]  @relation("company_roster_templates")
 }
 
 model Subscription {
@@ -80,6 +95,8 @@ model Subscription {
   company_id        Int
   type              String
   employee_quantity Int
+  payment_cycle     String?
+  price             Decimal?  @db.Decimal(5, 2)
   status            String
   start_date        DateTime
   end_date          DateTime
@@ -93,7 +110,7 @@ model Subscription {
 }
 
 model CompanyCodeType {
-  id           Int      
+  id           Int
   company_id   Int
   code_type    String
   status       String
@@ -104,8 +121,8 @@ model CompanyCodeType {
   company      Company  @relation("company_code_types", fields: [company_id], references: [id])
 
   @@id([id, company_id])
-  @@index([company_id])
   @@unique([company_id, code_type])
+  @@index([company_id])
 }
 
 model CompanyCode {
@@ -122,8 +139,8 @@ model CompanyCode {
   company      Company  @relation("company_codes", fields: [company_id], references: [id])
 
   @@id([company_id, id])
-  @@index([company_id])
   @@unique([company_id, code_type, code])
+  @@index([company_id])
 }
 
 model CompanyLocation {
@@ -139,21 +156,6 @@ model CompanyLocation {
   rosters      Roster[] @relation("location_rosters")
 
   @@id([id, company_id])
-  @@index([company_id])
-}
-
-model RoleBasedAccessControl {
-  id           Int      @id @default(autoincrement())
-  company_id   Int
-  user_role    String
-  module       String
-  access_type  String
-  created_by   String
-  created_date DateTime @default(now())
-  updated_by   String
-  updated_date DateTime @updatedAt
-  company      Company  @relation("company_rbac", fields: [company_id], references: [id])
-
   @@index([company_id])
 }
 
@@ -181,8 +183,8 @@ model User {
   id                   Int
   company_id           Int
   fullname             String
-  email                String             
-  contact_no           Int                
+  email                String
+  contact_no           Int
   role                 String
   position             String
   department_id        Int?
@@ -202,8 +204,8 @@ model User {
   requests             Request[]          @relation("user_requests")
 
   @@id([id, company_id])
-  @@index([company_id, department_id])
   @@unique([email, company_id])
+  @@index([company_id, department_id])
 }
 
 model UserPreference {
@@ -226,7 +228,7 @@ model EmploymentDetails {
   user_company_id Int
   working_hours   Decimal @db.Decimal(2, 2)
   employment_type String
-  user            User   @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
+  user            User    @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@id([user_id, user_company_id])
   @@index([user_id, user_company_id])

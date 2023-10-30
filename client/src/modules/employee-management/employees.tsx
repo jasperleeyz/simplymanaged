@@ -98,6 +98,20 @@ const EmployeesPage = () => {
         page: currentPage,
         sizePerPage: sizePerPage,
       };
+
+      setLoading((prev) => true);
+      getAllEmployees(
+        globalState?.user?.company_id || 0,
+        currentPage,
+        sizePerPage
+      )
+        .then((res) => {
+          setEmployeeList(res.data);
+          setTotalPages(res.totalPages);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
   }, [currentPage, sizePerPage]);
 
@@ -111,7 +125,11 @@ const EmployeesPage = () => {
           } successfully!`
         );
         setEmployeeList((prev) =>
-          prev.map((c) => ((c.id === res.data.id && c.company_id === res.data.company_id) ? res.data : c))
+          prev.map((c) =>
+            c.id === res.data.id && c.company_id === res.data.company_id
+              ? res.data
+              : c
+          )
         );
       })
       .catch((err) => {
@@ -173,9 +191,15 @@ const EmployeesPage = () => {
             }}
           />
           {emp.status === USER_STATUS.ACTIVE ? (
-            <DeactivateButton size="sm" onClick={() => updateStatus(emp, USER_STATUS.INACTIVE)} />
+            <DeactivateButton
+              size="sm"
+              onClick={() => updateStatus(emp, USER_STATUS.INACTIVE)}
+            />
           ) : (
-            <ActivateButton size="sm" onClick={() => updateStatus(emp, USER_STATUS.ACTIVE)} />
+            <ActivateButton
+              size="sm"
+              onClick={() => updateStatus(emp, USER_STATUS.ACTIVE)}
+            />
           )}
         </Table.Cell>
       </Table.Row>

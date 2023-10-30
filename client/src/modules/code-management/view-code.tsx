@@ -8,7 +8,7 @@ import {
 import React from "react";
 import { IApplicationCode } from "../../shared/model/application.model";
 import CreateButton from "../../shared/layout/buttons/create-button";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { CODE_STATUS, PATHS } from "../../configs/constants";
 import EditButton from "../../shared/layout/buttons/edit-button";
 import { createUpdateCodes, getAllCodes } from "../../shared/api/code.api";
@@ -26,8 +26,14 @@ const customTableTheme: CustomFlowbiteTheme["table"] = {
 };
 
 const ViewCode = () => {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [sizePerPage, setSizePerPage] = React.useState(10);
+  const location = useLocation();
+
+  const [currentPage, setCurrentPage] = React.useState(
+    location?.state?.page || 1
+  );
+  const [sizePerPage, setSizePerPage] = React.useState(
+    location?.state?.sizePerPage || 10
+  );
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
@@ -130,6 +136,29 @@ const ViewCode = () => {
         setLoading((prev) => false);
       });
   }, []);
+
+  React.useEffect(() => {
+    if (
+      currentPage !== location?.state?.page ||
+      sizePerPage !== location?.state?.sizePerPage
+    ) {
+      location.state = {
+        ...location.state,
+        page: currentPage,
+        sizePerPage: sizePerPage,
+      };
+
+      setLoading((prev) => true);
+      getAllCodes(currentPage, sizePerPage, "asc(code_type)")
+        .then((res) => {
+          setCodeList(res.data);
+          setTotalPages(res.totalPages);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
+    }
+  }, [currentPage, sizePerPage]);
 
   return (
     <div id="code-main">

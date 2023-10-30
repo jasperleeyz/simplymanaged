@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateSalt, hashPassword } from "../utils/security";
 import { generateFindObject, generateResultJson } from "../utils/utils";
+import { SUBSCRIPTION_STATUS } from "../utils/constants";
 
 export const userRouter = express.Router();
 
@@ -124,6 +125,29 @@ userRouter.post("/create", async (req, res) => {
       company_id,
     } = req.body;
 
+    // check if limit has been hit
+    const userCount = await prisma.user.count({
+      where: {
+        company_id: company_id,
+      },
+    });
+
+    const subscription = await prisma.subscription.findFirst({
+      where: {
+        company_id: company_id,
+        status: SUBSCRIPTION_STATUS.ACTIVE,
+      },
+    });
+
+    if(!subscription) {
+      throw new Error("No active subscription found.");
+    }
+
+    if(subscription?.employee_quantity <= userCount) {
+      res.status(400).send("Error creating employee. Employee limit has been reached for your subscription.");
+      return;
+    }
+
     const user = await prisma.$transaction(async (tx) => {
       const existingUser = await tx.user.findFirst({
         where: {
@@ -146,6 +170,7 @@ userRouter.post("/create", async (req, res) => {
           contact_no: Number(contact_no),
           position: position.toLocaleUpperCase().trim(),
           status: status.toLocaleUpperCase().trim(),
+          department_id: department_id,
           employment_details: {
             connectOrCreate: {
               where: {
@@ -176,7 +201,7 @@ userRouter.post("/create", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating user.");
+    res.status(400).send("Error creating new employee. Please try again later.");
   }
 });
 
@@ -212,12 +237,7 @@ userRouter.post("/update", async (req, res) => {
         position: position.toLocaleUpperCase().trim(),
         status: status,
         profile_image: profile_image,
-        department: {
-          connect: {
-            id: department_id,
-            company_id_id: company_id,
-          }
-        },
+        department_id: department_id,
         employment_details: employment_details,
         preferences: preferences,
         updated_by: logged_in_user["name"],
@@ -231,6 +251,6 @@ userRouter.post("/update", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error updating user.");
+    res.status(400).send("Error updating employee. Please try again later.");
   }
 });

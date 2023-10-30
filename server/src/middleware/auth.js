@@ -5,6 +5,7 @@ const config = process.env;
 const verifyToken = (req, res, next) => {
     if (!["/login", "/registration"].includes(req.path.replace("/api", "")) &&
         !req.path.replace("/api", "").startsWith("/code/registration")
+        && !req.path.replace("/api", "").startsWith("/subscription/model")
         && !req.path.replace("/api", "").startsWith("/test") // TODO: to remove after testing
     ) {
         const token = req.headers.authorization?.split(" ")[1];

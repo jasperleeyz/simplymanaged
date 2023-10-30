@@ -20,3 +20,15 @@ export const USER_STATUS = {
     A: "ACTIVE",
     I: "INACTIVE",
 }
+
+export const SUBSCRIPTION_STATUS = {
+    ACTIVE: "A",
+    INACTIVE: "I",
+    A: "ACTIVE",
+    I: "INACTIVE",
+}
+
+export const PAYMENT_CYCLE = {
+    MONTHLY: "MONTHLY",
+    ANNUALLY: "ANNUALLY",
+}
