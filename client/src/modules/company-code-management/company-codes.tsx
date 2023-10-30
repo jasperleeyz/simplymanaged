@@ -7,7 +7,7 @@ import {
 } from "flowbite-react";
 import React from "react";
 import CreateButton from "../../shared/layout/buttons/create-button";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { CODE_STATUS, PATHS } from "../../configs/constants";
 import EditButton from "../../shared/layout/buttons/edit-button";
 import DeactivateButton from "../../shared/layout/buttons/deactivate-button";
@@ -27,8 +27,14 @@ const customTableTheme: CustomFlowbiteTheme["table"] = {
 };
 
 const CompanyCodes = () => {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const [sizePerPage, setSizePerPage] = React.useState(10);
+  const location = useLocation();
+
+  const [currentPage, setCurrentPage] = React.useState(
+    location?.state?.page || 1
+  );
+  const [sizePerPage, setSizePerPage] = React.useState(
+    location?.state?.sizePerPage || 10
+  );
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
@@ -134,6 +140,29 @@ const CompanyCodes = () => {
         setLoading((prev) => false);
       });
   }, []);
+
+  React.useEffect(() => {
+    if (
+      currentPage !== location?.state?.page ||
+      sizePerPage !== location?.state?.sizePerPage
+    ) {
+      location.state = {
+        ...location.state,
+        page: currentPage,
+        sizePerPage: sizePerPage,
+      };
+
+      setLoading((prev) => true);
+      getAllCompanyCodes(logged_in_user?.company_id || 0, currentPage, sizePerPage, "asc(code_type)")
+      .then((res) => {
+        setCodeList(res.data);
+        setTotalPages(res.totalPages);
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+      });
+    }
+  }, [currentPage, sizePerPage]);
 
   return (
     <div id="code-main">

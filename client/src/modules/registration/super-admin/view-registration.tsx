@@ -150,6 +150,13 @@ const ViewRegistration = () => {
         page: currentPage,
         sizePerPage: sizePerPage,
       };
+
+      setLoading((prev) => true);
+      getAllRegistrations(currentPage, sizePerPage).then((res) => {
+        setRegistrationList(res.data);
+        setTotalPages(res.totalPages);
+        setLoading((prev) => false);
+      })
     }
   }, [currentPage, sizePerPage]);
 

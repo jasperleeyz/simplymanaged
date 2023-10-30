@@ -5,7 +5,7 @@ import { getCompanyById, updateCompany } from "../../shared/api/company.api";
 import LabeledField from "../../shared/layout/fields/labeled-field";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "flowbite-react";
-import { PATHS } from "../../configs/constants";
+import { DATE, PATHS } from "../../configs/constants";
 import { HiPencil, HiSave } from "react-icons/hi";
 import LabeledInputText from "../../shared/layout/form/labeled-text-input";
 import { toast } from "react-toastify";
@@ -14,6 +14,7 @@ import * as Yup from "yup";
 import { IApplicationCode } from "../../shared/model/application.model";
 import { getAllCodes } from "../../shared/api/code.api";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
+import moment from "moment";
 
 const CompanyPage = () => {
   const companyId =
@@ -27,9 +28,9 @@ const CompanyPage = () => {
 
   React.useEffect(() => {
     Promise.all([
-      getCompanyById(companyId || 0).then((response) => {
-        setCompany(response.data);
-      }),
+      // getCompanyById(companyId || 0).then((response) => {
+      //   setCompany(response.data);
+      // }),
       getAllCodes(
         undefined,
         undefined,
@@ -42,6 +43,14 @@ const CompanyPage = () => {
       toast.error(`Error retrieving company details. Please try again later.`);
     });
   }, []);
+
+  React.useEffect(() => {
+    if (!isEdit) {
+      getCompanyById(companyId || 0).then((response) => {
+        setCompany(response.data);
+      });
+    }
+  }, [isEdit]);
 
   return (
     <div>
@@ -226,8 +235,28 @@ const getForm = (initialValues, navigate, industryList) => {
                 name="company-subscription-type"
                 labelValue="Subscription Type"
                 value={
+                  initialValues?.subscriptions ? initialValues.subscriptions[0].type : "N/A"
+                }
+              />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <LabeledField
+                name="company-subscription-payment-cycle"
+                labelValue="Subscription Payment Cycle"
+                value={
                   initialValues?.subscriptions
-                    ? initialValues.subscriptions[0].type
+                    ? initialValues.subscriptions[0].payment_cycle
+                    : "N/A"
+                }
+              />
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <LabeledField
+                name="company-subscription-price"
+                labelValue="Subscription Price"
+                value={
+                  initialValues?.subscriptions
+                    ? `$${initialValues.subscriptions[0].price}`
                     : "N/A"
                 }
               />
@@ -249,7 +278,9 @@ const getForm = (initialValues, navigate, industryList) => {
                 labelValue="Subscription Start Date"
                 value={
                   initialValues?.subscriptions
-                    ? initialValues.subscriptions[0].start_date
+                    ? moment(initialValues.subscriptions[0].start_date).format(
+                        DATE.MOMENT_DDMMYYYY
+                      )
                     : "N/A"
                 }
               />
@@ -260,7 +291,9 @@ const getForm = (initialValues, navigate, industryList) => {
                 labelValue="Subscription Expiry Date"
                 value={
                   initialValues?.subscriptions
-                    ? initialValues.subscriptions[0].end_date
+                    ? moment(initialValues.subscriptions[0].end_date).format(
+                        DATE.MOMENT_DDMMYYYY
+                      )
                     : "N/A"
                 }
               />
@@ -295,7 +328,10 @@ const getBody = (company, navigate, industryList) => {
           <LabeledField
             name="industry"
             labelValue="Company Industry"
-            value={industryList.find((ind) => ind.code === company.industry)?.description || company.industry}
+            value={
+              industryList.find((ind) => ind.code === company.industry)
+                ?.description || company.industry
+            }
           />
         </div>
         <div className="col-span-2 md:col-span-1">
@@ -339,6 +375,28 @@ const getBody = (company, navigate, industryList) => {
         </div>
         <div className="col-span-2 md:col-span-1">
           <LabeledField
+            name="company-subscription-payment-cycle"
+            labelValue="Subscription Payment Cycle"
+            value={
+              company?.subscriptions
+                ? company.subscriptions[0].payment_cycle
+                : "N/A"
+            }
+          />
+        </div>
+        <div className="col-span-2 md:col-span-1">
+          <LabeledField
+            name="company-subscription-price"
+            labelValue="Subscription Price"
+            value={
+              company?.subscriptions
+                ? `$${company.subscriptions[0].price}`
+                : "N/A"
+            }
+          />
+        </div>
+        <div className="col-span-2 md:col-span-1">
+          <LabeledField
             name="company-subscription-member-limit"
             labelValue="Subscription Member Limit"
             value={
@@ -354,7 +412,9 @@ const getBody = (company, navigate, industryList) => {
             labelValue="Subscription Start Date"
             value={
               company?.subscriptions
-                ? company.subscriptions[0].start_date
+                ? moment(company.subscriptions[0].start_date).format(
+                    DATE.MOMENT_DDMMYYYY
+                  )
                 : "N/A"
             }
           />
@@ -364,7 +424,11 @@ const getBody = (company, navigate, industryList) => {
             name="company-subscription-end-date"
             labelValue="Subscription Expiry Date"
             value={
-              company?.subscriptions ? company.subscriptions[0].end_date : "N/A"
+              company?.subscriptions
+                ? moment(company.subscriptions[0].end_date).format(
+                    DATE.MOMENT_DDMMYYYY
+                  )
+                : "N/A"
             }
           />
         </div>

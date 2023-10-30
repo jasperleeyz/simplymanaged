@@ -129,6 +129,20 @@ const DepartmentsPage = () => {
         page: currentPage,
         sizePerPage: sizePerPage,
       };
+
+      setLoading((prev) => true);
+      getAllDepartments(
+        logged_in_user?.company_id || 0,
+        currentPage,
+        sizePerPage
+      )
+        .then((res) => {
+          setDepartmentList(res.data);
+          setTotalPages(res.totalPages);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
   }, [currentPage, sizePerPage]);
 

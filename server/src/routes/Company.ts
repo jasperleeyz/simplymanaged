@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
+import { SUBSCRIPTION_STATUS, USER_STATUS } from "../utils/constants";
 
 export const companyRouter = express.Router();
 
@@ -14,7 +15,23 @@ companyRouter.get("/:company_id", async (req, res) => {
       where: {
         id: Number(company_id),
       },
+      include: {
+        subscriptions: {
+          where: {
+            "status": SUBSCRIPTION_STATUS.ACTIVE,
+          },
+        },
+      },
+    }) as any;
+
+    const total_no_of_employees = await prisma.user.count({
+      where: {
+        company_id: Number(company_id),
+        status: USER_STATUS.ACTIVE,
+      },
     });
+
+    company.actual_no_of_employees = total_no_of_employees;
 
     res.status(200).json(generateResultJson(company));
   } catch (error) {

@@ -9,11 +9,16 @@ import {
 import { IRegistration } from "../../../shared/model/company.model";
 import { DATE, PATHS, REGISTRATION_STATUS } from "../../../configs/constants";
 import LabeledField from "../../../shared/layout/fields/labeled-field";
-import { IApplicationCode } from "../../../shared/model/application.model";
+import {
+  IApplicationCode,
+  ISubscriptionModel,
+} from "../../../shared/model/application.model";
 import { getCodesForRegistration } from "../../../shared/api/code.api";
 import ApproveButton from "../../../shared/layout/buttons/approve-button";
 import RejectButton from "../../../shared/layout/buttons/reject-button";
 import moment from "moment";
+import { capitalizeString } from "../../../configs/utils";
+import { getSubscriptionModelById } from "../../../shared/api/subscription.api";
 
 const RegistrationDetails = () => {
   const id = useParams()?.id;
@@ -28,6 +33,8 @@ const RegistrationDetails = () => {
   const [industryCodes, setIndustryCodes] = React.useState<IApplicationCode[]>(
     []
   );
+  const [subscriptionType, setSubscriptionType] =
+    React.useState<ISubscriptionModel>();
   const [loading, setLoading] = React.useState(false);
   const [processing, setProcessing] = React.useState("");
 
@@ -58,24 +65,22 @@ const RegistrationDetails = () => {
 
   React.useEffect(() => {
     Promise.all([
-      getRegistrationById(Number(id))
-        .then((res) => {
-          setRegistration(res.data);
-        })
-        .catch((err) => {
-          toast.error("Error fetching registration details.", { toastId: id });
-          navigate(`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`);
-        }),
-      getCodesForRegistration()
-        .then((res) => {
-          setNoOfEmployeesCodes(res.data.no_of_employees);
-          setIndustryCodes(res.data.industry);
-        })
-        .catch((err) => {
-          toast.error("Error fetching codes.", { toastId: id });
-          navigate(`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`);
-        }),
-    ]);
+      getRegistrationById(Number(id)).then((res) => {
+        setRegistration(res.data);
+        getSubscriptionModelById(res.data.subscription_model_id).then(
+          (res2) => {
+            setSubscriptionType(res2.data);
+          }
+        );
+      }),
+      getCodesForRegistration().then((res) => {
+        setNoOfEmployeesCodes(res.data.no_of_employees);
+        setIndustryCodes(res.data.industry);
+      }),
+    ]).catch((err) => {
+      toast.error("Error fetching registration details. Please try again later.", { toastId: id });
+      navigate(`/${PATHS.REGISTRATION}/${PATHS.VIEW_REGISTRATION}`);
+    });
   }, []);
 
   return (
@@ -143,6 +148,21 @@ const RegistrationDetails = () => {
           value={moment(registration?.created_date).format(
             DATE.MOMENT_DDMMYYYY
           )}
+        />
+        <LabeledField
+          id="registration-subscription-type"
+          labelValue="Subscription Type"
+          value={subscriptionType?.name}
+        />
+        <LabeledField
+          id="registration-subscription-payment-cycle"
+          labelValue="Subscription Payment Cycle"
+          value={subscriptionType?.payment_cycle}
+        />
+        <LabeledField
+          id="registration-subscription-price"
+          labelValue="Subscription Price"
+          value={`$${subscriptionType?.price}`}
         />
       </div>
       <div className="flex mt-8 gap-3">

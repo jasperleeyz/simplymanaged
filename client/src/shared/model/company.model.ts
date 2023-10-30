@@ -32,7 +32,6 @@ export interface ICompany {
     updated_by: string;
     updated_date: Date;
     subscriptions?: ISubscription[];
-    role_based_access_controls?: IRoleBasedAccessControl[];
     departments?: IDepartment[];
     locations?: ICompanyLocation[];
     roster_templates?: IRosterTemplate[];
@@ -93,14 +92,3 @@ export interface ICompanyLocation {
     updated_date?: Date;
 }
 
-export interface IRoleBasedAccessControl {
-    id: number;
-    company_id: number;
-    role: string;
-    module: string;
-    access_type: string;
-    created_by?: string;
-    created_date?: Date;
-    updated_by?: string;
-    updated_date?: Date;
-}

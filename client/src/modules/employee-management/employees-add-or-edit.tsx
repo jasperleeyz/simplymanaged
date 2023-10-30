@@ -164,18 +164,14 @@ const AddOrEditUser = () => {
               });
             }
           } catch (err) {
-            toast.error(
-              `Error ${
-                !id ? "creating new" : "updating"
-              } employee. Please try again later.`
-            );
+            toast.error(err as string, { toastId: "add-edit-employee" });
           } finally {
             setSubmitting(false);
           }
         }}
         validationSchema={UserSchema(
-          codeList.filter((code) => code.code_type === "position") || [],
-          codeList.filter((code) => code.code_type === "employment_type") || [],
+          codeList.filter((code) => code.code_type === "POSITION") || [],
+          codeList.filter((code) => code.code_type === "EMPLOYMENT_TYPE") || [],
           departmentList || []
         )}
       >
@@ -346,7 +342,7 @@ const AddOrEditUser = () => {
               >
                 <option value="" />
                 {codeList
-                  .filter((code) => code.code_type === "position")
+                  .filter((code) => code.code_type === "POSITION")
                   .map((code, idx) => {
                     return (
                       <option key={idx} value={code.code}>
@@ -408,7 +404,7 @@ const AddOrEditUser = () => {
               >
                 <option value="" />
                 {codeList
-                  .filter((code) => code.code_type === "employment_type")
+                  .filter((code) => code.code_type === "EMPLOYMENT_TYPE")
                   .map((code, idx) => {
                     return (
                       <option key={idx} value={code.code}>

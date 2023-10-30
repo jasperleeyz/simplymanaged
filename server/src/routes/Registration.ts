@@ -7,7 +7,7 @@ import {
   sendRegistrationEmail,
   sendRejectedEmail,
 } from "../utils/email";
-import { REGISTRATION_STATUS } from "../utils/constants";
+import { PAYMENT_CYCLE, REGISTRATION_STATUS, SUBSCRIPTION_STATUS } from "../utils/constants";
 
 export const registrationRouter = express.Router();
 
@@ -64,7 +64,7 @@ registrationRouter.get("/:id", async (req, res) => {
 
 registrationRouter.post("/", async (req, res) => {
   const registration_details = req.body;
-  console.log(registration_details);
+
   try {
     registration_details.created_by = "SYSTEM";
     registration_details.updated_by = "SYSTEM";
@@ -73,8 +73,13 @@ registrationRouter.post("/", async (req, res) => {
     registration_details.no_of_employees = Number(
       registration_details.no_of_employees
     );
+    registration_details.subscription_model_id = Number(registration_details.subscription_model);
+    registration_details.company_name = registration_details.company_name.toUpperCase();
+    registration_details.email = registration_details.email.toUpperCase();
+    registration_details.registrant_name = registration_details.registrant_name.toUpperCase();
+    registration_details.address = registration_details.address.toUpperCase();
 
-    const { id, ...registration } = registration_details;
+    const { id, subscription_model, ...registration } = registration_details;
 
     const new_registration = await prisma.registration.create({
       data: registration,
@@ -196,17 +201,40 @@ const approveRegistration = async (registration_details: Registration) => {
       data: new_company,
     });
 
-    const start_date = new Date();
-    const end_date = new Date(start_date.setMonth(start_date.getMonth() + 1)); // TODO: get from subscription
+    // create new subscription for company
+    const subscription_model_id = registration_details.subscription_model_id;
+    const subscription_model = await prisma.subscriptionModel.findFirst({
+      where: {
+        id: subscription_model_id || 0,
+      },
+    });
 
-    // create new subscription
+    if (!subscription_model) {
+      throw new Error("Subscription model does not exist");
+    }
+
+    const start_date = new Date();
+    let end_date = start_date;
+    if(subscription_model.payment_cycle === PAYMENT_CYCLE.ANNUALLY) {
+      end_date.setFullYear(end_date.getFullYear() + 1);
+    } else {
+      if(end_date.getMonth() === 11) {
+        end_date.setFullYear(end_date.getFullYear() + 1);
+        end_date.setMonth(0);
+      } else {
+        end_date.setMonth(end_date.getMonth() + 1);
+      }
+    }
+
     const new_subscription = {
       company_id: company.id,
-      type: "PREMIUM", // TODO: get from subscription
-      status: "A",
-      employee_quantity: 100, //TODO: get from subscription
+      type: subscription_model.name,
+      status: SUBSCRIPTION_STATUS.ACTIVE,
+      employee_quantity: subscription_model.member_limit,
       start_date: start_date,
       end_date: end_date, 
+      payment_cycle: subscription_model.payment_cycle,
+      price: subscription_model.price,
       created_by: "SYSTEM",
       updated_by: "SYSTEM",
     };

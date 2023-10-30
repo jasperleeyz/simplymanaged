@@ -1,4 +1,11 @@
-import { Button, CustomFlowbiteTheme, Pagination, Spinner, Table, TextInput } from "flowbite-react";
+import {
+  Button,
+  CustomFlowbiteTheme,
+  Pagination,
+  Spinner,
+  Table,
+  TextInput,
+} from "flowbite-react";
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { PATHS } from "../../configs/constants";
@@ -33,7 +40,9 @@ const LocationsPage = () => {
   const [loading, setLoading] = React.useState(true);
 
   const [searchTerm, setSearchTerm] = React.useState("");
-  const [locationList, setLocationList] = React.useState<ICompanyLocation[]>([]);
+  const [locationList, setLocationList] = React.useState<ICompanyLocation[]>(
+    []
+  );
 
   const generateBody = () => {
     if (locationList.length === 0) {
@@ -49,9 +58,7 @@ const LocationsPage = () => {
     return locationList.map((loc, idx) => (
       <Table.Row key={idx}>
         <Table.Cell>{loc.name}</Table.Cell>
-        <Table.Cell>
-          {loc.address}
-        </Table.Cell>
+        <Table.Cell>{loc.address}</Table.Cell>
         <Table.Cell>
           <div className="flex gap-2 justify-center">
             {/* <Button
@@ -118,6 +125,16 @@ const LocationsPage = () => {
         page: currentPage,
         sizePerPage: sizePerPage,
       };
+
+      setLoading((prev) => true);
+      getAllLocations(logged_in_user?.company_id || 0, currentPage, sizePerPage)
+        .then((res) => {
+          setLocationList(res.data);
+          setTotalPages(res.totalPages);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
   }, [currentPage, sizePerPage]);
 
