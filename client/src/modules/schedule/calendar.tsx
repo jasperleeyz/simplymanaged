@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
   Button,
   CustomFlowbiteTheme,
@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { getUserSchedule, getAllUserSchedule } from "../../shared/api/user-schedule.api";
 import { getAllLocations } from "../../shared/api/location.api"
+import { ICompanyLocation } from "../../shared/model/company.model";
 
 const customCalendarStyle: CustomFlowbiteTheme = {
   buttonGroup: {
@@ -29,21 +30,22 @@ const customCalendarStyle: CustomFlowbiteTheme = {
 
 const Calendar = () => {
   const navigate = useNavigate();
-  const user = React.useContext(GlobalStateContext).globalState?.user;
+  const { globalState } = useContext(GlobalStateContext);
 
   // TODO: to call retrieve schedule api here
-  const locationList = ["Toa Payoh", "Ang Mo Kio"];
+  const [locationList, setLocationList] = useState<ICompanyLocation[]>([]);
+  const [loadingLocation, setLoadingLocation] = useState(true);
 
   useEffect(() => {
-    setLoading((prev) => true);
+    setLoadingLocation((prev) => true);
     getAllLocations(
-      1
+      1//globalState?.user?.company_id || 0
     )
       .then((res) => {
-        console.log(res.data);
+        setLocationList(res.data);
       })
       .finally(() => {
-        setLoading((prev) => false);
+        setLoadingLocation((prev) => false);
         
       });
   }, []);
@@ -73,26 +75,26 @@ const Calendar = () => {
     return y;
   });
   const [isPersonal, setIsPersonal] = React.useState(() => {
-    if (user?.role === ROLES.EMPLOYEE) return true;
+    if (globalState?.user?.role === ROLES.EMPLOYEE) return true;
     const ip = history.state["isPersonal"];
     if (!ip) return false;
     return ip;
   });
 
-  const [loading, setLoading] = useState(true);
+  const [loadingUserSchedule, setLoadingUserSchedule] = useState(true);
 
   useEffect(() => {
-    setLoading((prev) => true);
+    setLoadingUserSchedule((prev) => true);
     getAllUserSchedule(
       0,
-      month,
+      month+1,
       year
     )
       .then((res) => {
         console.log(res.data);
       })
       .finally(() => {
-        setLoading((prev) => false);
+        setLoadingUserSchedule((prev) => false);
         
       });
   }, [month, year]);
@@ -169,13 +171,13 @@ const Calendar = () => {
               onChange={(e) => setLocation(e.target.value)}
             >
               {locationList.map((l, idx) => (
-                <option key={idx} value={l}>
-                  {l}
+                <option key={idx} value={l.name}>
+                  {l.name}
                 </option>
               ))}
             </Select>
           </div>
-          {user?.role === ROLES.MANAGER && (
+          {globalState?.user?.role === ROLES.MANAGER && (
             <div className="ms-auto mt-3 flex">
               <Button size="sm" onClick={() => setIsPersonal((prev) => !prev)}>
                 {!isPersonal ? "View Personal Schedule" : "View All Schedules"}

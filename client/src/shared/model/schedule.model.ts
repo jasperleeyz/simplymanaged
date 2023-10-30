@@ -3,36 +3,37 @@ import IUser from "./user.model";
 
 export interface IRosterTemplate {
   id: number;
-  companyId: number;
+  company_id: number;
   name: string;
-  noOfEmployees: number;
-  positions: IRosterTemplatePosition[];
-  createdBy: string;
-  createdDate: Date;
-  updatedBy: string;
-  updatedDate: Date;
+  no_of_employees: number;
+  created_by: string;
+  created_date?: Date;
+  updated_by: string;
+  updated_date?: Date;
+  positions?: IRosterTemplatePosition[];
 }
 
 export interface IRosterTemplatePosition {
-  rosterTemplateId: number;
-  companyId: number;
+  roster_template_id: number;
+  company_id: number;
   position: string;
   count: number;
 }
 
 export interface IRoster {
   id: number;
-  companyId: number;
-  locationId: number;
-  departmentId: number;
-  startDate: Date;
-  endDate: Date;
+  company_id: number;
+  location_id: number;
+  department_id: number;
+  start_date: Date;
+  end_date: Date;
   type: string;
-  createdBy: string;
-  createdDate?: Date;
-  updatedBy: string;
-  updatedDate?: Date;
-  employees: IUser[];
+  created_by: string;
+  created_date?: Date;
+  updated_by: string;
+  updated_date?: Date;
+  employees?: IUser[];
+  schedules?:IUserSchedule[];
   location?: ICompanyLocation;
 }
 

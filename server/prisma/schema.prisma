@@ -53,8 +53,8 @@ model Company {
   id                        Int                      @id @default(autoincrement())
   uen                       String                   @unique
   name                      String
-  contact_no                Int                      
-  email                     String                   
+  contact_no                Int
+  email                     String
   address                   String
   industry                  String
   no_of_employees           Int

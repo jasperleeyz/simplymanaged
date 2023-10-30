@@ -124,7 +124,7 @@ export const getNonConflictScheduleUser = async (
       .catch((err) => Promise.reject(err));
   };
 
-  export const createSchedule = async (schedule: IUserSchedule) => {
+  export const createUserSchedule = async (schedule: IUserSchedule) => {
     const url = `/user-schedule/create`;
     console.log(schedule)
     return await fetch(url, {

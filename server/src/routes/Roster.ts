@@ -20,8 +20,8 @@ RosterRouter.get("/get-schedule/:user_company_id/:user_id", async (req, res) => 
     };
 
     const UserSchedules = await prisma.$transaction([
-      prisma.userSchedule.count(...findObject.where),
-      prisma.userSchedule.findMany(findObject),
+      prisma.roster.count(...findObject.where),
+      prisma.roster.findMany(findObject),
     ]);
 
     // create result object
