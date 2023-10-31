@@ -46,7 +46,7 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
       no_of_employees,
       created_by,
       updated_by,
-      position
+      positions
     } = req.body;
 
     const rosterTemplate = await prisma.$transaction(async (tx) => {
@@ -57,20 +57,19 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
           name,
           no_of_employees,
           created_by,
-          updated_by,
+          updated_by
         },
       });
-
-      // for (const positionItem of position) {
-      //   await tx.rosterTemplatePosition.create({
-      //     data: {
-      //       roster_template_id: id,
-      //       company_id: company_id,
-      //       position: positionItem.position,
-      //       count: positionItem.count,
-      //     },
-      //   });
-      // }
+      for (const positionItem of positions) {
+        await tx.rosterTemplatePosition.create({
+          data: {
+            roster_template_id: id,
+            company_id: company_id,
+            position: positionItem.position,
+            count: positionItem.count,
+          },
+        });
+      }
     });
     
     res.status(200).json({

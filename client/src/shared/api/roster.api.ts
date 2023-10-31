@@ -11,12 +11,11 @@ export const getRosterById = async (companyId: number, rosterId: number): Promis
       .catch((err) => Promise.reject(err));
   };
 
-  export const createRosterTemplate = async (schedule: IRosterTemplate) => {
+  export const createRosterTemplate = async (rosterTemplate: IRosterTemplate) => {
     const url = `/roster/create/roster-template`;
-    console.log(schedule)
     return await fetch(url, {
       method: "POST",
-      body: JSON.stringify(schedule),
+      body: JSON.stringify(rosterTemplate),
     })
       .then((response) => {
         if (response.ok) return Promise.resolve(response.json());
