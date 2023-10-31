@@ -6,7 +6,7 @@ export const RosterRouter = express.Router();
 
 const prisma = new PrismaClient();
 
-RosterRouter.get("/get-roster-template/:company_id/:", async (req, res) => {
+RosterRouter.get("/get-roster-template/:company_id", async (req, res) => {
   const { page, size, sort, filter } = req.query;
   const { company_id } = req.params;
 
@@ -14,7 +14,7 @@ RosterRouter.get("/get-roster-template/:company_id/:", async (req, res) => {
     const findObject = generateFindObject(page, size, sort, filter);
     findObject.where = {
       ...findObject.where,
-      user_company_id: Number(company_id),
+      company_id: Number(company_id),
     };
 
     const rosterTemplates = await prisma.$transaction([

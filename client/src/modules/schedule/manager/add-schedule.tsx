@@ -37,7 +37,7 @@ import {
   getNonConflictScheduleUser,
   createUserSchedule,
 } from "../../../shared/api/user-schedule.api";
-import { createRosterTemplate } from "../../../shared/api/roster.api";
+import { getRosterTemplate, createRosterTemplate } from "../../../shared/api/roster.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -57,6 +57,7 @@ const AddSchedule = () => {
   const isEdit = location.pathname.endsWith(PATHS.EDIT_SCHEDULE);
 
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
+  const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEmployeeList, setFilteredEmployeeList] = useState<IUser[]>([]);
 
@@ -133,6 +134,20 @@ const AddSchedule = () => {
       };
     });
   };
+
+  useEffect(() => {
+    setLoading((prev) => true);
+    getRosterTemplate(
+      0,
+    )
+      .then((res) => {
+        setTemplateList(res.data)
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+      });
+  }, [
+  ]);
 
   useEffect(() => {
     setLoading((prev) => true);
@@ -482,7 +497,7 @@ const AddSchedule = () => {
         <Modal.Header>Template</Modal.Header>
         <Modal.Body>
           <div>
-            <p>asd</p>
+            <p>{templateList[0].name}</p>
           </div>
         </Modal.Body>
         <Modal.Footer>
