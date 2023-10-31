@@ -18,7 +18,12 @@ import React from "react";
 import moment from "moment";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import IUser from "../../../shared/model/user.model";
-import { IUserSchedule, IRoster } from "../../../shared/model/schedule.model";
+import {
+  IUserSchedule,
+  IRoster,
+  IRosterTemplate,
+  IRosterTemplatePosition,
+} from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
 import { capitalizeString } from "../../../configs/utils";
@@ -32,6 +37,9 @@ import {
   getNonConflictScheduleUser,
   createUserSchedule,
 } from "../../../shared/api/user-schedule.api";
+import {
+  createRosterTemplate,
+} from "../../../shared/api/roster.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -64,6 +72,13 @@ const AddSchedule = () => {
   const startIndex = (currentPage - 1) * sizePerPage;
   const endIndex = startIndex + sizePerPage;
   const employeesToDisplay = filteredEmployeeList.slice(startIndex, endIndex);
+
+  //modal
+  const [showAutoAssignModal, setAutoAssignShowModal] = React.useState(false);
+  const [showTemplateModal, setShowTemplateModal] = React.useState(false);
+  const [showSubmitModal, setShowSubmitModal] = React.useState(false);
+  const [showCreateTemplateModal, setShowCreateTemplateModal] =
+    React.useState(false);
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<IRoster>({
@@ -309,41 +324,47 @@ const AddSchedule = () => {
       " and "
     )} in the current schedule.`;
 
-    <Modal
-      show={showAutoAssignModal}
-      dismissible
-      onClose={() => setAutoAssignShowModal(false)}
-    >
-      <Modal.Header>Comfirmation</Modal.Header>
-      <Modal.Body>
-        <div>
-          <p>{message}</p>
-        </div>
-      </Modal.Body>
-      <Modal.Footer>
-        <div className="w-full md:w-1/2 ms-auto flex justify-center">
-          <Button
-            color="success"
-            className="w-full mr-3"
-            size="sm"
-            onClick={() => autoAssignPersonnel(positionCounts)}
-          >
-            Yes
-          </Button>
-          <Button
-            color="failure"
-            className="w-full"
-            size="sm"
-            onClick={() => setAutoAssignShowModal(false)}
-          >
-            No
-          </Button>
-        </div>
-      </Modal.Footer>
-    </Modal>;
+    return (
+      <Modal show={showSubmitModal} onClose={() => setShowSubmitModal(false)}>
+        <Modal.Header>Comfirmation</Modal.Header>
+        <Modal.Body>
+          <div>
+            <p>{message}</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="w-full md:w-1/2 ms-auto flex justify-center">
+            <Button
+              color="success"
+              className="w-full mr-3"
+              size="sm"
+              onClick={() => setShowCreateTemplateModal(true)}
+            >
+              Create Template
+            </Button>
+            <Button
+              color="success"
+              className="w-full mr-3"
+              size="sm"
+              onClick={() => createSchedule()}
+            >
+              Yes
+            </Button>
+            <Button
+              color="failure"
+              className="w-full"
+              size="sm"
+              onClick={() => setShowSubmitModal(false)}
+            >
+              No
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+    );
   };
 
-  const testModal = () => {
+  const autoAssignModal = () => {
     const positionCount = {};
     if (employeeList) {
       employeeList.forEach((emp, idx) => {
@@ -356,44 +377,62 @@ const AddSchedule = () => {
         }
       });
     }
-    const [positionSelectedCount, setPositionSelectedCount] = React.useState({});
 
-  const incrementSelectedCount = (position) => {
-    const currentCount = positionSelectedCount[position] || 0;
-    const limit = positionCount[position] || 0; // Get the position count limit
-    if (currentCount < limit) {
-      setPositionSelectedCount((prevPositionSelectedCount) => ({
-        ...prevPositionSelectedCount,
-        [position]: currentCount + 1,
-      }));
-    }
-  };
+    const [selectedPosition, setSelectedPosition] = useState(
+      Object.keys(positionCount)[0]
+    );
+    const [positionSelectedCount, setPositionSelectedCount] = React.useState(
+      {}
+    );
 
-  const decrementSelectedCount = (position) => {
-    const currentCount = positionSelectedCount[position] || 0;
-    if (currentCount > 0) {
-      setPositionSelectedCount((prevPositionSelectedCount) => ({
-        ...prevPositionSelectedCount,
-        [position]: currentCount - 1,
-      }));
-    }
-    
-  };
+    const incrementSelectedCount = (position) => {
+      const currentCount = positionSelectedCount[position] || 0;
+      const limit = positionCount[position] || 0; // Get the position count limit
+      if (currentCount < limit) {
+        setPositionSelectedCount((prevPositionSelectedCount) => ({
+          ...prevPositionSelectedCount,
+          [position]: currentCount + 1,
+        }));
+      }
+    };
+
+    const decrementSelectedCount = (position) => {
+      const currentCount = positionSelectedCount[position] || 0;
+      if (currentCount > 0) {
+        setPositionSelectedCount((prevPositionSelectedCount) => ({
+          ...prevPositionSelectedCount,
+          [position]: currentCount - 1,
+        }));
+      }
+    };
     return (
-      <Modal show={true} onClose={() => setAutoAssignShowModal(false)}>
-        <Modal.Header>Confirmation</Modal.Header>
+      <Modal
+        show={showAutoAssignModal}
+        onClose={() => setAutoAssignShowModal(false)}
+      >
+        <Modal.Header>Auto Assign</Modal.Header>
         <Modal.Body>
-        <div>
-          {Object.keys(positionCount).map((position, index) => (
-            <div key={index}>
+          <Select onChange={(e) => setSelectedPosition(e.target.value)}>
+            {Object.keys(positionCount).map((position, index) => (
+              <option key={index} value={position}>
+                {position}
+              </option>
+            ))}
+          </Select>
+          {selectedPosition !== "" ? (
+            <div>
               <p>
-                {position}: {positionSelectedCount[position] || 0} / {positionCount[position] || 0}
+                {positionSelectedCount[selectedPosition] || 0} /{" "}
+                {positionCount[selectedPosition] || 0}
               </p>
-              <Button onClick={() => incrementSelectedCount(position)}>Up</Button>
-              <Button onClick={() => decrementSelectedCount(position)}>Down</Button>
+              <Button onClick={() => incrementSelectedCount(selectedPosition)}>
+                +
+              </Button>
+              <Button onClick={() => decrementSelectedCount(selectedPosition)}>
+                -
+              </Button>
             </div>
-          ))}
-        </div>
+          ) : null}
         </Modal.Body>
         <Modal.Footer>
           <div className="w-full md:w-1/2 ms-auto flex justify-center">
@@ -401,7 +440,11 @@ const AddSchedule = () => {
               color="success"
               className="w-full mr-3"
               size="sm"
-              onClick={() => autoAssignPersonnel(positionSelectedCount)}
+              onClick={() => {
+                autoAssignPersonnel(positionSelectedCount);
+                setSelectedPosition("");
+                setPositionSelectedCount([]);
+              }}
             >
               Yes
             </Button>
@@ -409,7 +452,11 @@ const AddSchedule = () => {
               color="failure"
               className="w-full"
               size="sm"
-              onClick={() => setAutoAssignShowModal(false)}
+              onClick={() => {
+                setAutoAssignShowModal(false);
+                setSelectedPosition("");
+                setPositionSelectedCount([]);
+              }}
             >
               No
             </Button>
@@ -418,14 +465,143 @@ const AddSchedule = () => {
       </Modal>
     );
   };
+
+  const templateModal = () => {
+    return (
+      <Modal
+        show={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+      >
+        <Modal.Header>Template</Modal.Header>
+        <Modal.Body>
+          <div>
+            <p>asd</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="w-full md:w-1/2 ms-auto flex justify-center">
+            <Button
+              color="success"
+              className="w-full mr-3"
+              size="sm"
+              onClick={() => {}}
+            >
+              Yes
+            </Button>
+            <Button
+              color="failure"
+              className="w-full"
+              size="sm"
+              onClick={() => {
+                setShowTemplateModal(false);
+              }}
+            >
+              No
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
+
+  const createTemplateModal = () => {
+    const [rosterTemplate, setRosterTemplate] =
+    React.useState<IRosterTemplate>({
+      id: 0,
+      company_id: globalState?.user?.company_id || 0,
+      name: "",
+      no_of_employees: 0,
+      created_by: globalState?.user?.fullname || "",
+      updated_by: globalState?.user?.fullname || "",
+      positions: [],
+    });
+
+    const [positionCount, setPositonCount] = React.useState([]);
+
+    if (scheduleDetailsState.employees) {
+      // Initialize positionCount as an empty object
+
+      
+      scheduleDetailsState.employees.forEach((emp, idx) => {
+        if (emp && emp.position) {
+          const position = emp.position;
+          if (positionCount[position]) {
+            positionCount[position] += 1; // Increment the count for the position
+          } else {
+            positionCount[position] = 1;
+          }
+        }
+      });
+      console.log(positionCount)
+      // Loop through the positionCount object and create template positions
+      Object.keys(positionCount).forEach((position) => {
+        const templatePosition = {
+          roster_template_id: 0,
+          company_id: globalState?.user?.company_id || 0,
+          position: position,
+          count: positionCount[position],
+        };
+    
+        if(rosterTemplate.positions){
+          rosterTemplate.positions.push(templatePosition);
+        }
+      });
+    }
+
+    return (
+      <Modal
+        show={showCreateTemplateModal}
+        onClose={() => setShowCreateTemplateModal(false)}
+      >
+        <Modal.Header>Create Template</Modal.Header>
+        <Modal.Body>
+          <div>
+          <Label htmlFor="create-template" value="Name" />
+            <TextInput
+              id="create-template"
+              onChange={(e) => {
+                setRosterTemplate({
+                  ...rosterTemplate,
+                  name: e.target.value
+                });
+              }}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="w-full md:w-1/2 ms-auto flex justify-center">
+            <Button
+              color="success"
+              className="w-full mr-3"
+              size="sm"
+              onClick={() => {
+                createRosterTemplate(rosterTemplate)
+                setPositonCount([])
+              }}
+            >
+              Yes
+            </Button>
+            <Button
+              color="failure"
+              className="w-full"
+              size="sm"
+              onClick={() => {
+                setShowCreateTemplateModal(false);
+              }}
+            >
+              No
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
+
   const [errorMessage, setErrorMessage] = React.useState(() => {
     return {
       date: "",
     };
   });
-
-  const [showAutoAssignModal, setAutoAssignShowModal] = React.useState(false);
-  const [showTemplateModal, setShowTemplateModal] = React.useState(false);
 
   const [showEmpProps, setShowEmpProps] = React.useState({
     show: false,
@@ -433,15 +609,21 @@ const AddSchedule = () => {
   });
 
   const autoAssignPersonnel = (positionSelectedCount) => {
-    console.log(positionSelectedCount);
     setAutoAssignShowModal(false);
-    const newState: IRoster = { ...scheduleDetailsState, employees: [] }; // Provide a default empty array for employees
-  
+    const newState: IRoster = {
+      ...scheduleDetailsState,
+      employees: [],
+      schedules: [],
+    };
+
     // Loop through the selected positions and auto-assign employees
     Object.keys(positionSelectedCount).forEach((position) => {
       const selectedCount = positionSelectedCount[position];
-      const availableEmployees: IUser[] = employeeList.filter((emp) => emp.position === position);
-  
+      const availableEmployees: IUser[] = employeeList.filter(
+        (emp) => emp.position === position
+      );
+      const updatedSchedules: IUserSchedule[] = [];
+
       if (availableEmployees.length > 0 && selectedCount > 0) {
         const selectedEmployees: IUser[] = [];
         const shuffledCandidates: IUser[] = [...availableEmployees];
@@ -449,14 +631,36 @@ const AddSchedule = () => {
           if (shuffledCandidates.length === 0) {
             break; // If no more candidates are available, break the loop
           }
-          const randomIndex = Math.floor(Math.random() * shuffledCandidates.length);
-          const selectedEmployee: IUser = shuffledCandidates.splice(randomIndex, 1)[0];
+          const randomIndex = Math.floor(
+            Math.random() * shuffledCandidates.length
+          );
+          const selectedEmployee: IUser = shuffledCandidates.splice(
+            randomIndex,
+            1
+          )[0];
           selectedEmployees.push(selectedEmployee);
+          updatedSchedules.push({
+            user_id: selectedEmployee.id,
+            user_company_id: selectedEmployee.company_id,
+            roster_id: 0,
+            start_date: newState.start_date,
+            end_date: newState.end_date,
+            shift: "FULL",
+            status: "",
+            created_by: globalState?.user?.fullname || "",
+            updated_by: globalState?.user?.fullname || "",
+          });
         }
-        newState.employees = [...newState.employees ?? [], ...selectedEmployees];
+        newState.employees = [
+          ...(newState.employees ?? []),
+          ...selectedEmployees,
+        ];
+        newState.schedules = [
+          ...(newState.schedules ?? []),
+          ...updatedSchedules,
+        ];
       }
     });
-  
     // Update the state with the auto-assigned employees
     setScheduleDetailsState(newState);
   };
@@ -533,9 +737,13 @@ const AddSchedule = () => {
       toast.success("Schedule updated successfully");
     } else {
       if (scheduleDetailsState.schedules) {
-        scheduleDetailsState.schedules.forEach((schedule) => {
-          createUserSchedule(schedule);
-        });
+        if (scheduleDetailsState.schedules.length > 0) {
+          scheduleDetailsState.schedules.forEach((schedule) => {
+            createUserSchedule(schedule);
+          });
+          toast.success("Schedule created successfully");
+          navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+        }
       }
       const id = globalState?.schedule?.length
         ? globalState?.schedule?.length + 1
@@ -549,23 +757,18 @@ const AddSchedule = () => {
       //     { ...scheduleDetailsState, id: id, attendance: "N" },
       //   ],
       // }));
-
-      toast.success("Schedule created successfully");
     }
-
-    navigate(`/${PATHS.SCHEDULE}`, { replace: true });
   };
 
   return (
     <div>
-      {testModal()}
       <p className="header">{`${isEdit ? "Edit" : "Create"} Schedule`}</p>
       <div className="mb-3 flex justify-between">
         <BackButton size="sm" />
         <Button
           size="sm"
           onClick={() => {
-            setAutoAssignShowModal(true);
+            setShowTemplateModal(true);
           }}
         >
           <p>Template</p>
@@ -848,13 +1051,21 @@ const AddSchedule = () => {
         {generateSelectedEmployeeList()}
 
         <div className="mt-12 flex justify-end">
-          <Button onClick={() => createSchedule()} size="sm">
+          <Button
+            onClick={() => setShowSubmitModal(true)}
+            size="sm"
+            disabled={
+              scheduleDetailsState.employees &&
+              scheduleDetailsState.employees.length < 1
+            }
+          >
             Submit
           </Button>
         </div>
       </form>
 
       {/* Modal for auto assign personnel */}
+      {/*
       {showAutoAssignModal && (
         <Modal
           show={showAutoAssignModal}
@@ -895,6 +1106,13 @@ const AddSchedule = () => {
           </Modal.Footer>
         </Modal>
       )}
+      */}
+      <div>
+        {autoAssignModal()}
+        {submitModal()}
+        {templateModal()}
+        {showCreateTemplateModal && createTemplateModal()}
+      </div>
 
       {/* Modal for showing emp details */}
       {showEmpProps.show && (

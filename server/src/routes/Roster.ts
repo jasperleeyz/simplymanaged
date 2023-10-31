@@ -7,27 +7,26 @@ export const RosterRouter = express.Router();
 
 const prisma = new PrismaClient();
 
-RosterRouter.get("/get-schedule/:user_company_id/:user_id", async (req, res) => {
+RosterRouter.get("/get-roster-template/:company_id/:", async (req, res) => {
   const { page, size, sort, filter } = req.query;
-  const { user_company_id, user_id } = req.params;
+  const { company_id } = req.params;
 
   try {
     const findObject = generateFindObject(page, size, sort, filter);
     findObject.where = {
       ...findObject.where,
-      user_company_id: Number(user_company_id),
-      user_id: Number(user_id)
+      user_company_id: Number(company_id),
     };
 
-    const UserSchedules = await prisma.$transaction([
-      prisma.roster.count(...findObject.where),
-      prisma.roster.findMany(findObject),
+    const rosterTemplates = await prisma.$transaction([
+      prisma.rosterTemplate.count(...findObject.where),
+      prisma.rosterTemplate.findMany(findObject),
     ]);
 
     // create result object
     const result = generateResultJson(
-      UserSchedules[1],
-      UserSchedules[0],
+      rosterTemplates[1],
+      rosterTemplates[0],
       page,
       size
     );
@@ -35,106 +34,51 @@ RosterRouter.get("/get-schedule/:user_company_id/:user_id", async (req, res) => 
     res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving user schedules.");
-  }
-});
-
-RosterRouter.get("/get-non-conflict-user/:user_company_id/:start_date/:end_date", async (req, res) => {
-  const { page, size, sort, filter } = req.query;
-  const { user_company_id, start_date, end_date } = req.params;
-
-  try {
-    const findObject = generateFindObject(page, size, sort, filter);
-    findObject.where = {
-      ...findObject.where,
-      company_id: Number(user_company_id),
-    };
-
-    // Fetch schedules that do not conflict with the specified date range
-    const nonConflictingSchedules = await prisma.$transaction([
-      prisma.userSchedule.findMany({
-        where: {
-          user_company_id: Number(user_company_id),
-          start_date: { lte: new Date(end_date) }, // Start date is before the end date
-          end_date: { gte: new Date(start_date) } // End date is after the start date
-      }
-      })
-    ]);
-    const nonConflictingUserIds = nonConflictingSchedules[0].map(schedule => schedule.user_id);
-    const allUsers = await prisma.user.findMany(findObject);
-
-    // Filter out users with non-conflicting schedules
-    const usersWithoutConflicts = allUsers.filter(user => !nonConflictingUserIds.includes(user.id));
-
-    const result = generateResultJson(usersWithoutConflicts, usersWithoutConflicts.length, page, size);
-
-    res.status(200).json(result);
-  } catch (error) {
-    console.error(error);
-    res.status(400).send("Error checking user schedules for conflicts.");
+    res.status(400).send("Error retrieving roster templates.");
   }
 });
 
 RosterRouter.post("/create/roster-template", async (req, res) => {
   try {
-
     const {
       id,
       company_id,
       name,
       no_of_employees,
       created_by,
-      updated_by
+      updated_by,
+      position
     } = req.body;
-    
-    const newSchedule = await prisma.$transaction(async (tx) => {
-      const createdSchedule = await tx.rosterTemplate.create({
+
+    const rosterTemplate = await prisma.$transaction(async (tx) => {
+      const createdTemplate = await tx.rosterTemplate.create({
         data: {
-            id,
-            company_id,
-            name,
-            no_of_employees,
-            created_by,
-            updated_by
-        }
+          id,
+          company_id,
+          name,
+          no_of_employees,
+          created_by,
+          updated_by,
+        },
       });
-      
-      });
-      res.status(200).json({
-        rosterTemplate: ''
+
+      // for (const positionItem of position) {
+      //   await tx.rosterTemplatePosition.create({
+      //     data: {
+      //       roster_template_id: id,
+      //       company_id: company_id,
+      //       position: positionItem.position,
+      //       count: positionItem.count,
+      //     },
+      //   });
+      // }
+    });
+    
+    res.status(200).json({
+      rosterTemplate: rosterTemplate,
     });
   } catch (error) {
     console.error(error);
     res.status(400).send("Error creating roster template.");
   }
 });
-
-RosterRouter.post("/create/roster-template-position", async (req, res) => {
-    try {
-
-      const {
-        roster_template_id,
-        company_id,
-        position,
-        count
-      } = req.body;
-      
-      const newSchedule = await prisma.$transaction(async (tx) => {
-        const createdSchedule = await tx.rosterTemplatePosition.create({
-          data: {
-            roster_template_id,
-            company_id,
-            position,
-            count
-          }
-        });
-        
-        });
-        res.status(200).json({
-          rosterTemplatePosition: ''
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(400).send("Error creating roster template position.");
-    }
-  });
