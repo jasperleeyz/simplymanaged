@@ -164,3 +164,29 @@ UserScheduleRouter.post("/create", async (req, res) => {
     res.status(400).send("Error creating schedule.");
   }
 });
+
+UserScheduleRouter.get("/get-schedule-from-to/:companyId/:userId", async (req, res) => {
+  try {
+    const { companyId, userId } = req.params;
+    const { from, to } = req.query;
+
+    const userSchedules = await prisma.userSchedule.findMany({
+      where: {
+        user_company_id: Number(companyId),
+        user_id: Number(userId),
+        start_date: {
+          gte: from as string,
+          lte: to as string,
+        },
+      },
+      include: {
+        roster: true,
+      },
+    });
+
+    res.status(200).json(generateResultJson(userSchedules));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving user schedules.");
+  }
+});

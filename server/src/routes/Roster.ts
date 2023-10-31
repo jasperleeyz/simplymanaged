@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
-import { start } from "repl";
 
 export const RosterRouter = express.Router();
 
