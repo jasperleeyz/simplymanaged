@@ -8,6 +8,9 @@ import PendingRequestComponent from "./pending-request-component";
 import { ROLES } from "../../configs/constants";
 import { toast } from "react-toastify";
 import { IUserSchedule } from "../../shared/model/schedule.model";
+import IUser from "../../shared/model/user.model";
+import { getUserScheduleFromAndTo } from "../../shared/api/user-schedule.api";
+import moment from "moment";
 
 const Home = () => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
@@ -20,7 +23,7 @@ const Home = () => {
   const scheduleForTheDay = globalState?.schedule?.find(
     (val) =>
       val.start_date?.toLocaleDateString() === new Date().toLocaleDateString()
-      // && val.employeesSelected.find((emp) => emp.id === user?.id)
+    // && val.employeesSelected.find((emp) => emp.id === user?.id)
   );
 
   const [clockedIn, setClockedIn] = React.useState(() => {
@@ -43,10 +46,9 @@ const Home = () => {
     return CLOCK_IN;
   });
 
-  // TODO: retrieve shifts for the week
-  const scheduleForTheWeek = [
-    scheduleForTheDay,
-  ] as IUserSchedule[];
+  const [scheduleForTheWeek, setScheduleForTheWeek] = React.useState<
+    IUserSchedule[]
+  >([]);
 
   // TODO: retrieve request pending approval
   const pendingRequests = globalState?.requests?.filter(
@@ -64,14 +66,12 @@ const Home = () => {
     //   );
     //   scheduleForTheDay.employeesSelected[idx].attendance =
     //     clockedIn === CLOCK_OUT ? "P" : "I";
-
     //   setGlobalState((prev) => ({
     //     ...prev,
     //     schedule: prev.schedule.map((val) =>
     //       val.id === scheduleForTheDay.id ? scheduleForTheDay : val
     //     ),
     //   }));
-
     //   setClockedIn((prev) =>
     //     prev === CLOCK_IN
     //       ? CLOCK_OUT
@@ -79,12 +79,33 @@ const Home = () => {
     //       ? SCHEDULE_COMPLETED
     //       : CLOCK_IN
     //   );
-
     //   toast.success(
     //     `Successfully ${clockedIn === CLOCK_IN ? "clocked-in" : "clocked-out"}!`
     //   );
     // }
   };
+
+  React.useEffect(() => {
+    // TODO: retrieve schedules for the week
+    getUserScheduleFromAndTo(
+      user?.company_id || 0,
+      user?.id || 0,
+      new Date(),
+      moment(new Date()).add(7, "days").toDate()
+    )
+      .then((res) => {
+        setScheduleForTheWeek(res.data);
+      })
+      .catch((err) => {
+        toast.error("Error getting schedule for the week", {
+          toastId: "home-schedule-week",
+        });
+      });
+
+    if (user?.role === ROLES.MANAGER) {
+      // TODO: retrieve requests pending approval
+    }
+  }, []);
 
   return (
     <div className="w-full md:flex">
@@ -112,16 +133,20 @@ const Home = () => {
               <div className="md:w-1/2 md:mr-5">
                 <p className="sub-header">Upcoming Schedules</p>
                 <Card className="md:w-11/12">
-                  {/* {scheduleForTheWeek && scheduleForTheWeek.filter((s) => s.employeesSelected.find((emp) => emp.id === user?.id && emp.attendance === "N")).length > 0 ? (
-                    scheduleForTheWeek.filter((s) => s.employeesSelected.find((emp) => emp.id === user?.id && emp.attendance === "N")).map((shift, idx) => (
-                      <UpcomingShiftComponent key={idx} schedule={shift} />
-                    ))
+                  {scheduleForTheWeek &&
+                  scheduleForTheWeek.filter((s) => s.attendance === "N")
+                    .length > 0 ? (
+                    scheduleForTheWeek
+                      .filter((s) => s.attendance === "N")
+                      .map((shift, idx) => (
+                        <UpcomingShiftComponent key={idx} schedule={shift} />
+                      ))
                   ) : (
                     <>
                       <p>No upcoming shifts found</p>
                       <p className="text-sm text-gray-500">Enjoy your week!</p>
                     </>
-                  )} */}
+                  )}
                 </Card>
               </div>
               <div className="mt-5 md:mt-0 md:w-1/2">

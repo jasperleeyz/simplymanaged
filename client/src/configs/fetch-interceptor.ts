@@ -27,6 +27,11 @@ window.fetch = async function (...args) {
   // call original `fetch()` with intercepted request
   const response = await originalFetch(url, options);
 
+  if(response.status === 401) {
+    sessionStorage.removeItem("bearerToken");
+    window.location.href = "/login?q=timeout";
+  }
+
   // response interceptor
   return response;
 };

@@ -1,7 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
-import { start } from "repl";
 
 export const RosterRouter = express.Router();
 
@@ -138,3 +137,19 @@ RosterRouter.post("/create/roster-template-position", async (req, res) => {
       res.status(400).send("Error creating roster template position.");
     }
   });
+
+RosterRouter.get("/:companyId/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    const companyId = Number(req.params.companyId);
+
+    const roster = await prisma.roster.findUnique({
+      where: { id_company_id: { id: id, company_id: companyId } },
+    });
+
+    res.status(200).json(generateResultJson(roster));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving roster.");
+  }
+});

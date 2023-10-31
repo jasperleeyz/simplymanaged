@@ -35,6 +35,7 @@ export interface IRoster {
   employees?: IUser[];
   schedules?:IUserSchedule[];
   location?: ICompanyLocation;
+  schedules?: IUserSchedule[];
 }
 
 export interface IUserSchedule {
@@ -51,6 +52,8 @@ export interface IUserSchedule {
   createdDate?: Date;
   updated_by: string;
   updatedDate?: Date;
+  roster?: IRoster;
+  user?: IUser;
 }
 
 

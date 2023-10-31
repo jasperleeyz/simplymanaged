@@ -4,8 +4,9 @@ import LabeledInputText from "../layout/form/labeled-text-input";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { GlobalStateContext } from "../../configs/global-state-provider";
+import { GlobalStateContext, InitialGlobalState } from "../../configs/global-state-provider";
 import { getHomeLink } from "../../configs/utils";
+import { toast } from "react-toastify";
 
 const LoginSchema = Yup.object().shape({
   email: Yup.string()
@@ -65,7 +66,21 @@ const Login = () => {
   };
 
   React.useEffect(() => {
-    if (isAuthenticated) {
+    if(location.search) {
+      const params = new URLSearchParams(location.search);
+      const q = params.get("q");
+      if(q && q === "timeout") {
+        toast.error("Session timeout. Please login again.", { toastId: "session-timeout" });
+        setGlobalState((prevState) => ({
+          ...InitialGlobalState,
+          sessionFetched: true,
+          isAuthenticated: false,
+        }));
+        navigate("/login");
+      }
+    }
+    
+    if (isAuthenticated && sessionStorage.getItem("bearerToken")) {
       navigate(
         location.state?.from || 
         getHomeLink(globalState?.user?.role || ""), { replace: true });
