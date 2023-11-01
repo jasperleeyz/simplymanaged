@@ -103,12 +103,43 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
         });
       }
     });
-    
     res.status(200).json({
       rosterTemplate: rosterTemplate,
     });
   } catch (error) {
     console.error(error);
     res.status(400).send("Error creating roster template.");
+  }
+});
+
+RosterRouter.delete("/delete/roster-template", async (req, res) => {
+  try {
+    const { id, company_id } = req.body;
+
+    const rosterTemplate = await prisma.$transaction(async (tx) => {
+      await tx.rosterTemplatePosition.deleteMany({
+        where: {
+          roster_template_id: id,
+        }
+      });
+
+      await tx.rosterTemplate.delete({
+        where: {
+          id_company_id: {
+            id,
+            company_id,
+          },
+        },
+      });
+
+
+    });
+
+    res.status(200).json({
+      message: 'Roster template deleted',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error deleting roster template.");
   }
 });

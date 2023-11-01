@@ -41,6 +41,7 @@ import {
   getRosterTemplate,
   getRosterTemplatePosition,
   createRosterTemplate,
+  deleteRosterTemplate,
 } from "../../../shared/api/roster.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
@@ -86,7 +87,7 @@ const AddSchedule = () => {
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<IRoster>({
-      id: 0,
+      id: 1,
       company_id: globalState?.user?.company_id || 0,
       location_id: 0,
       department_id: globalState?.user?.department_id || 0,
@@ -330,7 +331,7 @@ const AddSchedule = () => {
 
     return (
       <Modal show={showSubmitModal} onClose={() => setShowSubmitModal(false)}>
-        <Modal.Header>Comfirmation</Modal.Header>
+        <Modal.Header>Confirmation</Modal.Header>
         <Modal.Body>
           <div>
             <p>{message}</p>
@@ -424,28 +425,41 @@ const AddSchedule = () => {
       >
         <Modal.Header>Auto Assign</Modal.Header>
         <Modal.Body>
-          <Select onChange={(e) => setSelectedPosition(e.target.value)}>
-            {Object.keys(positionCount).map((position, index) => (
-              <option key={index} value={position}>
-                {position}
-              </option>
-            ))}
-          </Select>
-          {selectedPosition !== "" ? (
-            <div>
-              <p>
-                {positionSelectedCount[selectedPosition] || 0} /{" "}
-                {positionCount[selectedPosition] || 0}
-              </p>
-              <Button onClick={() => incrementSelectedCount(selectedPosition)}>
-                +
-              </Button>
-              <Button onClick={() => decrementSelectedCount(selectedPosition)}>
-                -
-              </Button>
-            </div>
-          ) : null}
-        </Modal.Body>
+  <div style={{ display: 'flex', alignItems: 'center' }}>
+    <Select onChange={(e) => setSelectedPosition(e.target.value)}>
+      {Object.keys(positionCount).map((position, index) => (
+        <option key={index} value={position}>
+          {position}
+        </option>
+      ))}
+    </Select>
+    {selectedPosition !== "" ? (
+    <div style={{ display: 'flex', alignItems: 'center'}}>
+      <Label style={{ marginRight: 'auto', fontSize: '16px' }}>
+        {positionSelectedCount[selectedPosition] || 0} /{" "}
+        {positionCount[selectedPosition] || 0}
+      </Label>
+      <Button style={{ marginLeft: '300px'}}
+      onClick={() => incrementSelectedCount(selectedPosition)}>
+        +
+      </Button>
+      <Button style={{ marginLeft: '10px'}}
+      onClick={() => decrementSelectedCount(selectedPosition)}>
+        -
+      </Button>
+    </div>
+) : null}
+  </div>
+  {selectedPosition !== "" ? (
+    <div style={{ display: 'flex', alignItems: 'center'}}>
+      {Object.keys(positionSelectedCount).map((position, index) => (
+  <div key={index}>
+    {position}{positionSelectedCount[position]}
+  </div>
+))}
+    </div>
+) : null}
+</Modal.Body>
         <Modal.Footer>
           <div className="w-full md:w-1/2 ms-auto flex justify-center">
             <Button
@@ -537,39 +551,42 @@ const AddSchedule = () => {
             <p>
               {selectedTemplate && (
                 <span>
-                Employees: {selectedTemplate.no_of_employees}
-                {templatePositions.map((templatePosition, index) => (
-                  <div key={index}>
-                    {templatePosition.position} - {templatePosition.count}
-                  </div>
-                ))}
-              </span>
+                  Employees: {selectedTemplate.no_of_employees}
+                  {templatePositions.map((templatePosition, index) => (
+                    <div key={index}>
+                      {templatePosition.position} - {templatePosition.count}
+                    </div>
+                  ))}
+                </span>
               )}
             </p>
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <div className="w-full md:w-1/2 ms-auto flex justify-center">
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => {}}
-            >
-              Yes
-            </Button>
-            <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => {
-                setShowTemplateModal(false);
-              }}
-            >
-              No
-            </Button>
-          </div>
-        </Modal.Footer>
+  <div className="w-full flex justify-between items-center">
+    <Button
+      color="failure"
+      className="w-1/4" // Adjust the width as needed
+      size="sm"
+      onClick={() => {
+        if (selectedTemplate) {
+          deleteRosterTemplate(selectedTemplate);
+        }
+      }}
+    >
+      Delete
+    </Button>
+    <div className="flex-1"></div> {/* Flex to push the "Use" button to the right */}
+    <Button
+      color="success"
+      className="w-1/4" // Adjust the width as needed
+      size="sm"
+      onClick={() => {}}
+    >
+      Use
+    </Button>
+  </div>
+</Modal.Footer>
       </Modal>
     );
   };
@@ -642,10 +659,14 @@ const AddSchedule = () => {
             <TextInput
               id="create-template"
               onChange={(e) => {
-                setRosterTemplate({
-                  ...rosterTemplate,
-                  name: e.target.value,
-                });
+                const text = e.target.value;
+                const words = text.split(/\s+/);
+                if (words.length <= 10) {
+                  setRosterTemplate({
+                    ...rosterTemplate,
+                    name: e.target.value,
+                  });
+                }
               }}
             />
           </div>
@@ -844,26 +865,30 @@ const AddSchedule = () => {
   return (
     <div>
       <p className="header">{`${isEdit ? "Edit" : "Create"} Schedule`}</p>
-      <div className="mb-3 flex justify-between">
+      <div className="mb-3 flex justify-between items-center">
         <BackButton size="sm" />
-        <Button
-          size="sm"
-          onClick={() => {
-            setShowTemplateModal(true);
-          }}
-        >
-          <p>Template</p>
-          <HiUserGroup className="ml-2 my-auto" />
-        </Button>
-        <Button
-          size="sm"
-          onClick={() => {
-            setAutoAssignShowModal(true);
-          }}
-        >
-          <p>Auto Assign</p>
-          <HiUserGroup className="ml-2 my-auto" />
-        </Button>
+
+        <div className="flex items-center">
+          <Button
+            size="sm"
+            onClick={() => {
+              setShowTemplateModal(true);
+            }}
+            className="mr-2" // Add right margin class here
+          >
+            <p>Template</p>
+            <HiUserGroup className="ml-2 my-auto" />
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              setAutoAssignShowModal(true);
+            }}
+          >
+            <p>Auto Assign</p>
+            <HiUserGroup className="ml-2 my-auto" />
+          </Button>
+        </div>
       </div>
       <form>
         {/*
@@ -991,7 +1016,7 @@ const AddSchedule = () => {
               autoComplete="off"
             />
           </div>
-          <div id="people-section" className="mt-4 overflow-x-auto">
+          <div id="people-section" className="mt-4 overflow-x-auto flex">
             <Table theme={customTableTheme}>
               <Table.Head>
                 <Table.HeadCell>Employee</Table.HeadCell>
@@ -1006,10 +1031,11 @@ const AddSchedule = () => {
                     </Table.Cell>
                   </Table.Row>
                 ) : (
-                  generateEmployeeList()
+                generateEmployeeList()
                 )}
               </Table.Body>
             </Table>
+            {generateSelectedEmployeeList()}
           </div>
 
           <div className="mx-10">
@@ -1129,7 +1155,7 @@ const AddSchedule = () => {
           </div>
         </div>
         */}
-        {generateSelectedEmployeeList()}
+        
 
         <div className="mt-12 flex justify-end">
           <Button

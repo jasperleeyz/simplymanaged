@@ -45,3 +45,16 @@ export const getRosterById = async (companyId: number, rosterId: number): Promis
       })
       .catch((err) => Promise.reject(err));
   };
+
+  export const deleteRosterTemplate = async (rosterTemplate: IRosterTemplate): Promise<any> => {
+    console.log(JSON.stringify(rosterTemplate))
+    return await fetch(`/roster/delete/roster-template`, {
+      method: "DELETE",
+      body: JSON.stringify(rosterTemplate),
+    })
+      .then((response) => {
+        if (response.ok) return Promise.resolve(response.json());
+        else return response.text().then((text) => Promise.reject(text));
+      })
+      .catch((err) => Promise.reject(err));
+  };
