@@ -37,6 +37,38 @@ RosterRouter.get("/get-roster-template/:company_id", async (req, res) => {
   }
 });
 
+RosterRouter.get("/get-roster-template-positions/:company_id/:roster_template_id", async (req, res) => {
+  const { page, size, sort, filter } = req.query;
+  const { company_id, roster_template_id } = req.params;
+
+  try {
+    const findObject = generateFindObject(page, size, sort, filter);
+    findObject.where = {
+      ...findObject.where,
+      company_id: Number(company_id),
+      roster_template_id: Number(roster_template_id)
+    };
+
+    const rosterTemplatePosition = await prisma.$transaction([
+      prisma.rosterTemplatePosition.count(...findObject.where),
+      prisma.rosterTemplatePosition.findMany(findObject),
+    ]);
+
+    // create result object
+    const result = generateResultJson(
+      rosterTemplatePosition[1],
+      rosterTemplatePosition[0],
+      page,
+      size
+    );
+
+    res.status(200).json(result);
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving roster template position.");
+  }
+});
+
 RosterRouter.post("/create/roster-template", async (req, res) => {
   try {
     const {

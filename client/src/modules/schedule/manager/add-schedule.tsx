@@ -37,7 +37,11 @@ import {
   getNonConflictScheduleUser,
   createUserSchedule,
 } from "../../../shared/api/user-schedule.api";
-import { getRosterTemplate, createRosterTemplate } from "../../../shared/api/roster.api";
+import {
+  getRosterTemplate,
+  getRosterTemplatePosition,
+  createRosterTemplate,
+} from "../../../shared/api/roster.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -57,7 +61,6 @@ const AddSchedule = () => {
   const isEdit = location.pathname.endsWith(PATHS.EDIT_SCHEDULE);
 
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
-  const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEmployeeList, setFilteredEmployeeList] = useState<IUser[]>([]);
 
@@ -71,7 +74,7 @@ const AddSchedule = () => {
   const startIndex = (currentPage - 1) * sizePerPage;
   const endIndex = startIndex + sizePerPage;
   const employeesToDisplay = filteredEmployeeList.slice(startIndex, endIndex);
-  
+
   const [showAutoAssignModal, setAutoAssignShowModal] = React.useState(false);
 
   const [showTemplateModal, setShowTemplateModal] = React.useState(false);
@@ -134,20 +137,6 @@ const AddSchedule = () => {
       };
     });
   };
-
-  useEffect(() => {
-    setLoading((prev) => true);
-    getRosterTemplate(
-      0,
-    )
-      .then((res) => {
-        setTemplateList(res.data)
-      })
-      .finally(() => {
-        setLoading((prev) => false);
-      });
-  }, [
-  ]);
 
   useEffect(() => {
     setLoading((prev) => true);
@@ -382,27 +371,26 @@ const AddSchedule = () => {
   const autoAssignModal = () => {
     const [positionCount, setPositionCount] = useState({});
 
-  useEffect(() => {
-    if (employeeList) {
-      const updatedPositionCount = {};
-      employeeList.forEach((emp, idx) => {
-        if (emp) {
-          if (updatedPositionCount[emp.position]) {
-            updatedPositionCount[emp.position]++;
-          } else {
-            updatedPositionCount[emp.position] = 1;
+    useEffect(() => {
+      if (employeeList) {
+        const updatedPositionCount = {};
+        employeeList.forEach((emp, idx) => {
+          if (emp) {
+            if (updatedPositionCount[emp.position]) {
+              updatedPositionCount[emp.position]++;
+            } else {
+              updatedPositionCount[emp.position] = 1;
+            }
           }
-        }
-      });
-      setPositionCount(updatedPositionCount);
-    }
-  }, [employeeList]);
-   
+        });
+        setPositionCount(updatedPositionCount);
+      }
+    }, [employeeList]);
 
-    const [selectedPosition, setSelectedPosition] = useState('');
+    const [selectedPosition, setSelectedPosition] = useState("");
 
     useEffect(() => {
-      setSelectedPosition(Object.keys(positionCount)[0])
+      setSelectedPosition(Object.keys(positionCount)[0]);
     }, [positionCount]);
 
     const [positionSelectedCount, setPositionSelectedCount] = React.useState(
@@ -489,15 +477,75 @@ const AddSchedule = () => {
   };
 
   const templateModal = () => {
+    const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
+    useEffect(() => {
+      setLoading((prev) => true);
+      getRosterTemplate(0)
+        .then((res) => {
+          setTemplateList(res.data);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
+    }, []);
+
+    const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();
+    useEffect(() => {
+      setSelectedTemplate(templateList[0]);
+    }, [templateList]);
+
+    const [templatePositions, setTemplatePositions] = useState<
+      IRosterTemplatePosition[]
+    >([]);
+    useEffect(() => {
+      setLoading((prev) => true);
+      getRosterTemplatePosition(
+        selectedTemplate?.company_id || 0,
+        selectedTemplate?.id || 0
+      )
+        .then((res) => {
+          setTemplatePositions(res.data);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
+    }, [selectedTemplate]);
+
     return (
       <Modal
         show={showTemplateModal}
         onClose={() => setShowTemplateModal(false)}
       >
-        <Modal.Header>Template</Modal.Header>
+        <Modal.Header>Roster Template</Modal.Header>
         <Modal.Body>
+          <Select
+            onChange={(e) => {
+              const selectedTemplateName = e.target.value;
+              const selectedTemplateObject = templateList.find(
+                (template) => template.name === selectedTemplateName
+              );
+              setSelectedTemplate(selectedTemplateObject);
+            }}
+          >
+            {templateList.map((template, index) => (
+              <option key={index} value={template.name}>
+                {template.name}
+              </option>
+            ))}
+          </Select>
           <div>
-            <p>{templateList[0].name}</p>
+            <p>
+              {selectedTemplate && (
+                <span>
+                Employees: {selectedTemplate.no_of_employees}
+                {templatePositions.map((templatePosition, index) => (
+                  <div key={index}>
+                    {templatePosition.position} - {templatePosition.count}
+                  </div>
+                ))}
+              </span>
+              )}
+            </p>
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -540,14 +588,16 @@ const AddSchedule = () => {
     );
 
     const [positionCount, setPositionCount] = useState({});
-    const [positionList, setPositionList] = React.useState<IRosterTemplatePosition[]>([]);
+    const [positionList, setPositionList] = React.useState<
+      IRosterTemplatePosition[]
+    >([]);
     useEffect(() => {
       setRosterTemplate((prevTemplate) => ({
         ...prevTemplate,
         positions: [],
         no_of_employees: scheduleDetailsState.employees?.length || 0,
       }));
-    
+
       if (scheduleDetailsState.employees) {
         const updatedPositionCount = {};
         scheduleDetailsState.employees.forEach((emp, idx) => {
@@ -559,11 +609,11 @@ const AddSchedule = () => {
             }
           }
         });
-    
+
         setPositionCount(updatedPositionCount);
       }
     }, [scheduleDetailsState.employees]);
-    
+
     useEffect(() => {
       const newPositions = Object.keys(positionCount).map((position) => ({
         roster_template_id: 0,
@@ -573,13 +623,13 @@ const AddSchedule = () => {
       }));
 
       setPositionList(newPositions);
-    
+
       setRosterTemplate((prevTemplate) => ({
         ...prevTemplate,
         positions: newPositions,
       }));
     }, [positionCount]);
-    
+
     return (
       <Modal
         show={showCreateTemplateModal}
