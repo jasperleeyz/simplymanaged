@@ -3,44 +3,44 @@ import IUser from "./user.model";
 
 export interface IRequest {
     id: number;
-    userId: number;
-    companyId: number;
+    user_id: number;
+    company_id: number;
     type: string;
     status: string;
-    createdDate: Date;
-    createdBy: string;
-    updatedDate: Date;
-    updatedBy: string;
-    bidRequest?: IBidRequest;
-    leaveRequest?: ILeaveRequest;
-    swapRequest?: ISwapRequest;
+    created_date: Date;
+    created_by: string;
+    updated_date: Date;
+    updated_by: string;
+    bid_request?: IBidRequest;
+    leave_request?: ILeaveRequest;
+    swap_request?: ISwapRequest;
 }
 
 
 export interface IBidRequest {
-    requestId: number;
-    requestedRoster: IRoster; 
+    request_id: number;
+    requested_roster: IRoster; 
     shift: string;
-    startDate: Date;
-    endDate: Date;
+    start_date: Date;
+    end_date: Date;
 }
 
 
 export interface ILeaveRequest {
-    requestId: number;
+    request_id: number;
     type: string;
-    startDate: Date;
-    endDate: Date;
+    start_date: Date;
+    end_date: Date;
     remarks?: string;
-    isHalfDay: boolean;
+    half_day: string;
 }
 
 
 export interface ISwapRequest {
-    requestId: number;
+    request_id: number;
     requester: IUser;
-    requesterSchedule: IUserSchedule; 
-    requestedUser: IUser; // employee who owns the requested shift
-    requestedSchedule: IUserSchedule; 
+    requester_schedule: IUserSchedule; 
+    requested_user: IUser; // employee who owns the requested shift
+    requested_schedule: IUserSchedule; 
     reason: string;
 }

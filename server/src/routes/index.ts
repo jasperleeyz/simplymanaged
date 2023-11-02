@@ -13,6 +13,7 @@ import { companyRouter } from "./Company";
 import { UserScheduleRouter } from "./UserSchedule";
 import { subscriptionRouter } from "./Subscription";
 import { RosterRouter } from "./Roster";
+import { requestRouter } from "./Request";
 
 
 export const routes = express.Router();
@@ -30,3 +31,4 @@ routes.use('/location', locationRouter);
 routes.use('/user-schedule', UserScheduleRouter)
 routes.use('/subscription', subscriptionRouter);
 routes.use('/roster', RosterRouter);
+routes.use('/request', requestRouter);

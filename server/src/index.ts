@@ -138,7 +138,7 @@ app.post(`/api/login`, async (req, res) => {
 
     if (user && checkPassword(password, user.password)) {
       const token = jwt.sign(
-        { company_id: user.company_id, email: user.email, name: user.fullname, role: user.role },
+        { user_id: user.id, company_id: user.company_id, email: user.email, name: user.fullname, role: user.role },
         process.env.JWT_SECRET,
         {
           expiresIn: "1d", // expires in 24 hours

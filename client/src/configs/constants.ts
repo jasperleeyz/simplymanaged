@@ -34,7 +34,10 @@ export const PATHS = {
   EDIT_PROFILE: "edit",
 
   REQUESTS: "requests",
-  VIEW_REQUEST: "view-request",
+  VIEW_REQUEST: "view",
+  ADD_REQUEST: "add",
+  ADD_LEAVE_REQUEST: "add?type=leave",
+  ADD_SWAP_REQUEST: "add?type=swap",
 
   EMPLOYEES: "employees",
   ADD_EMPLOYEE: "add",
@@ -102,6 +105,15 @@ export const USER_STATUS = {
   INACTIVE: "I",
   A: "ACTIVE",
   I: "INACTIVE",
+};
+
+export const REQUEST_STATUS = {
+  PENDING: "P",
+  APPROVED: "A",
+  REJECTED: "R",
+  R: "REJECTED",
+  P: "PENDING",
+  A: "APPROVED",
 };
 
 export const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB

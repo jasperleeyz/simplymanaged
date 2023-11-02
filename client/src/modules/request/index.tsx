@@ -5,12 +5,14 @@ import { Route, Routes } from "react-router-dom";
 import Requests from "./requests";
 import { PATHS } from "../../configs/constants";
 import RequestDetails from "./request-details";
+import AddOrEditRequest from "./add-edit-request";
 
 const RequestRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Requests />} />
       <Route path={`/${PATHS.VIEW_REQUEST}`} element={<RequestDetails />} />
+      <Route path={`/${PATHS.ADD_REQUEST}`} element={<AddOrEditRequest />} />
     </Routes>
   );
 };

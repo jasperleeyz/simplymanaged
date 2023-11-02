@@ -282,9 +282,10 @@ model BidRequest {
 model LeaveRequest {
   request_id Int      @id
   type       String
-  remarks    String
+  remarks    String?
   start_date DateTime
   end_date   DateTime
+  half_day   String
   request    Request  @relation("leave_request", fields: [request_id], references: [id])
 
   @@index([request_id])
@@ -328,6 +329,7 @@ model Roster {
 model RosterTemplate {
   id              Int
   company_id      Int
+  roster_type     String
   name            String
   no_of_employees Int
   created_by      String
@@ -351,4 +353,15 @@ model RosterTemplatePosition {
 
   @@id([roster_template_id, company_id, position])
   @@index([roster_template_id, company_id])
+}
+
+model Sequences {
+  id             Int      @id @default(autoincrement())
+  company_id     Int
+  sequence_key   String   @unique
+  sequence_value Int      @default(1)
+  created_by     String   @default("SYSTEM")
+  created_date   DateTime @default(now())
+  updated_by     String   @default("SYSTEM")
+  updated_date   DateTime @updatedAt
 }
