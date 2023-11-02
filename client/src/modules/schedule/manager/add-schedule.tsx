@@ -493,35 +493,37 @@ const AddSchedule = () => {
   const templateModal = () => {
     const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
     useEffect(() => {
-      setLoading((prev) => true);
-      getRosterTemplate(0)
+      //setLoading((prev) => true);
+      getRosterTemplate(globalState?.user?.company_id || 0)
         .then((res) => {
           setTemplateList(res.data);
         })
         .finally(() => {
-          setLoading((prev) => false);
+        //  setLoading((prev) => false);
         });
-    }, []);
+    }, [showTemplateModal]);
 
     const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();
     useEffect(() => {
       setSelectedTemplate(templateList[0]);
     }, [templateList]);
 
-    const [templatePositions, setTemplatePositions] = useState<
-      IRosterTemplatePosition[]
-    >([]);
+    const [templatePositions, setTemplatePositions] = useState<{ [key: string]: number }>({});
     useEffect(() => {
-      setLoading((prev) => true);
+      //setLoading((prev) => true);
       getRosterTemplatePosition(
         selectedTemplate?.company_id || 0,
         selectedTemplate?.id || 0
       )
         .then((res) => {
-          setTemplatePositions(res.data);
+          const templatePosition = {};
+          res.data.forEach((item) => {
+            templatePosition[item.position] = item.count;
+          setTemplatePositions(templatePosition);    
+          });
         })
         .finally(() => {
-          setLoading((prev) => false);
+          //setLoading((prev) => false);
         });
     }, [selectedTemplate]);
 
@@ -552,11 +554,11 @@ const AddSchedule = () => {
               {selectedTemplate && (
                 <span>
                   Employees: {selectedTemplate.no_of_employees}
-                  {templatePositions.map((templatePosition, index) => (
-                    <div key={index}>
-                      {templatePosition.position} - {templatePosition.count}
-                    </div>
-                  ))}
+                  {Object.keys(templatePositions).map((position, index) => (
+                  <div key={index}>
+                    {position} - {templatePositions[position]}
+                  </div>
+                ))}
                 </span>
               )}
             </p>
@@ -581,7 +583,7 @@ const AddSchedule = () => {
       color="success"
       className="w-1/4" // Adjust the width as needed
       size="sm"
-      onClick={() => {}}
+      onClick={() => {autoAssignPersonnel(templatePositions)}}
     >
       Use
     </Button>
@@ -658,6 +660,7 @@ const AddSchedule = () => {
             <Label htmlFor="create-template" value="Name" />
             <TextInput
               id="create-template"
+              autoComplete="off"
               onChange={(e) => {
                 const text = e.target.value;
                 const words = text.split(/\s+/);
