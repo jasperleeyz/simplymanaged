@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
+import { getNextSequenceValue } from "../utils/sequence";
+import { SEQUENCE_KEYS } from "../utils/constants";
 
 export const locationRouter = express.Router();
 
@@ -52,19 +54,9 @@ locationRouter.post("/create-update", async (req, res) => {
         });
       } else {
         loc = prisma.$transaction(async (tx) => {
-          const existingLoc = await tx.companyLocation.findFirst({
-            where: {
-              company_id: company_id,
-            },
-            orderBy: {
-              id: "desc",
-            },
-            select: { id: true },
-          });
-  
           return await tx.companyLocation.create({
             data: {
-              id: existingLoc ? existingLoc.id + 1 : 1,
+              id: await getNextSequenceValue(company_id, SEQUENCE_KEYS.COMPANY_LOCATION_SEQUENCE),
               company_id: company_id,
               name: name.toLocaleUpperCase().trim(),
               address: address.toLocaleUpperCase().trim(),

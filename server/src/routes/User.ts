@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateSalt, hashPassword } from "../utils/security";
 import { generateFindObject, generateResultJson } from "../utils/utils";
-import { SUBSCRIPTION_STATUS } from "../utils/constants";
+import { SEQUENCE_KEYS, SUBSCRIPTION_STATUS } from "../utils/constants";
+import { getNextSequenceValue } from "../utils/sequence";
 
 export const userRouter = express.Router();
 
@@ -56,7 +57,6 @@ userRouter.get("/info", async (req, res) => {
           email: logged_in_user?.email,
         },
       });
-
     }
 
     if (user) {
@@ -91,7 +91,8 @@ userRouter.get("/:company_id", async (req, res) => {
 
     const usersWithoutPassword = users[1].map((user) => {
       const { password, ...userWithoutPassword } = user;
-      userWithoutPassword.profile_image = userWithoutPassword?.profile_image?.toString() as any || null;
+      userWithoutPassword.profile_image =
+        (userWithoutPassword?.profile_image?.toString() as any) || null;
       return userWithoutPassword;
     });
 
@@ -139,12 +140,16 @@ userRouter.post("/create", async (req, res) => {
       },
     });
 
-    if(!subscription) {
+    if (!subscription) {
       throw new Error("No active subscription found.");
     }
 
-    if(subscription?.employee_quantity <= userCount) {
-      res.status(400).send("Error creating employee. Employee limit has been reached for your subscription.");
+    if (subscription?.employee_quantity <= userCount) {
+      res
+        .status(400)
+        .send(
+          "Error creating employee. Employee limit has been reached for your subscription."
+        );
       return;
     }
 
@@ -161,7 +166,10 @@ userRouter.post("/create", async (req, res) => {
 
       return await tx.user.create({
         data: {
-          id: existingUser ? existingUser.id + 1 : 1,
+          id: await getNextSequenceValue(
+            company_id,
+            SEQUENCE_KEYS.USER_SEQUENCE
+          ),
           company_id: company_id,
           email: email.toLocaleUpperCase().trim(),
           password: hashedPassword,
@@ -172,19 +180,9 @@ userRouter.post("/create", async (req, res) => {
           status: status.toLocaleUpperCase().trim(),
           department_id: department_id,
           employment_details: {
-            connectOrCreate: {
-              where: {
-                user_id_user_company_id: {
-                  user_id: existingUser ? existingUser.id + 1 : 1,
-                  user_company_id: company_id,
-                },
-                employment_type: employment_details.employment_type,
-                working_hours: Number(employment_details.working_hours),
-              },
-              create: {
-                working_hours: Number(employment_details.working_hours),
-                employment_type: employment_details.employment_type,
-              },
+            create: {
+              working_hours: Number(employment_details.working_hours),
+              employment_type: employment_details.employment_type,
             },
           },
           profile_image: Buffer.from(profile_image),
@@ -201,7 +199,9 @@ userRouter.post("/create", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating new employee. Please try again later.");
+    res
+      .status(400)
+      .send("Error creating new employee. Please try again later.");
   }
 });
 

@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
+import { getNextSequenceValue } from "../utils/sequence";
+import { SEQUENCE_KEYS } from "../utils/constants";
 
 export const companyCodeRouter = express.Router();
 
@@ -58,19 +60,9 @@ companyCodeRouter.post("/create-update", async (req, res) => {
       } else {
         // create new code type
         await prisma.$transaction(async (tx) => {
-          const existingCompanyCodeType = await tx.companyCodeType.findFirst({
-            where: {
-              company_id: company_id,
-            },
-            orderBy: {
-              id: "desc",
-            },
-            select: { id: true },
-          });
-  
           return await tx.companyCodeType.create({
             data: {
-              id: existingCompanyCodeType ? existingCompanyCodeType.id + 1 : 1,
+              id: await getNextSequenceValue(company_id, SEQUENCE_KEYS.COMPANY_CODE_TYPE_SEQUENCE),
               company_id: company_id,
               code_type: code_type_other.toLocaleUpperCase().trim(),
               status: "A",
@@ -105,16 +97,6 @@ companyCodeRouter.post("/create-update", async (req, res) => {
       });
     } else {
       companyCode = prisma.$transaction(async (tx) => {
-        const existingCompanyCode = await tx.companyCode.findFirst({
-          where: {
-            company_id: company_id,
-          },
-          orderBy: {
-            id: "desc",
-          },
-          select: { id: true },
-        });
-
         return await tx.companyCode.create({
           data: {
             code_type: code_type,
@@ -125,7 +107,7 @@ companyCodeRouter.post("/create-update", async (req, res) => {
             updated_by: logged_in_user?.name,
             // created_date: new Date(),
             company_id: company_id,
-            id: existingCompanyCode ? existingCompanyCode.id + 1 : 1,
+            id: await getNextSequenceValue(company_id, SEQUENCE_KEYS.COMPANY_CODE_SEQUENCE)
           },
         });
       });

@@ -1,6 +1,8 @@
 import { Department, PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
+import { getNextSequenceValue } from "../utils/sequence";
+import { SEQUENCE_KEYS } from "../utils/constants";
 
 export const departmentRouter = express.Router();
 
@@ -58,19 +60,9 @@ departmentRouter.post("/create-update", async (req, res) => {
       });
     } else {
       department = prisma.$transaction(async (tx) => {
-        const existingDept = await tx.department.findFirst({
-          where: {
-            company_id: company_id,
-          },
-          orderBy: {
-            id: "desc",
-          },
-          select: { id: true },
-        });
-
         return await tx.department.create({
           data: {
-            id: existingDept ? existingDept.id + 1 : 1,
+            id: await getNextSequenceValue(company_id, SEQUENCE_KEYS.DEPARTMENT_SEQUENCE),
             company_id: company_id,
             department_name: department_name.toLocaleUpperCase().trim(),
             department_head_id:

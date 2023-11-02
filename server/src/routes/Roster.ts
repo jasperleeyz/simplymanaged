@@ -75,6 +75,7 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
       id,
       company_id,
       name,
+      roster_type,
       no_of_employees,
       created_by,
       updated_by,
@@ -86,6 +87,7 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
         data: {
           id,
           company_id,
+          roster_type,
           name,
           no_of_employees,
           created_by,
