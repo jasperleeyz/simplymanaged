@@ -7,7 +7,9 @@ import {
   sendRegistrationEmail,
   sendRejectedEmail,
 } from "../utils/email";
-import { PAYMENT_CYCLE, REGISTRATION_STATUS, SUBSCRIPTION_STATUS } from "../utils/constants";
+import { PAYMENT_CYCLE, REGISTRATION_STATUS, SEQUENCE_KEYS, SUBSCRIPTION_STATUS } from "../utils/constants";
+import { getNextSequenceValue, instantiateSequences } from "../utils/sequence";
+import { get } from "http";
 
 export const registrationRouter = express.Router();
 
@@ -243,11 +245,13 @@ const approveRegistration = async (registration_details: Registration) => {
       data: new_subscription,
     });
 
+    // instantiate sequence table for company
+    await instantiateSequences(company.id);
 
     // create new code types for company
     const code_types = [
       {
-        id: 1,
+        id: await getNextSequenceValue(company.id, SEQUENCE_KEYS.COMPANY_CODE_TYPE_SEQUENCE),
         company_id: company.id,
         code_type: "POSITION",        
         status: "A",
@@ -255,7 +259,7 @@ const approveRegistration = async (registration_details: Registration) => {
         updated_by: "SYSTEM",
       },
       {
-        id: 2,
+        id: await getNextSequenceValue(company.id, SEQUENCE_KEYS.COMPANY_CODE_TYPE_SEQUENCE),
         company_id: company.id,
         code_type: "EMPLOYMENT_TYPE",        
         status: "A",
@@ -287,6 +291,8 @@ const approveRegistration = async (registration_details: Registration) => {
     const system_admin = await prisma.user.create({
       data: new_system_admin,
     });
+
+    //
 
     return {
       username: system_admin.email,
