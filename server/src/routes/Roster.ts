@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
+import { SEQUENCE_KEYS, SUBSCRIPTION_STATUS } from "../utils/constants";
+import { getNextSequenceValue } from "../utils/sequence";
 
 export const RosterRouter = express.Router();
 
@@ -72,7 +74,6 @@ RosterRouter.get("/get-roster-template-positions/:company_id/:roster_template_id
 RosterRouter.post("/create/roster-template", async (req, res) => {
   try {
     const {
-      id,
       company_id,
       name,
       roster_type,
@@ -82,10 +83,15 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
       positions
     } = req.body;
 
+    const id = await getNextSequenceValue(
+      company_id,
+      SEQUENCE_KEYS.USER_SEQUENCE
+    )
+    
     const rosterTemplate = await prisma.$transaction(async (tx) => {
       const createdTemplate = await tx.rosterTemplate.create({
         data: {
-          id,
+          id: id,
           company_id,
           roster_type,
           name,

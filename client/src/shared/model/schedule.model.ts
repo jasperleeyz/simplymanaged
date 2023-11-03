@@ -2,8 +2,9 @@ import { ICompanyLocation } from "./company.model";
 import IUser from "./user.model";
 
 export interface IRosterTemplate {
-  id: number;
+  id?: number;
   company_id: number;
+  roster_type: string,
   name: string;
   no_of_employees: number;
   created_by: string;
@@ -14,8 +15,8 @@ export interface IRosterTemplate {
 }
 
 export interface IRosterTemplatePosition {
-  roster_template_id: number;
-  company_id: number;
+  roster_template_id?: number;
+  company_id?: number;
   position: string;
   count: number;
 }
@@ -35,7 +36,6 @@ export interface IRoster {
   employees?: IUser[];
   schedules?:IUserSchedule[];
   location?: ICompanyLocation;
-  schedules?: IUserSchedule[];
 }
 
 export interface IUserSchedule {

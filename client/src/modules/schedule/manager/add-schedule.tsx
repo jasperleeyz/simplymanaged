@@ -425,41 +425,46 @@ const AddSchedule = () => {
       >
         <Modal.Header>Auto Assign</Modal.Header>
         <Modal.Body>
-  <div style={{ display: 'flex', alignItems: 'center' }}>
-    <Select onChange={(e) => setSelectedPosition(e.target.value)}>
-      {Object.keys(positionCount).map((position, index) => (
-        <option key={index} value={position}>
-          {position}
-        </option>
-      ))}
-    </Select>
-    {selectedPosition !== "" ? (
-    <div style={{ display: 'flex', alignItems: 'center'}}>
-      <Label style={{ marginRight: 'auto', fontSize: '16px' }}>
-        {positionSelectedCount[selectedPosition] || 0} /{" "}
-        {positionCount[selectedPosition] || 0}
-      </Label>
-      <Button style={{ marginLeft: '300px'}}
-      onClick={() => incrementSelectedCount(selectedPosition)}>
-        +
-      </Button>
-      <Button style={{ marginLeft: '10px'}}
-      onClick={() => decrementSelectedCount(selectedPosition)}>
-        -
-      </Button>
-    </div>
-) : null}
-  </div>
-  {selectedPosition !== "" ? (
-    <div style={{ display: 'flex', alignItems: 'center'}}>
-      {Object.keys(positionSelectedCount).map((position, index) => (
-  <div key={index}>
-    {position}{positionSelectedCount[position]}
-  </div>
-))}
-    </div>
-) : null}
-</Modal.Body>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <Select onChange={(e) => setSelectedPosition(e.target.value)}>
+              {Object.keys(positionCount).map((position, index) => (
+                <option key={index} value={position}>
+                  {position}
+                </option>
+              ))}
+            </Select>
+            {selectedPosition !== "" ? (
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Label style={{ marginRight: "auto", fontSize: "16px" }}>
+                  {positionSelectedCount[selectedPosition] || 0} /{" "}
+                  {positionCount[selectedPosition] || 0}
+                </Label>
+                <Button
+                  style={{ marginLeft: "300px" }}
+                  onClick={() => incrementSelectedCount(selectedPosition)}
+                >
+                  +
+                </Button>
+                <Button
+                  style={{ marginLeft: "10px" }}
+                  onClick={() => decrementSelectedCount(selectedPosition)}
+                >
+                  -
+                </Button>
+              </div>
+            ) : null}
+          </div>
+          {selectedPosition !== "" ? (
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {Object.keys(positionSelectedCount).map((position, index) => (
+                <div key={index}>
+                  {position}
+                  {positionSelectedCount[position]}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </Modal.Body>
         <Modal.Footer>
           <div className="w-full md:w-1/2 ms-auto flex justify-center">
             <Button
@@ -499,7 +504,7 @@ const AddSchedule = () => {
           setTemplateList(res.data);
         })
         .finally(() => {
-        //  setLoading((prev) => false);
+          //  setLoading((prev) => false);
         });
     }, [showTemplateModal]);
 
@@ -508,7 +513,9 @@ const AddSchedule = () => {
       setSelectedTemplate(templateList[0]);
     }, [templateList]);
 
-    const [templatePositions, setTemplatePositions] = useState<{ [key: string]: number }>({});
+    const [templatePositions, setTemplatePositions] = useState<{
+      [key: string]: number;
+    }>({});
     useEffect(() => {
       //setLoading((prev) => true);
       getRosterTemplatePosition(
@@ -519,7 +526,7 @@ const AddSchedule = () => {
           const templatePosition = {};
           res.data.forEach((item) => {
             templatePosition[item.position] = item.count;
-          setTemplatePositions(templatePosition);    
+            setTemplatePositions(templatePosition);
           });
         })
         .finally(() => {
@@ -555,40 +562,43 @@ const AddSchedule = () => {
                 <span>
                   Employees: {selectedTemplate.no_of_employees}
                   {Object.keys(templatePositions).map((position, index) => (
-                  <div key={index}>
-                    {position} - {templatePositions[position]}
-                  </div>
-                ))}
+                    <div key={index}>
+                      {position} - {templatePositions[position]}
+                    </div>
+                  ))}
                 </span>
               )}
             </p>
           </div>
         </Modal.Body>
         <Modal.Footer>
-  <div className="w-full flex justify-between items-center">
-    <Button
-      color="failure"
-      className="w-1/4" // Adjust the width as needed
-      size="sm"
-      onClick={() => {
-        if (selectedTemplate) {
-          deleteRosterTemplate(selectedTemplate);
-        }
-      }}
-    >
-      Delete
-    </Button>
-    <div className="flex-1"></div> {/* Flex to push the "Use" button to the right */}
-    <Button
-      color="success"
-      className="w-1/4" // Adjust the width as needed
-      size="sm"
-      onClick={() => {autoAssignPersonnel(templatePositions)}}
-    >
-      Use
-    </Button>
-  </div>
-</Modal.Footer>
+          <div className="w-full flex justify-between items-center">
+            <Button
+              color="failure"
+              className="w-1/4" // Adjust the width as needed
+              size="sm"
+              onClick={() => {
+                if (selectedTemplate) {
+                  deleteRosterTemplate(selectedTemplate);
+                }
+              }}
+            >
+              Delete
+            </Button>
+            <div className="flex-1"></div>{" "}
+            {/* Flex to push the "Use" button to the right */}
+            <Button
+              color="success"
+              className="w-1/4" // Adjust the width as needed
+              size="sm"
+              onClick={() => {
+                autoAssignPersonnel(templatePositions);
+              }}
+            >
+              Use
+            </Button>
+          </div>
+        </Modal.Footer>
       </Modal>
     );
   };
@@ -598,10 +608,11 @@ const AddSchedule = () => {
       {
         id: 0,
         company_id: globalState?.user?.company_id || 0,
-        name: "",
+        roster_type: '',
+        name: '',
         no_of_employees: 0,
-        created_by: globalState?.user?.fullname || "",
-        updated_by: globalState?.user?.fullname || "",
+        created_by: globalState?.user?.fullname || '',
+        updated_by: globalState?.user?.fullname || '',
         positions: [],
       }
     );
@@ -875,16 +886,6 @@ const AddSchedule = () => {
           <Button
             size="sm"
             onClick={() => {
-              setShowTemplateModal(true);
-            }}
-            className="mr-2" // Add right margin class here
-          >
-            <p>Template</p>
-            <HiUserGroup className="ml-2 my-auto" />
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => {
               setAutoAssignShowModal(true);
             }}
           >
@@ -1008,16 +1009,36 @@ const AddSchedule = () => {
               }}
             />
           </div>
+          <div className ="mr-5">
+          <Label htmlFor="schedule-employees" value="Template" />
+          <Select
+            onChange={(e) => {
+              /*const selectedTemplateName = e.target.value;
+              const selectedTemplateObject = templateList.find(
+                (template) => template.name === selectedTemplateName
+              );
+              setSelectedTemplate(selectedTemplateObject);*/
+            }}
+          >
+            {employeeList.map((template, index) => (
+              <option key={index} value={template.fullname}>
+                {template.fullname}
+              </option>
+            ))}
+          </Select>
+          </div>
         </div>
         <div className="mb-3">
-          <Label htmlFor="schedule-employees" value="Employees Available" />
-          <div className="flex justify-between">
-            <TextInput
-              placeholder="Search Position..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              autoComplete="off"
-            />
+          <div className="mr-5">
+            <Label htmlFor="schedule-employees" value="Employees Available" />
+            <div className="flex">
+              <TextInput
+                placeholder="Search Position..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                autoComplete="off"
+              />
+            </div>
           </div>
           <div id="people-section" className="mt-4 overflow-x-auto flex">
             <Table theme={customTableTheme}>
@@ -1034,13 +1055,12 @@ const AddSchedule = () => {
                     </Table.Cell>
                   </Table.Row>
                 ) : (
-                generateEmployeeList()
+                  generateEmployeeList()
                 )}
               </Table.Body>
             </Table>
             {generateSelectedEmployeeList()}
           </div>
-
           <div className="mx-10">
             <Pagination
               currentPage={currentPage}
@@ -1158,7 +1178,6 @@ const AddSchedule = () => {
           </div>
         </div>
         */}
-        
 
         <div className="mt-12 flex justify-end">
           <Button
