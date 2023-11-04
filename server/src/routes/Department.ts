@@ -53,7 +53,7 @@ departmentRouter.post("/create-update", async (req, res) => {
         data: {
           department_name: department_name.toLocaleUpperCase().trim(),
           department_head_id:
-            department_head_id === 0 ? null : department_head_id,
+            department_head_id === 0 ? null : Number(department_head_id),
           updated_by: logged_in_user?.name,
           // updated_date: new Date(),
         },

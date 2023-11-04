@@ -1,13 +1,12 @@
 import IUser from "../model/user.model";
 
 export const getAllEmployees = async (
-  company_id: number,
   page?: number,
   size?: number,
   sort?: string,
   filter?: string
 ): Promise<any> => {
-  let url = `/user/${company_id}`;
+  let url = `/user`;
 
   if (page || size || sort || filter) {
     url += `?`;
@@ -39,10 +38,7 @@ export const getAllEmployees = async (
     .catch((err) => Promise.reject(err));
 };
 
-
-export const addEmployee = async (
-  user: IUser
-): Promise<any> => {
+export const addEmployee = async (user: IUser): Promise<any> => {
   return await fetch(`/user/create`, {
     method: "POST",
     body: JSON.stringify(user),
@@ -52,11 +48,9 @@ export const addEmployee = async (
       else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
-}
+};
 
-export const updateEmployee = async (
-  user: IUser
-): Promise<any> => {
+export const updateEmployee = async (user: IUser): Promise<any> => {
   return await fetch(`/user/update`, {
     method: "POST",
     body: JSON.stringify(user),
@@ -66,4 +60,17 @@ export const updateEmployee = async (
       else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
-}
+};
+
+export const getEmployeeById = async (userId: number): Promise<any> => {
+  const url = `/user/${userId}`;
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+};

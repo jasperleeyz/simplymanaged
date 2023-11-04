@@ -299,7 +299,7 @@ const Calendar = () => {
     const [showConfirmationModal, setShowConfirmationModal] =
     React.useState(false);
     useEffect(() => {
-      getAllEmployees(globalState?.user?.company_id || 0)
+      getAllEmployees()
         .then((res) => {
           const positionsArray = res.data.map((item) => item.position).flat();
           const templatePosition = positionsArray.reduce((acc, position) => {

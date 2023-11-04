@@ -75,8 +75,9 @@ userRouter.get("/info", async (req, res) => {
   }
 });
 
-userRouter.get("/:company_id", async (req, res) => {
-  const { company_id } = req.params;
+userRouter.get("/", async (req, res) => {
+  const logged_in_user = req.headers?.["x-access-user"] as any;
+  const company_id = logged_in_user["company_id"];
   const { page, size, sort, filter } = req.query;
 
   try {
@@ -102,6 +103,31 @@ userRouter.get("/:company_id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(400).send("Error getting users.");
+  }
+});
+
+userRouter.get("/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+  const logged_in_user = req.headers?.["x-access-user"] as any;
+  const company_id = logged_in_user["company_id"];
+  
+  try {
+    const user = await prisma.user.findFirst({
+      where: {
+        id: Number(user_id),
+        company_id: Number(company_id),
+      },
+      include: { employment_details: true, preferences: true },
+    }) as any;
+
+    const { password, ...userWithoutPassword } = user;
+    userWithoutPassword.profile_image =
+      (userWithoutPassword?.profile_image?.toString() as any) || null;
+    
+    res.status(200).json(generateResultJson(userWithoutPassword));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error getting user.");
   }
 });
 

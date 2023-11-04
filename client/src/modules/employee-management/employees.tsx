@@ -71,7 +71,6 @@ const EmployeesPage = () => {
     // if (searchTerm !== "") {
     setLoading((prev) => true);
     getAllEmployees(
-      globalState?.user?.company_id || 0,
       1,
       sizePerPage,
       undefined,

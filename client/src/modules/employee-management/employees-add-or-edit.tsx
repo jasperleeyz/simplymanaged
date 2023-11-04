@@ -119,7 +119,6 @@ const AddOrEditUser = () => {
 
     if (id) {
       getAllEmployees(
-        loggedin_user?.company_id || 0,
         undefined,
         undefined,
         undefined,
