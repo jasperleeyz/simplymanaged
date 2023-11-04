@@ -138,7 +138,7 @@ const Calendar = () => {
   const templateModal = () => {
     const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
     const [showConfirmationModal, setShowConfirmationModal] =
-    React.useState(false);
+      React.useState(false);
     useEffect(() => {
       //setLoading((prev) => true);
       getRosterTemplate(globalState?.user?.company_id || 0)
@@ -148,7 +148,7 @@ const Calendar = () => {
         .finally(() => {
           //  setLoading((prev) => false);
         });
-    }, [showTemplateModal, confirmationModal]);
+    }, [showTemplateModal == true]);
 
     const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();
     useEffect(() => {
@@ -175,120 +175,127 @@ const Calendar = () => {
           //setLoading((prev) => false);
         });
     }, [selectedTemplate]);
-    
+
     return (
       <div>
-      <Modal
-        show={showTemplateModal}
-        onClose={() => setShowTemplateModal(false)}
-      >
-        <Modal.Header>Roster Template</Modal.Header>
-        <Modal.Body>
-          <Label className="text-l" value="Template Name" />
-          <div className="flex my-2">
-            {templateList.length > 0? (<Select
-              onChange={(e) => {
-                const selectedTemplateName = e.target.value;
-                const selectedTemplateObject = templateList.find(
-                  (template) => template.name === selectedTemplateName
-                );
-                setSelectedTemplate(selectedTemplateObject);
-              }}
-            >
-              {templateList.map((template, index) => (
-                <option key={index} value={template.name}>
-                  {template.name}
-                </option>
-              ))}
-            </Select>): (<p>No roster template available</p>)}
-          </div>
-          <div>
-            <p>
-              {selectedTemplate && (
-                <div>
-                  <Label
-                    className="my-2 text-l"
-                    value="Template Details"
-                  ></Label>
-                <div>
-                  <span>
-                  Shift Type - {selectedTemplate.roster_type} 
-                    {Object.keys(templatePositions).map((position, index) => (
-                      <div key={index}>
-                        {position} - {templatePositions[position]}
-                      </div>
-                    ))}
-                    No of Employees - {selectedTemplate.no_of_employees}
-                  </span>
-                  </div>
-                </div>
+        <Modal
+          show={showTemplateModal}
+          onClose={() => setShowTemplateModal(false)}
+        >
+          <Modal.Header>Roster Template</Modal.Header>
+          <Modal.Body>
+            <Label className="text-l" value="Template Name" />
+            <div className="flex my-2">
+              {templateList.length > 0 ? (
+                <Select
+                  onChange={(e) => {
+                    const selectedTemplateName = e.target.value;
+                    const selectedTemplateObject = templateList.find(
+                      (template) => template.name === selectedTemplateName
+                    );
+                    setSelectedTemplate(selectedTemplateObject);
+                  }}
+                >
+                  {templateList.map((template, index) => (
+                    <option key={index} value={template.name}>
+                      {template.name}
+                    </option>
+                  ))}
+                </Select>
+              ) : (
+                <p>No roster template available</p>
               )}
-            </p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full flex justify-between items-center">
-            <Button
-              color="success"
-              className="w-1/4" // Adjust the width as needed
-              size="sm"
-              onClick={() => {
-                setShowCreateTemplateModal(true);
-                setShowTemplateModal(false);
-              }}
-            >
-              Create
-            </Button>
-            <div className="flex-1"></div>{" "}
-            {/* Flex to push the "Use" button to the right */}
-            <Button
-              color="failure"
-              className="w-1/4" // Adjust the width as needed
-              size="sm"
-              disabled={templateList.length === 0}
-              onClick={() => {
-                setShowConfirmationModal(true);
-              }}
-            >
-              Delete
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-      <Modal show={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
-        <Modal.Header>Confirmation</Modal.Header>
-        <Modal.Body>
-          <div>
-            <p>Delete {selectedTemplate?.name} ?</p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full md:w-1/2 ms-auto flex justify-center">
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => {
-                if(selectedTemplate){
-                  deleteRosterTemplate(selectedTemplate)
-                  toast.success("Template delete successfully")
-                  setShowConfirmationModal(false)
-                }
-            }}
-            >
-              Yes
-            </Button>
-            <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => setShowConfirmationModal(false)}
-            >
-              No
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
+            </div>
+            <div>
+                {selectedTemplate && (
+                  <div>
+                    <Label
+                      className="my-2 text-l"
+                      value="Template Details"
+                    ></Label>
+                    <div>
+                      <span>
+                        Shift Type - {selectedTemplate.roster_type}
+                        {Object.keys(templatePositions).map(
+                          (position, index) => (
+                            <div key={index}>
+                              {position} - {templatePositions[position]}
+                            </div>
+                          )
+                        )}
+                        No of Employees - {selectedTemplate.no_of_employees}
+                      </span>
+                    </div>
+                  </div>
+                )}
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="w-full flex justify-between items-center">
+              <Button
+                color="success"
+                className="w-1/4" // Adjust the width as needed
+                size="sm"
+                onClick={() => {
+                  setShowCreateTemplateModal(true);
+                  setShowTemplateModal(false);
+                }}
+              >
+                Create
+              </Button>
+              <div className="flex-1"></div>{" "}
+              {/* Flex to push the "Use" button to the right */}
+              <Button
+                color="failure"
+                className="w-1/4" // Adjust the width as needed
+                size="sm"
+                disabled={templateList.length === 0}
+                onClick={() => {
+                  setShowConfirmationModal(true);
+                }}
+              >
+                Delete
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
+        <Modal
+          show={showConfirmationModal}
+          onClose={() => setShowConfirmationModal(false)}
+        >
+          <Modal.Header>Confirmation</Modal.Header>
+          <Modal.Body>
+            <div>
+              Delete {selectedTemplate?.name} ?
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="w-full md:w-1/2 ms-auto flex justify-center">
+              <Button
+                color="success"
+                className="w-full mr-3"
+                size="sm"
+                onClick={() => {
+                  if (selectedTemplate) {
+                    deleteRosterTemplate(selectedTemplate);
+                    toast.success("Template delete successfully");
+                    setShowConfirmationModal(false);
+                  }
+                }}
+              >
+                Yes
+              </Button>
+              <Button
+                color="failure"
+                className="w-full"
+                size="sm"
+                onClick={() => setShowConfirmationModal(false)}
+              >
+                No
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
       </div>
     );
   };
@@ -298,7 +305,7 @@ const Calendar = () => {
       [key: string]: number;
     }>({});
     const [showConfirmationModal, setShowConfirmationModal] =
-    React.useState(false);
+      React.useState(false);
     useEffect(() => {
       getAllEmployees(globalState?.user?.company_id || 0)
         .then((res) => {
@@ -323,6 +330,20 @@ const Calendar = () => {
         positions: [],
       }
     );
+
+    useEffect(() => {
+      setRosterTemplate((prevTemplate) => ({
+        ...prevTemplate,
+        company_id: globalState?.user?.company_id || 0,
+        roster_type: "",
+        name: "",
+        no_of_employees: 0,
+        created_by: globalState?.user?.fullname || "",
+        updated_by: globalState?.user?.fullname || "",
+        positions: [],
+      }));
+      setPositionSelectedCount([])
+    }, [showCreateTemplateModal]);
 
     const [positionSelectedCount, setPositionSelectedCount] = React.useState(
       {}
@@ -381,153 +402,159 @@ const Calendar = () => {
 
     return (
       <div>
-      <Modal
-        show={showCreateTemplateModal}
-        onClose={() => setShowCreateTemplateModal(false)}
-      >
-        <Modal.Header>Create Roster Template</Modal.Header>
-        <Modal.Body>
-          <Label className="my-2 text-l" value="Template Position"></Label>
-          <div className="flex my-2">
-            <Select onChange={(e) => setSelectedPosition(e.target.value)}>
-              {Object.keys(templatePositions).map((position, index) => (
-                <option key={index} value={position}>
-                  {position}
-                </option>
-              ))}
-            </Select>
-            {selectedPosition !== "" ? (
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <Button
-                  style={{ marginLeft: "300px" }}
-                  onClick={() => decrementSelectedCount(selectedPosition)}
-                >
-                <span style={{ fontSize: "20px" }}>-</span>
-                </Button>
-                <Button
-                  style={{ marginLeft: "10px"}}
-                  onClick={() => incrementSelectedCount(selectedPosition)}
-                >
-                <span style={{ fontSize: "20px" }}>+</span>
-                </Button>
+        <Modal
+          show={showCreateTemplateModal}
+          onClose={() => setShowCreateTemplateModal(false)}
+        >
+          <Modal.Header>Create Roster Template</Modal.Header>
+          <Modal.Body>
+            <Label className="my-2 text-l" value="Template Position"></Label>
+            <div className="flex my-2">
+              <Select onChange={(e) => setSelectedPosition(e.target.value)}>
+                {Object.keys(templatePositions).map((position, index) => (
+                  <option key={index} value={position}>
+                    {position}
+                  </option>
+                ))}
+              </Select>
+              {selectedPosition !== "" ? (
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <Button
+                    style={{ marginLeft: "300px" }}
+                    onClick={() => decrementSelectedCount(selectedPosition)}
+                  >
+                    <span style={{ fontSize: "20px" }}>-</span>
+                  </Button>
+                  <Button
+                    style={{ marginLeft: "10px" }}
+                    onClick={() => incrementSelectedCount(selectedPosition)}
+                  >
+                    <span style={{ fontSize: "20px" }}>+</span>
+                  </Button>
+                </div>
+              ) : null}
+            </div>
+            {rosterTemplate.no_of_employees > 0 ? (
+              <div className="my-2">
+                <Label
+                  className="text-l"
+                  htmlFor="template-details"
+                  value="Template Details"
+                />
+                {Object.keys(positionSelectedCount).map((position, index) => (
+                  <div className="my-2" key={index}>
+                    {positionSelectedCount[position] > 0 && (
+                      <div>
+                        {position} - {positionSelectedCount[position]}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                No of Employees - {rosterTemplate.no_of_employees}
               </div>
             ) : null}
-          </div>
-          {rosterTemplate.no_of_employees > 0 ? (
             <div className="my-2">
               <Label
-                className="text-l"
-                htmlFor="template-details"
-                value="Template Details"
+                className="mr-2 text-l"
+                htmlFor="shift-template"
+                value="Shfit-Based"
               />
-              {Object.keys(positionSelectedCount).map((position, index) => (
-                <div className="my-2" key={index}>
-                  {position} - {positionSelectedCount[position]}
-                </div>
-              ))}
-              No of Employees -  {rosterTemplate.no_of_employees}
+              <Checkbox
+                value={rosterTemplate.roster_type}
+                checked={rosterTemplate.roster_type == "SHIFT"}
+                onChange={() => {
+                  if (rosterTemplate.roster_type == "SHIFT") {
+                    setRosterTemplate((prevTemplate) => ({
+                      ...prevTemplate,
+                      roster_type: "PROJECT",
+                    }));
+                  } else {
+                    setRosterTemplate((prevTemplate) => ({
+                      ...prevTemplate,
+                      roster_type: "SHIFT",
+                    }));
+                  }
+                }}
+              />
             </div>
-          ) : null}
-          <div className="my-2">
-            <Label
-              className="mr-2 text-l"
-              htmlFor="shift-template"
-              value="Shfit-Based"
-            />
-            <Checkbox value={rosterTemplate.roster_type} 
-            checked={rosterTemplate.roster_type == 'SHIFT'} 
-            onChange={() => {
-              if(rosterTemplate.roster_type == 'SHIFT')
-                { setRosterTemplate((prevTemplate) => ({
-                  ...prevTemplate,
-                  roster_type: 'PROJECT',
-                }));}
-              else{
-                setRosterTemplate((prevTemplate) => ({
-                  ...prevTemplate,
-                  roster_type: 'SHIFT',
-                }));
-              }
-            }} />
-          </div>
-          <div>
-            <Label
-              className="text-l"
-              htmlFor="create-template"
-              value="Template Name"
-            />
-            <TextInput
-              style={{ width: "150px" }}
-              maxLength={10}
-              autoComplete="off"
-              onChange={(e) => {
-                setRosterTemplate((prevTemplate) => ({
-                  ...prevTemplate,
-                  name: e.target.value,
-                }));
-              }}
-            />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="ml-auto">
-            <Button
-              color="success"
-              size="sm"
-              onClick={() => {
-                setShowConfirmationModal(true)
-              }}
-            >
-              Create
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-      <Modal show={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
-      <Modal.Header>Confirmation</Modal.Header>
-      <Modal.Body>
-        <div>
-          <p>Create {rosterTemplate?.name} ?</p>
-        </div>
-      </Modal.Body>
-      <Modal.Footer>
-        <div className="w-full md:w-1/2 ms-auto flex justify-center">
-          <Button
-            color="success"
-            className="w-full mr-3"
-            size="sm"
-            onClick={() => {
-              if(rosterTemplate){
-                createRosterTemplate(rosterTemplate)
-                toast.success("Template create successfully")
-                setShowConfirmationModal(false)
-                setShowCreateTemplateModal(false)
-              }
-          }}
-          >
-            Yes
-          </Button>
-          <Button
-            color="failure"
-            className="w-full"
-            size="sm"
-            onClick={() => setShowConfirmationModal(false)}
-          >
-            No
-          </Button>
-        </div>
-      </Modal.Footer>
-    </Modal>
-    </div>
+            <div>
+              <Label
+                className="text-l"
+                htmlFor="create-template"
+                value="Template Name"
+              />
+              <TextInput
+                style={{ width: "150px" }}
+                maxLength={10}
+                autoComplete="off"
+                onChange={(e) => {
+                  setRosterTemplate((prevTemplate) => ({
+                    ...prevTemplate,
+                    name: e.target.value,
+                  }));
+                }}
+              />
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="ml-auto">
+              <Button
+                color="success"
+                size="sm"
+                onClick={() => {
+                  setShowConfirmationModal(true);
+                }}
+              >
+                Create
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
+        <Modal
+          show={showConfirmationModal}
+          onClose={() => setShowConfirmationModal(false)}
+        >
+          <Modal.Header>Confirmation</Modal.Header>
+          <Modal.Body>
+            <div>
+              Create {rosterTemplate?.name} ?
+            </div>
+          </Modal.Body>
+          <Modal.Footer>
+            <div className="w-full md:w-1/2 ms-auto flex justify-center">
+              <Button
+                color="success"
+                className="w-full mr-3"
+                size="sm"
+                onClick={() => {
+                  if (rosterTemplate) {
+                    createRosterTemplate(rosterTemplate);
+                    toast.success("Template create successfully");
+                    setShowConfirmationModal(false);
+                    setShowCreateTemplateModal(false);
+                  }
+                }}
+              >
+                Yes
+              </Button>
+              <Button
+                color="failure"
+                className="w-full"
+                size="sm"
+                onClick={() => setShowConfirmationModal(false)}
+              >
+                No
+              </Button>
+            </div>
+          </Modal.Footer>
+        </Modal>
+      </div>
     );
   };
 
   const confirmationModal = () => {
-    return (
-      <div></div>
-    );
+    return <div></div>;
   };
-
 
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
@@ -602,7 +629,7 @@ const Calendar = () => {
                     className="ml-3"
                   >
                     <HiTemplate className="my-auto mr-2" />
-                    <p>Roster Template</p>
+                    Roster Template
                   </Button>
                   <Button
                     size="sm"
@@ -610,7 +637,7 @@ const Calendar = () => {
                     className="ml-3"
                   >
                     <HiCalendar className="my-auto mr-2" />
-                    <p>Create Schedule</p>
+                    Create Schedule
                   </Button>
                 </div>
               )}
