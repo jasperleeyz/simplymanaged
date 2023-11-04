@@ -116,7 +116,7 @@ const Calendar = () => {
     const to = new Date(year, month+1)
     getUserScheduleFromAndTo(0, globalState?.user?.id || 0, from, to)
       .then((res) => {
-        console.log(res.data);
+        //console.log(res.data);
       })
       .finally(() => {
         setLoadingUserSchedule((prev) => false);
