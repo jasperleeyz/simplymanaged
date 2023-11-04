@@ -6,7 +6,7 @@ import moment from "moment";
 import ScheduleDateBox from "./schedule-date-box";
 import React from "react";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
-import {getUserScheduleFromAndTo} from "../../../shared/api/user-schedule.api"
+import {getAllUserSchedule, getUserScheduleFromAndTo} from "../../../shared/api/user-schedule.api"
 import { IUserSchedule } from "../../model/schedule.model";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
@@ -64,7 +64,18 @@ const CalendarMonthView = ({
         })
         .finally(() => {
         });
-    }, []);
+    }, [isPersonal]);
+
+    useEffect(() => {
+      getAllUserSchedule(0, month+1, year)
+        .then((res) => {
+          console.log(res.data)
+          //setScheduleList(res.data);
+        })
+        .finally(() => {
+        });
+    }, [!isPersonal]);
+    
     
   /*const scheduleForMonth = scheduleList?.filter(
     (schedule) =>

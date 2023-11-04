@@ -66,8 +66,9 @@ const PersonalDateBox = ({
           {/* <p className="absolute whitespace-normal">No schedule for the day</p>
         <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
           <div className="bg-green-300 rounded p-1">
-            <Label>{roster?.location?.name}</Label>
+            <Label>{schedule.roster?.location?.name}</Label>
             <Label>{schedule?.roster?.type}</Label>
+            <Label>{schedule?.status}</Label>
           </div>
         </div>
       )}

@@ -134,10 +134,10 @@ const Home = () => {
                 <p className="sub-header">Upcoming Schedules</p>
                 <Card className="md:w-11/12">
                   {scheduleForTheWeek &&
-                  scheduleForTheWeek.filter((s) => s.attendance === "N")
+                  scheduleForTheWeek.filter((s) => s.status === "")
                     .length > 0 ? (
                     scheduleForTheWeek
-                      .filter((s) => s.attendance === "N")
+                      .filter((s) => s.status === "")
                       .map((shift, idx) => (
                         <UpcomingShiftComponent key={idx} schedule={shift} />
                       ))
