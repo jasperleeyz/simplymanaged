@@ -186,7 +186,7 @@ const Calendar = () => {
         <Modal.Body>
           <Label className="text-l" value="Template Name" />
           <div className="flex my-2">
-            <Select
+            {templateList.length > 0? (<Select
               onChange={(e) => {
                 const selectedTemplateName = e.target.value;
                 const selectedTemplateObject = templateList.find(
@@ -200,7 +200,7 @@ const Calendar = () => {
                   {template.name}
                 </option>
               ))}
-            </Select>
+            </Select>): (<p>No roster template available</p>)}
           </div>
           <div>
             <p>
@@ -245,6 +245,7 @@ const Calendar = () => {
               color="failure"
               className="w-1/4" // Adjust the width as needed
               size="sm"
+              disabled={templateList.length === 0}
               onClick={() => {
                 setShowConfirmationModal(true);
               }}
@@ -299,7 +300,7 @@ const Calendar = () => {
     const [showConfirmationModal, setShowConfirmationModal] =
     React.useState(false);
     useEffect(() => {
-      getAllEmployees()
+      getAllEmployees(globalState?.user?.company_id || 0)
         .then((res) => {
           const positionsArray = res.data.map((item) => item.position).flat();
           const templatePosition = positionsArray.reduce((acc, position) => {
@@ -401,13 +402,13 @@ const Calendar = () => {
                   style={{ marginLeft: "300px" }}
                   onClick={() => decrementSelectedCount(selectedPosition)}
                 >
-                  -
+                <span style={{ fontSize: "20px" }}>-</span>
                 </Button>
                 <Button
-                  style={{ marginLeft: "10px" }}
+                  style={{ marginLeft: "10px"}}
                   onClick={() => incrementSelectedCount(selectedPosition)}
                 >
-                  +
+                <span style={{ fontSize: "20px" }}>+</span>
                 </Button>
               </div>
             ) : null}
