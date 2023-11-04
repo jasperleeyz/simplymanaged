@@ -10,9 +10,9 @@ import { capitalizeString } from "../../../configs/utils";
 
 const ViewSchedule = () => {
   const location = useLocation();
-  const schedule = location.state?.schedule as IRoster;
+  const schedule = location.state?.schedule as IUserSchedule;
   const type = location.state?.type as string;
-
+  const startDate = new Date(schedule.start_date);
   return (
     <div id="schedule-details-main">
       <p className="header">Schedule Details</p>
@@ -20,12 +20,12 @@ const ViewSchedule = () => {
         <LabeledField
           id="schedule-date"
           labelValue="Date"
-          value={schedule.start_date?.toLocaleDateString()}
+          value={startDate.toLocaleDateString()}
         />
         <LabeledField
           id="schedule-location"
           labelValue="Location"
-          value={schedule.location?.name}
+          value={schedule.roster?.location?.name}
         />
         <div className="col-span-2">
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />

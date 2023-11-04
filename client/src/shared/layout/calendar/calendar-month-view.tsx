@@ -60,6 +60,7 @@ const CalendarMonthView = ({
       const to = new Date(year, month+1)
       getUserScheduleFromAndTo(0, globalState?.user?.id || 0, from, to)
         .then((res) => {
+          console.log(res.data)
           setScheduleList(res.data);
         })
         .finally(() => {
@@ -69,7 +70,7 @@ const CalendarMonthView = ({
     useEffect(() => {
       getAllUserSchedule(0, month+1, year)
         .then((res) => {
-          console.log(res.data)
+          //console.log(res.data)
           //setScheduleList(res.data);
         })
         .finally(() => {
@@ -103,9 +104,9 @@ const CalendarMonthView = ({
               <Table.Row key={idx}>
                 {week.days.map((day, didx) => {
                   const scheduleForDay = scheduleList?.filter((schedule) => {
-                    const startDate = new Date(schedule.start_date);
-                    const startday = startDate.getDate();
-                    return startday === day.date();
+                    const startDate = new Date(schedule.start_date).getDate();
+                    const endDate = new Date(schedule.end_date).getDate(); 
+                    return startDate <= day.date() && day.date() <= endDate;
                   });
                   return (
                     <Table.Cell key={didx}>
