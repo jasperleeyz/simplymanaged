@@ -34,6 +34,7 @@ import {
   deleteRosterTemplate,
 } from "../../shared/api/roster.api";
 import { toast } from "react-toastify";
+import {getUserScheduleFromAndTo} from "../../shared/api/user-schedule.api"
 
 const customCalendarStyle: CustomFlowbiteTheme = {
   buttonGroup: {
@@ -101,6 +102,19 @@ const Calendar = () => {
   useEffect(() => {
     setLoadingUserSchedule((prev) => true);
     getAllUserSchedule(0, month + 1, year)
+      .then((res) => {
+        //console.log(res.data);
+      })
+      .finally(() => {
+        setLoadingUserSchedule((prev) => false);
+      });
+  }, [month, year]);
+
+  useEffect(() => {
+    setLoadingUserSchedule((prev) => true);
+    const from = new Date(year, month)
+    const to = new Date(year, month+1)
+    getUserScheduleFromAndTo(0, globalState?.user?.id || 0, from, to)
       .then((res) => {
         console.log(res.data);
       })
@@ -552,10 +566,6 @@ const Calendar = () => {
     );
   };
 
-  const confirmationModal = () => {
-    return <div></div>;
-  };
-
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
       <div id="schedule-main">
@@ -654,7 +664,6 @@ const Calendar = () => {
       <div>
         {templateModal()}
         {createTemplateModal()}
-        {confirmationModal()}
       </div>
     </Flowbite>
   );
