@@ -6,16 +6,34 @@ import {
   Flowbite,
   Label,
   Select,
+  Modal,
+  TextInput,
+  Checkbox,
 } from "flowbite-react";
 import React from "react";
 import { MONTHS, PATHS, ROLES } from "../../configs/constants";
 import CalendarMonthView from "../../shared/layout/calendar/calendar-month-view";
-import { HiCalendar } from "react-icons/hi";
+import { HiCalendar, HiDocument, HiTemplate } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { getUserSchedule, getAllUserSchedule } from "../../shared/api/user-schedule.api";
-import { getAllLocations } from "../../shared/api/location.api"
+import {
+  IUserSchedule,
+  IRoster,
+  IRosterTemplate,
+  IRosterTemplatePosition,
+} from "../../shared/model/schedule.model";
+import { getAllUserSchedule } from "../../shared/api/user-schedule.api";
+import { getAllEmployees } from "../../shared/api/user.api";
+import { getAllLocations } from "../../shared/api/location.api";
 import { ICompanyLocation } from "../../shared/model/company.model";
+import IUser from "../../shared/model/user.model";
+import {
+  getRosterTemplate,
+  getRosterTemplatePosition,
+  createRosterTemplate,
+  deleteRosterTemplate,
+} from "../../shared/api/roster.api";
+import { toast } from "react-toastify";
 
 const customCalendarStyle: CustomFlowbiteTheme = {
   buttonGroup: {
@@ -38,18 +56,15 @@ const Calendar = () => {
 
   useEffect(() => {
     setLoadingLocation((prev) => true);
-    getAllLocations(
-      1//globalState?.user?.company_id || 0
-    )
+    getAllLocations(globalState?.user?.company_id || 0)
       .then((res) => {
         setLocationList(res.data);
       })
       .finally(() => {
         setLoadingLocation((prev) => false);
-        
       });
   }, []);
-  
+
   const scheduleList =
     React.useContext(GlobalStateContext).globalState?.schedule;
 
@@ -85,17 +100,12 @@ const Calendar = () => {
 
   useEffect(() => {
     setLoadingUserSchedule((prev) => true);
-    getAllUserSchedule(
-      0,
-      month+1,
-      year
-    )
+    getAllUserSchedule(0, month + 1, year)
       .then((res) => {
         console.log(res.data);
       })
       .finally(() => {
         setLoadingUserSchedule((prev) => false);
-        
       });
   }, [month, year]);
 
@@ -120,6 +130,403 @@ const Calendar = () => {
       ""
     );
   }, [dateRange, location, month, year, isPersonal]);
+
+  const [showTemplateModal, setShowTemplateModal] = React.useState(false);
+  const [showCreateTemplateModal, setShowCreateTemplateModal] =
+    React.useState(false);
+
+  const templateModal = () => {
+    const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
+    const [showConfirmationModal, setShowConfirmationModal] =
+    React.useState(false);
+    useEffect(() => {
+      //setLoading((prev) => true);
+      getRosterTemplate(globalState?.user?.company_id || 0)
+        .then((res) => {
+          setTemplateList(res.data);
+        })
+        .finally(() => {
+          //  setLoading((prev) => false);
+        });
+    }, [showTemplateModal, confirmationModal]);
+
+    const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();
+    useEffect(() => {
+      setSelectedTemplate(templateList[0]);
+    }, [templateList]);
+
+    const [templatePositions, setTemplatePositions] = useState<{
+      [key: string]: number;
+    }>({});
+    useEffect(() => {
+      //setLoading((prev) => true);
+      getRosterTemplatePosition(
+        selectedTemplate?.company_id || 0,
+        selectedTemplate?.id || 0
+      )
+        .then((res) => {
+          const templatePosition = {};
+          res.data.forEach((item) => {
+            templatePosition[item.position] = item.count;
+            setTemplatePositions(templatePosition);
+          });
+        })
+        .finally(() => {
+          //setLoading((prev) => false);
+        });
+    }, [selectedTemplate]);
+    
+    return (
+      <div>
+      <Modal
+        show={showTemplateModal}
+        onClose={() => setShowTemplateModal(false)}
+      >
+        <Modal.Header>Roster Template</Modal.Header>
+        <Modal.Body>
+          <Label className="text-l" value="Template Name" />
+          <div className="flex my-2">
+            <Select
+              onChange={(e) => {
+                const selectedTemplateName = e.target.value;
+                const selectedTemplateObject = templateList.find(
+                  (template) => template.name === selectedTemplateName
+                );
+                setSelectedTemplate(selectedTemplateObject);
+              }}
+            >
+              {templateList.map((template, index) => (
+                <option key={index} value={template.name}>
+                  {template.name}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <p>
+              {selectedTemplate && (
+                <div>
+                  <Label
+                    className="my-2 text-l"
+                    value="Template Details"
+                  ></Label>
+                <div>
+                  <span>
+                  Shift Type - {selectedTemplate.roster_type} 
+                    {Object.keys(templatePositions).map((position, index) => (
+                      <div key={index}>
+                        {position} - {templatePositions[position]}
+                      </div>
+                    ))}
+                    No of Employees - {selectedTemplate.no_of_employees}
+                  </span>
+                  </div>
+                </div>
+              )}
+            </p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="w-full flex justify-between items-center">
+            <Button
+              color="success"
+              className="w-1/4" // Adjust the width as needed
+              size="sm"
+              onClick={() => {
+                setShowCreateTemplateModal(true);
+                setShowTemplateModal(false);
+              }}
+            >
+              Create
+            </Button>
+            <div className="flex-1"></div>{" "}
+            {/* Flex to push the "Use" button to the right */}
+            <Button
+              color="failure"
+              className="w-1/4" // Adjust the width as needed
+              size="sm"
+              onClick={() => {
+                setShowConfirmationModal(true);
+              }}
+            >
+              Delete
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
+        <Modal.Header>Confirmation</Modal.Header>
+        <Modal.Body>
+          <div>
+            <p>Delete {selectedTemplate?.name} ?</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="w-full md:w-1/2 ms-auto flex justify-center">
+            <Button
+              color="success"
+              className="w-full mr-3"
+              size="sm"
+              onClick={() => {
+                if(selectedTemplate){
+                  deleteRosterTemplate(selectedTemplate)
+                  toast.success("Template delete successfully")
+                  setShowConfirmationModal(false)
+                }
+            }}
+            >
+              Yes
+            </Button>
+            <Button
+              color="failure"
+              className="w-full"
+              size="sm"
+              onClick={() => setShowConfirmationModal(false)}
+            >
+              No
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+      </div>
+    );
+  };
+
+  const createTemplateModal = () => {
+    const [templatePositions, setTemplatePositions] = useState<{
+      [key: string]: number;
+    }>({});
+    const [showConfirmationModal, setShowConfirmationModal] =
+    React.useState(false);
+    useEffect(() => {
+      getAllEmployees(globalState?.user?.company_id || 0)
+        .then((res) => {
+          const positionsArray = res.data.map((item) => item.position).flat();
+          const templatePosition = positionsArray.reduce((acc, position) => {
+            acc[position] = (acc[position] || 0) + 1;
+            return acc;
+          }, {});
+          setTemplatePositions(templatePosition);
+        })
+        .finally(() => {});
+    }, []);
+
+    const [rosterTemplate, setRosterTemplate] = React.useState<IRosterTemplate>(
+      {
+        company_id: globalState?.user?.company_id || 0,
+        roster_type: "",
+        name: "",
+        no_of_employees: 0,
+        created_by: globalState?.user?.fullname || "",
+        updated_by: globalState?.user?.fullname || "",
+        positions: [],
+      }
+    );
+
+    const [positionSelectedCount, setPositionSelectedCount] = React.useState(
+      {}
+    );
+
+    useEffect(() => {
+      const newPositions = Object.keys(positionSelectedCount).map(
+        (position) => ({
+          roster_template_id: 0,
+          company_id: globalState?.user?.company_id || 0,
+          position: position,
+          count: positionSelectedCount[position],
+        })
+      );
+
+      setRosterTemplate((prevTemplate) => ({
+        ...prevTemplate,
+        positions: newPositions,
+      }));
+    }, [positionSelectedCount]);
+
+    const [selectedPosition, setSelectedPosition] = useState("");
+
+    useEffect(() => {
+      setSelectedPosition(Object.keys(templatePositions)[0]);
+    }, [templatePositions]);
+
+    const incrementSelectedCount = (position) => {
+      const currentCount = positionSelectedCount[position] || 0;
+      const limit = templatePositions[position] || 0; // Get the position count limit
+      if (currentCount < limit) {
+        setPositionSelectedCount((prevPositionSelectedCount) => ({
+          ...prevPositionSelectedCount,
+          [position]: currentCount + 1,
+        }));
+        setRosterTemplate((prevTemplate) => ({
+          ...prevTemplate,
+          no_of_employees: prevTemplate.no_of_employees + 1,
+        }));
+      }
+    };
+
+    const decrementSelectedCount = (position) => {
+      const currentCount = positionSelectedCount[position] || 0;
+      if (currentCount > 0) {
+        setPositionSelectedCount((prevPositionSelectedCount) => ({
+          ...prevPositionSelectedCount,
+          [position]: currentCount - 1,
+        }));
+        setRosterTemplate((prevTemplate) => ({
+          ...prevTemplate,
+          no_of_employees: prevTemplate.no_of_employees - 1,
+        }));
+      }
+    };
+
+    return (
+      <div>
+      <Modal
+        show={showCreateTemplateModal}
+        onClose={() => setShowCreateTemplateModal(false)}
+      >
+        <Modal.Header>Create Roster Template</Modal.Header>
+        <Modal.Body>
+          <Label className="my-2 text-l" value="Template Position"></Label>
+          <div className="flex my-2">
+            <Select onChange={(e) => setSelectedPosition(e.target.value)}>
+              {Object.keys(templatePositions).map((position, index) => (
+                <option key={index} value={position}>
+                  {position}
+                </option>
+              ))}
+            </Select>
+            {selectedPosition !== "" ? (
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Button
+                  style={{ marginLeft: "300px" }}
+                  onClick={() => decrementSelectedCount(selectedPosition)}
+                >
+                  -
+                </Button>
+                <Button
+                  style={{ marginLeft: "10px" }}
+                  onClick={() => incrementSelectedCount(selectedPosition)}
+                >
+                  +
+                </Button>
+              </div>
+            ) : null}
+          </div>
+          {rosterTemplate.no_of_employees > 0 ? (
+            <div className="my-2">
+              <Label
+                className="text-l"
+                htmlFor="template-details"
+                value="Template Details"
+              />
+              {Object.keys(positionSelectedCount).map((position, index) => (
+                <div className="my-2" key={index}>
+                  {position} - {positionSelectedCount[position]}
+                </div>
+              ))}
+              No of Employees -  {rosterTemplate.no_of_employees}
+            </div>
+          ) : null}
+          <div className="my-2">
+            <Label
+              className="mr-2 text-l"
+              htmlFor="shift-template"
+              value="Shfit-Based"
+            />
+            <Checkbox value={rosterTemplate.roster_type} 
+            checked={rosterTemplate.roster_type == 'SHIFT'} 
+            onChange={() => {
+              if(rosterTemplate.roster_type == 'SHIFT')
+                { setRosterTemplate((prevTemplate) => ({
+                  ...prevTemplate,
+                  roster_type: 'PROJECT',
+                }));}
+              else{
+                setRosterTemplate((prevTemplate) => ({
+                  ...prevTemplate,
+                  roster_type: 'SHIFT',
+                }));
+              }
+            }} />
+          </div>
+          <div>
+            <Label
+              className="text-l"
+              htmlFor="create-template"
+              value="Template Name"
+            />
+            <TextInput
+              style={{ width: "150px" }}
+              maxLength={10}
+              autoComplete="off"
+              onChange={(e) => {
+                setRosterTemplate((prevTemplate) => ({
+                  ...prevTemplate,
+                  name: e.target.value,
+                }));
+              }}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="ml-auto">
+            <Button
+              color="success"
+              size="sm"
+              onClick={() => {
+                setShowConfirmationModal(true)
+              }}
+            >
+              Create
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+      <Modal show={showConfirmationModal} onClose={() => setShowConfirmationModal(false)}>
+      <Modal.Header>Confirmation</Modal.Header>
+      <Modal.Body>
+        <div>
+          <p>Create {rosterTemplate?.name} ?</p>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <div className="w-full md:w-1/2 ms-auto flex justify-center">
+          <Button
+            color="success"
+            className="w-full mr-3"
+            size="sm"
+            onClick={() => {
+              if(rosterTemplate){
+                createRosterTemplate(rosterTemplate)
+                toast.success("Template create successfully")
+                setShowConfirmationModal(false)
+                setShowCreateTemplateModal(false)
+              }
+          }}
+          >
+            Yes
+          </Button>
+          <Button
+            color="failure"
+            className="w-full"
+            size="sm"
+            onClick={() => setShowConfirmationModal(false)}
+          >
+            No
+          </Button>
+        </div>
+      </Modal.Footer>
+    </Modal>
+    </div>
+    );
+  };
+
+  const confirmationModal = () => {
+    return (
+      <div></div>
+    );
+  };
+
 
   return (
     <Flowbite theme={{ theme: customCalendarStyle }}>
@@ -163,19 +570,23 @@ const Calendar = () => {
             </div>
           </div>
           <div className="mt-3 md:mt-0 md:ms-24">
-            <Label htmlFor="location" value="Location" />
-            <Select
-              id="location"
-              sizing="sm"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            >
-              {locationList.map((l, idx) => (
-                <option key={idx} value={l.name}>
-                  {l.name}
-                </option>
-              ))}
-            </Select>
+            {locationList.length > 0 ? (
+              <>
+                <Label htmlFor="location" value="Location" />
+                <Select
+                  id="location"
+                  sizing="sm"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                >
+                  {locationList.map((l, idx) => (
+                    <option key={idx} value={l.name}>
+                      {l.name}
+                    </option>
+                  ))}
+                </Select>
+              </>
+            ) : null}
           </div>
           {globalState?.user?.role === ROLES.MANAGER && (
             <div className="ms-auto mt-3 flex">
@@ -183,14 +594,24 @@ const Calendar = () => {
                 {!isPersonal ? "View Personal Schedule" : "View All Schedules"}
               </Button>
               {!isPersonal && (
-                <Button
-                  size="sm"
-                  onClick={() => navigate(`./${PATHS.CREATE_SCHEDULE}`)}
-                  className="ml-3"
-                >
-                  <HiCalendar className="my-auto mr-2" />
-                  <p>Create Schedule</p>
-                </Button>
+                <div className="flex">
+                  <Button
+                    size="sm"
+                    onClick={() => setShowTemplateModal(true)}
+                    className="ml-3"
+                  >
+                    <HiTemplate className="my-auto mr-2" />
+                    <p>Roster Template</p>
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => navigate(`./${PATHS.CREATE_SCHEDULE}`)}
+                    className="ml-3"
+                  >
+                    <HiCalendar className="my-auto mr-2" />
+                    <p>Create Schedule</p>
+                  </Button>
+                </div>
               )}
             </div>
           )}
@@ -201,6 +622,11 @@ const Calendar = () => {
           isPersonal={isPersonal}
           location={location}
         />
+      </div>
+      <div>
+        {templateModal()}
+        {createTemplateModal()}
+        {confirmationModal()}
       </div>
     </Flowbite>
   );

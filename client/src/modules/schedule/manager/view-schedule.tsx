@@ -20,7 +20,7 @@ const ViewSchedule = () => {
         <LabeledField
           id="schedule-date"
           labelValue="Date"
-          value={schedule.startDate?.toLocaleDateString()}
+          value={schedule.start_date?.toLocaleDateString()}
         />
         <LabeledField
           id="schedule-location"
