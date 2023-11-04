@@ -178,14 +178,14 @@ userRouter.post("/create", async (req, res) => {
           contact_no: Number(contact_no),
           position: position.toLocaleUpperCase().trim(),
           status: status.toLocaleUpperCase().trim(),
-          department_id: department_id,
+          department_id: Number(department_id),
           employment_details: {
             create: {
-              working_hours: Number(employment_details.working_hours),
+              working_hours: Number(Number(employment_details.working_hours).toFixed(2)),
               employment_type: employment_details.employment_type,
             },
           },
-          profile_image: Buffer.from(profile_image),
+          profile_image: profile_image ? Buffer.from(profile_image) : null,
           created_by: logged_in_user["name"],
           updated_by: logged_in_user["name"],
         },
@@ -223,11 +223,18 @@ userRouter.post("/update", async (req, res) => {
 
   const logged_in_user = req.headers?.["x-access-user"] as any;
 
+  const { user_id, user_company_id, ...employment_details_without_ids } =
+    employment_details;
+
+    console.log(Number(employment_details_without_ids.working_hours));
+
   try {
     const user = await prisma.user.update({
       where: {
-        id: id,
-        id_company_id: company_id,
+        id_company_id: {
+          id: Number(id),
+          company_id: Number(company_id),
+        },
       },
       data: {
         email: email.toLocaleUpperCase().trim(),
@@ -237,11 +244,44 @@ userRouter.post("/update", async (req, res) => {
         position: position.toLocaleUpperCase().trim(),
         status: status,
         profile_image: profile_image,
-        department_id: department_id,
-        employment_details: employment_details,
-        preferences: preferences,
+        department_id: Number(department_id),
+        employment_details: {
+          upsert: {
+            create: {
+              working_hours: Number(
+                employment_details_without_ids.working_hours
+              ).toFixed(2),
+              employment_type: employment_details_without_ids.employment_type,
+            },
+            update: {
+              working_hours: Number(
+                employment_details_without_ids.working_hours
+              ).toFixed(2),
+              employment_type: employment_details_without_ids.employment_type,
+            },
+          },
+        },
         updated_by: logged_in_user["name"],
       },
+    });
+
+    // update preferences for user
+    preferences.forEach(async (preference: any) => {
+      await prisma.userPreference.upsert({
+        where: {
+          id: preference.id,
+          user_id: preference.user_id,
+          user_company_id: preference.user_company_id,
+        },
+        create: {
+          ...preference,
+          user_id: user.id,
+          user_company_id: user.company_id,
+        },
+        update: {
+          ...preference,
+        },
+      });
     });
 
     const { password: userPassword, ...userWithoutPassword } = user;

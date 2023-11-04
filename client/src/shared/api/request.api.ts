@@ -58,7 +58,7 @@ export const getPersonalRequests = async (
     .catch((err) => Promise.reject(err));
 };
 
-export const getRequestById = async (requestId: number) => {
+export const getPersonalRequestById = async (requestId: number) => {
   const url = `/request/personal-request/${requestId}`;
 
   return await fetch(url, {

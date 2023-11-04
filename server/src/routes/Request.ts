@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { LeaveRequest, PrismaClient, Request } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 
@@ -31,6 +31,12 @@ requestRouter.get("/personal-request", async (req, res) => {
       prisma.request.findMany(findObject),
     ]);
 
+    requests[1].forEach((request: any) => {
+      if(request.leave_request) {
+        request.leave_request.attachment = request.leave_request.attachment?.toString() as any || null;
+      }
+    });
+
     return res
       .status(200)
       .json(generateResultJson(requests[1], requests[0], page, size));
@@ -55,7 +61,11 @@ requestRouter.get("/personal-request/:requestId", async (req, res) => {
         user_id: Number(user_id),
       },
       include: { leave_request: true, swap_request: true, bid_request: true },
-    });
+    }) as any;
+
+    if(request.leave_request) {
+      request.leave_request.attachment = request.leave_request.attachment?.toString() as any || null;
+    }
 
     return res.status(200).json(generateResultJson(request));
   } catch (err) {
@@ -73,6 +83,8 @@ requestRouter.post("/create-leave/:companyId/:userId", async (req, res) => {
       end_date,
       half_day,
       status,
+      remarks,
+      attachment,
       total_leave_days,
     } = req.body;
     const logged_in_user = req.headers["x-access-user"] as any;
@@ -91,6 +103,8 @@ requestRouter.post("/create-leave/:companyId/:userId", async (req, res) => {
             start_date: new Date(start_date),
             end_date: new Date(end_date),
             half_day: half_day,
+            remarks: remarks,
+            attachment: Buffer.from(attachment),
           },
         },
       },

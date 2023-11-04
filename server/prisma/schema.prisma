@@ -39,15 +39,15 @@ model Registration {
   registrant_name       String
   contact_no            Int
   email                 String
+  address               String
   industry              String
   no_of_employees       Int
+  subscription_model_id Int?
   approve_status        String
   created_by            String   @default("SYSTEM")
   created_date          DateTime @default(now())
   updated_by            String
   updated_date          DateTime @updatedAt
-  address               String
-  subscription_model_id Int?
 }
 
 model SubscriptionModel {
@@ -55,7 +55,7 @@ model SubscriptionModel {
   name          String
   member_limit  Int
   payment_cycle String
-  price         Decimal  @db.Decimal(5, 2)
+  price         Decimal  @db.Decimal(6, 2)
   created_by    String
   created_date  DateTime @default(now())
   updated_by    String
@@ -92,6 +92,8 @@ model Subscription {
   company_id        Int
   type              String
   employee_quantity Int
+  payment_cycle     String?
+  price             Decimal? @db.Decimal(5, 2)
   status            String
   start_date        DateTime
   end_date          DateTime
@@ -99,8 +101,6 @@ model Subscription {
   created_date      DateTime @default(now())
   updated_by        String
   updated_date      DateTime @updatedAt
-  payment_cycle     String?
-  price             Decimal? @db.Decimal(5, 2)
   company           Company  @relation("company_subscriptions", fields: [company_id], references: [id])
 
   @@index([company_id])
@@ -222,7 +222,7 @@ model UserPreference {
 model EmploymentDetails {
   user_id         Int
   user_company_id Int
-  working_hours   Decimal @db.Decimal(2, 2)
+  working_hours   Decimal @db.Decimal(5, 2)
   employment_type String
   user            User    @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
@@ -286,6 +286,7 @@ model LeaveRequest {
   start_date DateTime
   end_date   DateTime
   half_day   String
+  attachment Bytes?
   request    Request  @relation("leave_request", fields: [request_id], references: [id])
 
   @@index([request_id])

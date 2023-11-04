@@ -2,7 +2,7 @@ import { Formik } from "formik";
 import React from "react";
 import * as Yup from "yup";
 import LabeledTextInput from "../../shared/layout/form/labeled-text-input";
-import { Button, Label, Radio } from "flowbite-react";
+import { Button, FileInput, Label, Radio, Textarea } from "flowbite-react";
 import BackButton from "../../shared/layout/buttons/back-button";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import LabeledField from "../../shared/layout/fields/labeled-field";
@@ -12,9 +12,12 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { getAllCompanyCodes } from "../../shared/api/company-code.api";
-import { IRequest } from "../../shared/model/request.model";
-import { create } from "domain";
 import { createLeaveRequest } from "../../shared/api/request.api";
+import {
+  ATTACHMENT_REQUIRED_LEAVES,
+  MAX_PROFILE_IMAGE_SIZE,
+} from "../../configs/constants";
+import { HiX } from "react-icons/hi";
 
 const validationSchema = Yup.object().shape({
   leave_type: Yup.string().required("Field is required"),
@@ -22,6 +25,11 @@ const validationSchema = Yup.object().shape({
   end_date: Yup.date()
     .min(Yup.ref("start_date"), "End date must not be earlier than start date")
     .required("Field is required"),
+  attachment: Yup.string().when("leave_type", {
+    is: (leave_type) => ATTACHMENT_REQUIRED_LEAVES.includes(leave_type),
+    then: (schema) => schema.required("Field is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
 });
 
 const LeaveForm = () => {
@@ -35,6 +43,7 @@ const LeaveForm = () => {
     half_day: "NO",
     total_leave_days: 0,
     status: "P",
+    attachment: "",
   });
   const [leaveBalance, setLeaveBalance] = React.useState(0);
   const [leaveTypeList, setLeaveTypeList] = React.useState<ICompanyCode[]>([]);
@@ -92,6 +101,7 @@ const LeaveForm = () => {
               values.end_date,
               values.half_day
             );
+            console.log(values);
             await createLeaveRequest(
               user?.company_id || 0,
               user?.id || 0,
@@ -205,6 +215,112 @@ const LeaveForm = () => {
                 />
               ) : null}
             </div>
+            <div className="mb-2">
+              <Label htmlFor="remarks">Remarks</Label>
+              <Textarea
+                id="remarks"
+                name="remarks"
+                value={props.values.remarks}
+                onChange={props.handleChange}
+                onBlur={props.handleBlur}
+                color={
+                  props.errors.remarks && props.touched.remarks
+                    ? "failure"
+                    : "gray"
+                }
+                helperText={
+                  props.errors.remarks && props.touched.remarks ? (
+                    <>{props.errors.remarks}</>
+                  ) : null
+                }
+              />
+            </div>
+            {ATTACHMENT_REQUIRED_LEAVES.includes(props.values.leave_type) && (
+              <div className="mb-2">
+                <Label htmlFor="attachment">Attachment</Label>
+                <div className="flex">
+                  <div className="w-full">
+                    <FileInput
+                      id="attachment"
+                      name="attachment"
+                      accept=".png,.jpg,.jpeg"
+                      onBlur={props.handleBlur}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          // validate file size
+                          if (e.target.files[0].size > MAX_PROFILE_IMAGE_SIZE) {
+                            props.setFieldError(
+                              "attachment",
+                              `File size should not exceed ${
+                                MAX_PROFILE_IMAGE_SIZE / (1024 * 1024)
+                              }MB`
+                            );
+                            return;
+                          }
+
+                          if (
+                            !e.target.files[0].type.match(
+                              /image\/(png|jpg|jpeg)/
+                            )
+                          ) {
+                            props.setFieldError(
+                              "attachment",
+                              `File type should be png, jpg or jpeg`
+                            );
+                            return;
+                          }
+
+                          const reader = new FileReader();
+                          reader.onload = (evt) => {
+                            props.setFieldValue(
+                              "attachment",
+                              evt.target?.result
+                            );
+                          };
+                          reader.readAsDataURL(e.target.files[0]);
+                        }
+                      }}
+                      color={
+                        props.errors.attachment && props.touched.attachment
+                          ? "failure"
+                          : "gray"
+                      }
+                      helperText={
+                        props.errors.attachment && props.touched.attachment ? (
+                          <>{props.errors.attachment}</>
+                        ) : (
+                          <>
+                            Only png, jpg and jpeg files with a size limit of
+                            10MB are allowed.
+                          </>
+                        )
+                      }
+                    />
+                  </div>
+                  {props.values.attachment && (
+                    <div>
+                      <Button
+                        color="failure"
+                        size="lg"
+                        onClick={() => {
+                          props.setFieldValue("attachment", "");
+                        }}
+                      >
+                        <HiX />
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                {props.values.attachment && (
+                  <img
+                    src={props.values.attachment}
+                    className="mt-2"
+                    alt="attachment"
+                    style={{ maxWidth: "100%", maxHeight: "500px" }}
+                  />
+                )}
+              </div>
+            )}
             <div className="flex justify-end gap-3 mt-12">
               <BackButton size="sm" color="light" />
               <Button

@@ -54,3 +54,17 @@ export const createUpdateDepartment = async (
     })
     .catch((err) => Promise.reject(err));
 };
+
+export const getDepartmentHeadByDepartmentId = async (
+  departmentId: number
+): Promise<any> => {
+  const url = `/department/${departmentId}/head-of-department`;
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+}

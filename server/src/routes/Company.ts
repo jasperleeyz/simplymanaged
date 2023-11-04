@@ -31,7 +31,7 @@ companyRouter.get("/:company_id", async (req, res) => {
       },
     });
 
-    company.actual_no_of_employees = total_no_of_employees;
+    company['actual_no_of_employees'] = total_no_of_employees;
 
     res.status(200).json(generateResultJson(company));
   } catch (error) {

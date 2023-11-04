@@ -80,3 +80,25 @@ departmentRouter.post("/create-update", async (req, res) => {
     res.status(400).send(`Error ${id ? "updating": "adding"} department.`);
   }
 });
+
+departmentRouter.get("/:departmentId/head-of-department", async (req, res) => {
+  try {
+    const department_id = req.params?.departmentId;
+
+    const logged_in_user = req.headers["x-access-user"] as any;
+    const company_id = logged_in_user["company_id"];
+
+    const department = await prisma.department.findFirst({
+      where: {
+        id: Number(department_id),
+        company_id: Number(company_id),
+      },
+      include: { department_head: true },
+    }) as any;
+
+    return res.status(200).json(generateResultJson(department.department_head));
+  } catch (err) {
+    console.error(err);
+    return res.status(400).send("Error getting head of department");
+  }
+});

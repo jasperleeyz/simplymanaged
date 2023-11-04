@@ -116,4 +116,22 @@ export const REQUEST_STATUS = {
   A: "APPROVED",
 };
 
+export const REQUEST = {
+  STATUS: {
+    PENDING: "P",
+    APPROVED: "A",
+    REJECTED: "R",
+    R: "REJECTED",
+    P: "PENDING",
+    A: "APPROVED",
+  },
+  TYPE: {
+    LEAVE: "LEAVE",
+    SWAP: "SWAP",
+    BID: "BID",
+  },
+}
+
 export const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
+
+export const ATTACHMENT_REQUIRED_LEAVES = ["MC", "HL"];

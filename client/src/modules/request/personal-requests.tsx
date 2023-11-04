@@ -1,8 +1,7 @@
 import { Button, Table } from "flowbite-react";
 import React from "react";
 import { IRequest } from "../../shared/model/request.model";
-import { DATE, PATHS, REQUEST_STATUS } from "../../configs/constants";
-import { capitalizeString } from "../../configs/utils";
+import { DATE, PATHS, REQUEST } from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import { getPersonalRequests } from "../../shared/api/request.api";
 import { toast } from "react-toastify";
@@ -77,40 +76,36 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
                   </>
                 ) : request.type.toLocaleLowerCase() === "shift" ? (
                   <p>
-                    {`${request.bid_request?.start_date.toLocaleDateString()}, ${
+                    {`${moment(request.bid_request?.start_date).format(
+                        "DD/MM/YYYY"
+                      )}, ${
                       request.bid_request?.shift
                     } Shift`}
                   </p>
                 ) : (
                   <>
                     <p>
-                      {`His/Her schedule: ${request.swap_request?.requester_schedule.start_date.toLocaleDateString(
-                        DATE.LANGUAGE
-                      )}, ${request.swap_request?.requester_schedule.start_date.toLocaleDateString(
-                        DATE.LANGUAGE,
-                        { weekday: "long" }
-                      )},
+                      {`His/Her schedule: ${moment(request.swap_request?.requester_schedule.start_date).format(
+                        "DD/MM/YYYY"
+                      )}, ${moment(request.swap_request?.requester_schedule.start_date).format("dddd")},
                             ${request.swap_request?.requester_schedule.shift}
                           `}
                     </p>
-                    <p>{`Your schedule: ${request.swap_request?.requested_schedule.start_date.toLocaleDateString(
-                      DATE.LANGUAGE
-                    )}, ${request.swap_request?.requested_schedule.start_date.toLocaleDateString(
-                      DATE.LANGUAGE,
-                      { weekday: "long" }
-                    )},
+                    <p>{`Your schedule: ${moment(request.swap_request?.requested_schedule.start_date).format(
+                        "DD/MM/YYYY"
+                      )}, ${moment(request.swap_request?.requested_schedule.start_date).format("dddd")},
                             ${request.swap_request?.requested_schedule.shift}
                           `}</p>
                   </>
                 )}
               </Table.Cell>
-              <Table.Cell>{REQUEST_STATUS[request.status]}</Table.Cell>
+              <Table.Cell>{REQUEST.STATUS[request.status]}</Table.Cell>
               <Table.Cell>
                 <div className="flex gap-2 items-center justify-center">
                   <Button
                     size="sm"
                     onClick={() => {
-                      navigate(`./${PATHS.VIEW_REQUEST}/${request.id}`);
+                      navigate(`./${PATHS.VIEW_REQUEST}/personal/${request.id}`);
                     }}
                   >
                     View

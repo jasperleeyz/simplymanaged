@@ -5,7 +5,7 @@ import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { IRequest } from "../../shared/model/request.model";
 import { capitalizeString } from "../../configs/utils";
-import { DATE, PATHS, ROLES } from "../../configs/constants";
+import { DATE, PATHS, REQUEST, ROLES } from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import ApproveButton from "../../shared/layout/buttons/approve-button";
 import RejectButton from "../../shared/layout/buttons/reject-button";
@@ -141,7 +141,7 @@ const Requests = () => {
                           >
                             View
                           </Button>
-                          {request.status === "pending" && (
+                          {request.status === REQUEST.STATUS.PENDING && (
                             <>
                               <ApproveButton
                                 size="sm"

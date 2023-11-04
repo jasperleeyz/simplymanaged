@@ -10,7 +10,7 @@
     "get-latest-schema": "npx prisma db pull"
   },
   "dependencies": {
-    "@prisma/client": "^5.4.1",
+    "@prisma/client": "^5.5.2",
     "bcrypt": "^5.1.0",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
@@ -30,7 +30,7 @@
     "cross-env": "^7.0.3",
     "mocha": "^10.2.0",
     "nodemon": "^3.0.1",
-    "prisma": "^5.4.1",
+    "prisma": "^5.5.2",
     "ts-node": "10.9.1",
     "typescript": "5.1.6"
   },

@@ -33,6 +33,7 @@ export interface ILeaveRequest {
     end_date: Date;
     remarks?: string;
     half_day: string;
+    attachment?: string;
 }
 
 
