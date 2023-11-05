@@ -41,14 +41,14 @@ UserScheduleRouter.get("/get-schedule/:user_company_id/:user_id", async (req, re
 
 UserScheduleRouter.get("/get-schedule/:user_company_id/:month/:year", async (req, res) => {
   const { page, size, sort, filter } = req.query;
-  const { user_company_id, month, year} = req.params;
+  const { user_company_id, month, year } = req.params;
 
   try {
     // Calculate the start and end dates for the selected month and year
     const startDate = new Date(`${year}-${month}-01`);
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
-  
+
     // Fetch user schedules for the specified month and year
     const userSchedules = await prisma.userSchedule.findMany({
       where: {
@@ -63,25 +63,25 @@ UserScheduleRouter.get("/get-schedule/:user_company_id/:month/:year", async (req
         start_date: true,
       },
     });
-  
+
     // Group user schedules by day
     const userSchedulesByDay: { [day: number]: Array<string> } = {};
-userSchedules.forEach((schedule) => {
-  const day = schedule.start_date.getDate();
-  if (!userSchedulesByDay[day]) {
-    userSchedulesByDay[day] = [];
-  }
-  userSchedulesByDay[day].push(schedule.user.fullname); // Use the specific property you want (e.g., fullname)
-});
+    userSchedules.forEach((schedule) => {
+      const day = schedule.start_date.getDate();
+      if (!userSchedulesByDay[day]) {
+        userSchedulesByDay[day] = [];
+      }
+      userSchedulesByDay[day].push(schedule.user.fullname); // Use the specific property you want (e.g., fullname)
+    });
 
-  
+
     // Create the result object with users grouped by day
     const result: { [key: string]: string[] } = {};
     for (const day in userSchedulesByDay) {
       const dayString = `${day} - ${month} - ${year}`;
       result[dayString] = userSchedulesByDay[day].map((fullname) => fullname); // Adjust this based on your user data structure.
     }
-  
+
     const resultz = generateResultJson(result)
     res.status(200).json(resultz);
   } catch (error) {
@@ -108,7 +108,7 @@ UserScheduleRouter.get("/get-non-conflict-user/:user_company_id/:start_date/:end
           user_company_id: Number(user_company_id),
           start_date: { lte: new Date(end_date) }, // Start date is before the end date
           end_date: { gte: new Date(start_date) } // End date is after the start date
-      }
+        }
       })
     ]);
     const nonConflictingUserIds = nonConflictingSchedules[0].map(schedule => schedule.user_id);
@@ -140,7 +140,7 @@ UserScheduleRouter.post("/create", async (req, res) => {
       created_by,
       updated_by
     } = req.body;
-    
+
     const newSchedule = await prisma.$transaction(async (tx) => {
       const createdSchedule = await tx.userSchedule.create({
         data: {
@@ -180,7 +180,11 @@ UserScheduleRouter.get("/get-schedule-from-to/:companyId/:userId", async (req, r
         },
       },
       include: {
-        roster: true,
+        roster: {
+          select: {
+            type: true,
+          },
+        },
       },
     });
 

@@ -42,6 +42,7 @@ import {
   getRosterTemplatePosition,
   createRosterTemplate,
   deleteRosterTemplate,
+  createRoster,
 } from "../../../shared/api/roster.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
@@ -78,16 +79,10 @@ const AddSchedule = () => {
 
   const [showAutoAssignModal, setAutoAssignShowModal] = React.useState(false);
 
-  const [showTemplateModal, setShowTemplateModal] = React.useState(false);
-
   const [showSubmitModal, setShowSubmitModal] = React.useState(false);
-
-  const [showCreateTemplateModal, setShowCreateTemplateModal] =
-    React.useState(false);
 
   const [scheduleDetailsState, setScheduleDetailsState] =
     React.useState<IRoster>({
-      id: 1,
       company_id: globalState?.user?.company_id || 0,
       location_id: 0,
       department_id: globalState?.user?.department_id || 0,
@@ -138,6 +133,18 @@ const AddSchedule = () => {
       };
     });
   };
+
+  const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
+  useEffect(() => {
+    //setLoading((prev) => true);
+    getRosterTemplate(globalState?.user?.company_id || 0)
+      .then((res) => {
+        setTemplateList(res.data);
+      })
+      .finally(() => {
+        //  setLoading((prev) => false);
+      });
+  }, []);
 
   useEffect(() => {
     setLoading((prev) => true);
@@ -338,33 +345,50 @@ const AddSchedule = () => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-          <div className="w-full md:w-1/2 ms-auto flex justify-center">
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => setShowCreateTemplateModal(true)}
-            >
-              Create Template
-            </Button>
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => createSchedule()}
-            >
-              Yes
-            </Button>
-            <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => setShowSubmitModal(false)}
-            >
-              No
-            </Button>
-          </div>
-        </Modal.Footer>
+  <Label
+    className="mr-2 text-l"
+    htmlFor="shift-template"
+    value="Shift-Based"
+  />
+  <Checkbox
+    value={scheduleDetailsState.type}
+    checked={scheduleDetailsState.type === "SHIFT"}
+    onChange={() => {
+      if (scheduleDetailsState.type === "SHIFT") {
+        setScheduleDetailsState((prev) => ({
+          ...prev,
+          type: "PROJECT",
+        }));
+      } else {
+        setScheduleDetailsState((prev) => ({
+          ...prev,
+          type: "SHIFT",
+        }));
+      }
+    }}
+  />
+  <div className="w-full md:w-1/2 ms-auto flex">
+    <Button
+      color="success"
+      className="w-full mr-3"
+      size="sm"
+      onClick={() => {
+        createRoster(scheduleDetailsState);
+        setShowSubmitModal(false)
+      toast.success('Schedule created')}}
+    >
+      Yes
+    </Button>
+    <Button
+      color="failure"
+      className="w-full"
+      size="sm"
+      onClick={() => setShowSubmitModal(false)}
+    >
+      No
+    </Button>
+  </div>
+</Modal.Footer>
       </Modal>
     );
   };
@@ -435,10 +459,6 @@ const AddSchedule = () => {
             </Select>
             {selectedPosition !== "" ? (
               <div style={{ display: "flex", alignItems: "center" }}>
-                <Label style={{ marginRight: "auto", fontSize: "16px" }}>
-                  {positionSelectedCount[selectedPosition] || 0} /{" "}
-                  {positionCount[selectedPosition] || 0}
-                </Label>
                 <Button
                   style={{ marginLeft: "300px" }}
                   onClick={() => incrementSelectedCount(selectedPosition)}
@@ -455,11 +475,10 @@ const AddSchedule = () => {
             ) : null}
           </div>
           {selectedPosition !== "" ? (
-            <div style={{ display: "flex", alignItems: "center" }}>
+            <div className="my-2">
               {Object.keys(positionSelectedCount).map((position, index) => (
                 <div key={index}>
-                  {position}
-                  {positionSelectedCount[position]}
+                  {position} - {positionSelectedCount[position]}
                 </div>
               ))}
             </div>
@@ -485,224 +504,6 @@ const AddSchedule = () => {
               onClick={() => {
                 setAutoAssignShowModal(false);
                 setPositionSelectedCount([]);
-              }}
-            >
-              No
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
-
-  const templateModal = () => {
-    const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
-    useEffect(() => {
-      //setLoading((prev) => true);
-      getRosterTemplate(globalState?.user?.company_id || 0)
-        .then((res) => {
-          setTemplateList(res.data);
-        })
-        .finally(() => {
-          //  setLoading((prev) => false);
-        });
-    }, [showTemplateModal]);
-
-    const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();
-    useEffect(() => {
-      setSelectedTemplate(templateList[0]);
-    }, [templateList]);
-
-    const [templatePositions, setTemplatePositions] = useState<{
-      [key: string]: number;
-    }>({});
-    useEffect(() => {
-      //setLoading((prev) => true);
-      getRosterTemplatePosition(
-        selectedTemplate?.company_id || 0,
-        selectedTemplate?.id || 0
-      )
-        .then((res) => {
-          const templatePosition = {};
-          res.data.forEach((item) => {
-            templatePosition[item.position] = item.count;
-            setTemplatePositions(templatePosition);
-          });
-        })
-        .finally(() => {
-          //setLoading((prev) => false);
-        });
-    }, [selectedTemplate]);
-
-    return (
-      <Modal
-        show={showTemplateModal}
-        onClose={() => setShowTemplateModal(false)}
-      >
-        <Modal.Header>Roster Template</Modal.Header>
-        <Modal.Body>
-          <Select
-            onChange={(e) => {
-              const selectedTemplateName = e.target.value;
-              const selectedTemplateObject = templateList.find(
-                (template) => template.name === selectedTemplateName
-              );
-              setSelectedTemplate(selectedTemplateObject);
-            }}
-          >
-            {templateList.map((template, index) => (
-              <option key={index} value={template.name}>
-                {template.name}
-              </option>
-            ))}
-          </Select>
-          <div>
-            <p>
-              {selectedTemplate && (
-                <span>
-                  Employees: {selectedTemplate.no_of_employees}
-                  {Object.keys(templatePositions).map((position, index) => (
-                    <div key={index}>
-                      {position} - {templatePositions[position]}
-                    </div>
-                  ))}
-                </span>
-              )}
-            </p>
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full flex justify-between items-center">
-            <Button
-              color="failure"
-              className="w-1/4" // Adjust the width as needed
-              size="sm"
-              onClick={() => {
-                if (selectedTemplate) {
-                  deleteRosterTemplate(selectedTemplate);
-                }
-              }}
-            >
-              Delete
-            </Button>
-            <div className="flex-1"></div>{" "}
-            {/* Flex to push the "Use" button to the right */}
-            <Button
-              color="success"
-              className="w-1/4" // Adjust the width as needed
-              size="sm"
-              onClick={() => {
-                autoAssignPersonnel(templatePositions);
-              }}
-            >
-              Use
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
-
-  const createTemplateModal = () => {
-    const [rosterTemplate, setRosterTemplate] = React.useState<IRosterTemplate>(
-      {
-        id: 0,
-        company_id: globalState?.user?.company_id || 0,
-        roster_type: '',
-        name: '',
-        no_of_employees: 0,
-        created_by: globalState?.user?.fullname || '',
-        updated_by: globalState?.user?.fullname || '',
-        positions: [],
-      }
-    );
-
-    const [positionCount, setPositionCount] = useState({});
-    const [positionList, setPositionList] = React.useState<
-      IRosterTemplatePosition[]
-    >([]);
-    useEffect(() => {
-      setRosterTemplate((prevTemplate) => ({
-        ...prevTemplate,
-        positions: [],
-        no_of_employees: scheduleDetailsState.employees?.length || 0,
-      }));
-
-      if (scheduleDetailsState.employees) {
-        const updatedPositionCount = {};
-        scheduleDetailsState.employees.forEach((emp, idx) => {
-          if (emp) {
-            if (updatedPositionCount[emp.position]) {
-              updatedPositionCount[emp.position]++;
-            } else {
-              updatedPositionCount[emp.position] = 1;
-            }
-          }
-        });
-
-        setPositionCount(updatedPositionCount);
-      }
-    }, [scheduleDetailsState.employees]);
-
-    useEffect(() => {
-      const newPositions = Object.keys(positionCount).map((position) => ({
-        roster_template_id: 0,
-        company_id: globalState?.user?.company_id || 0,
-        position: position,
-        count: positionCount[position],
-      }));
-
-      setPositionList(newPositions);
-
-      setRosterTemplate((prevTemplate) => ({
-        ...prevTemplate,
-        positions: newPositions,
-      }));
-    }, [positionCount]);
-
-    return (
-      <Modal
-        show={showCreateTemplateModal}
-        onClose={() => setShowCreateTemplateModal(false)}
-      >
-        <Modal.Header>Create Template</Modal.Header>
-        <Modal.Body>
-          <div>
-            <Label htmlFor="create-template" value="Name" />
-            <TextInput
-              id="create-template"
-              autoComplete="off"
-              onChange={(e) => {
-                const text = e.target.value;
-                const words = text.split(/\s+/);
-                if (words.length <= 10) {
-                  setRosterTemplate({
-                    ...rosterTemplate,
-                    name: e.target.value,
-                  });
-                }
-              }}
-            />
-          </div>
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full md:w-1/2 ms-auto flex justify-center">
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => {
-                createRosterTemplate(rosterTemplate);
-              }}
-            >
-              Yes
-            </Button>
-            <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => {
-                setShowCreateTemplateModal(false);
               }}
             >
               No
@@ -755,6 +556,8 @@ const AddSchedule = () => {
             1
           )[0];
           selectedEmployees.push(selectedEmployee);
+          // if subscription push shift pref
+          //else push full
           updatedSchedules.push({
             user_id: selectedEmployee.id,
             user_company_id: selectedEmployee.company_id,
@@ -779,6 +582,75 @@ const AddSchedule = () => {
     });
     // Update the state with the auto-assigned employees
     setScheduleDetailsState(newState);
+  };
+
+  const useSelectedTemplate = (selectedTemplate: IRosterTemplate) => {
+    const newState: IRoster = {
+      ...scheduleDetailsState,
+      employees: [],
+      schedules: [],
+    };
+
+    let errorOccurred = false;
+
+    // Loop through the selected positions and auto-assign employees
+    if (selectedTemplate.positions) {
+      selectedTemplate.positions.forEach((positionData) => {
+        const selectedCount = positionData.count;
+        const position = positionData.position;
+
+        const availableEmployees: IUser[] = employeeList.filter(
+          (emp) => emp.position === position
+        );
+        const updatedSchedules: IUserSchedule[] = [];
+
+        if (availableEmployees.length > 0 && selectedCount > 0) {
+          const selectedEmployees: IUser[] = [];
+          const shuffledCandidates: IUser[] = [...availableEmployees];
+          for (let i = 0; i < selectedCount; i++) {
+            if (shuffledCandidates.length === 0) {
+              toast.error(`Not enough employees for position: ${position}`);
+              errorOccurred = true; // If no more candidates are available, break the loop
+            }
+            const randomIndex = Math.floor(
+              Math.random() * shuffledCandidates.length
+            );
+            const selectedEmployee: IUser = shuffledCandidates.splice(
+              randomIndex,
+              1
+            )[0];
+            selectedEmployees.push(selectedEmployee);
+            // if subscription push shift pref
+            //else push full
+            updatedSchedules.push({
+              user_id: selectedEmployee.id,
+              user_company_id: selectedEmployee.company_id,
+              roster_id: 0,
+              start_date: newState.start_date,
+              end_date: newState.end_date,
+              shift: "FULL",
+              status: "",
+              created_by: globalState?.user?.fullname || "",
+              updated_by: globalState?.user?.fullname || "",
+            });
+          }
+          newState.employees = [
+            ...(newState.employees ?? []),
+            ...selectedEmployees,
+          ];
+          newState.schedules = [
+            ...(newState.schedules ?? []),
+            ...updatedSchedules,
+          ];
+        } else {
+          toast.error(`Not enough employees for position: ${position}`);
+          errorOccurred = true;
+        }
+      });
+    }
+    // Update the state with the auto-assigned employees
+    setScheduleDetailsState(newState);
+    return !errorOccurred;
   };
 
   const updateEmployeeShift = (e, employee: IUserSchedule) => {
@@ -959,18 +831,18 @@ const AddSchedule = () => {
                 if (moment(e.target.value).isBefore(moment(new Date()))) {
                   setErrorMessage((prev) => ({
                     ...prev,
-                    startDate: "Start date cannot be before today",
+                    start_date: "Start date cannot be before today",
                   }));
                 } else {
                   setErrorMessage((prev) => ({
                     ...prev,
-                    startDate: "",
+                    start_date: "",
                   }));
                 }
                 setScheduleDetailsState((prev) => ({
                   ...prev,
-                  startDate: new Date(e.target.value),
-                  endDate: new Date(e.target.value),
+                  start_date: new Date(e.target.value),
+                  end_date: new Date(e.target.value),
                 }));
               }}
             />
@@ -986,7 +858,7 @@ const AddSchedule = () => {
                 <span className="error-message">{errorMessage.date}</span>
               }
               onChange={(e) => {
-                setSchedulesToDefault();
+                //setSchedulesToDefault();
                 if (
                   moment(e.target.value).isBefore(
                     moment(scheduleDetailsState.start_date)
@@ -994,39 +866,52 @@ const AddSchedule = () => {
                 ) {
                   setErrorMessage((prev) => ({
                     ...prev,
-                    endDate: "End date cannot be before the start date",
+                    end_date: "End date cannot be before the start date",
                   }));
                 } else {
                   setErrorMessage((prev) => ({
                     ...prev,
-                    endDate: "",
+                    end_date: "",
                   }));
                 }
                 setScheduleDetailsState((prev) => ({
                   ...prev,
-                  endDate: new Date(e.target.value),
+                  end_date: new Date(e.target.value),
                 }));
               }}
             />
           </div>
-          <div className ="mr-5">
-          <Label htmlFor="schedule-employees" value="Template" />
-          <Select
-            onChange={(e) => {
-              /*const selectedTemplateName = e.target.value;
-              const selectedTemplateObject = templateList.find(
-                (template) => template.name === selectedTemplateName
-              );
-              setSelectedTemplate(selectedTemplateObject);*/
-            }}
-          >
-            {employeeList.map((template, index) => (
-              <option key={index} value={template.fullname}>
-                {template.fullname}
-              </option>
-            ))}
-          </Select>
-          </div>
+          {templateList.length > 0 && (
+            <div className="mr-5">
+              <Label htmlFor="employees-template" value="Template" />
+              <Select
+                onChange={(e) => {
+                  const selectedTemplateName = e.target.value;
+                  const selectedTemplateObject = templateList.find(
+                    (template) => template.name === selectedTemplateName
+                  );
+                  if (selectedTemplateObject)
+                    if (!useSelectedTemplate(selectedTemplateObject))
+                      e.target.value = "-";
+                  if (e.target.value === "-") {
+                    const newState: IRoster = {
+                      ...scheduleDetailsState,
+                      employees: [],
+                      schedules: [],
+                    };
+                    setScheduleDetailsState(newState);
+                  }
+                }}
+              >
+                <option value="-">-</option>
+                {templateList.map((template, index) => (
+                  <option key={index} value={template.name}>
+                    {template.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
         </div>
         <div className="mb-3">
           <div className="mr-5">
@@ -1239,8 +1124,6 @@ const AddSchedule = () => {
       <div>
         {autoAssignModal()}
         {submitModal()}
-        {templateModal()}
-        {createTemplateModal()}
       </div>
 
       {/* Modal for showing emp details */}

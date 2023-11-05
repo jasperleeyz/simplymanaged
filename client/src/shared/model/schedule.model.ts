@@ -22,7 +22,7 @@ export interface IRosterTemplatePosition {
 }
 
 export interface IRoster {
-  id: number;
+  id?: number;
   company_id: number;
   location_id: number;
   department_id: number;

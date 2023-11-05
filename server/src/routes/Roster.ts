@@ -3,6 +3,7 @@ import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { SEQUENCE_KEYS, SUBSCRIPTION_STATUS } from "../utils/constants";
 import { getNextSequenceValue } from "../utils/sequence";
+import { create } from "domain";
 
 export const RosterRouter = express.Router();
 
@@ -20,8 +21,16 @@ RosterRouter.get("/get-roster-template/:company_id", async (req, res) => {
     };
 
     const rosterTemplates = await prisma.$transaction([
-      prisma.rosterTemplate.count(...findObject.where),
-      prisma.rosterTemplate.findMany(findObject),
+      prisma.rosterTemplate.count({ where: findObject.where }),
+      prisma.rosterTemplate.findMany({
+        ...findObject,
+        where: {
+          company_id: Number(company_id),
+        },
+        include: {
+          positions: true,
+        },
+      }),
     ]);
 
     // create result object
@@ -107,6 +116,64 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
             company_id: company_id,
             position: positionItem.position,
             count: positionItem.count,
+          },
+        });
+      }
+    });
+    res.status(200).json({
+      rosterTemplate: rosterTemplate,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error creating roster template.");
+  }
+});
+
+RosterRouter.post("/create/roster", async (req, res) => {
+  try {
+    const {
+      company_id,
+      location_id,
+      department_id,
+      start_date,
+      end_date,
+      type,
+      created_by,
+      updated_by,
+      schedules
+    } = req.body;
+
+    const id = await getNextSequenceValue(
+      company_id,
+      SEQUENCE_KEYS.USER_SEQUENCE
+    )
+    
+    const rosterTemplate = await prisma.$transaction(async (tx) => {
+      const createdTemplate = await tx.roster.create({
+        data: {
+          id: id,
+          company_id,
+          location_id,
+          department_id,
+          start_date,
+          end_date,
+          type,
+          created_by,
+          updated_by
+        },
+      });
+      for (const scheduleItem of schedules) {
+        await tx.userSchedule.create({
+          data: {
+            user_id: scheduleItem.user_id,
+            user_company_id: scheduleItem.user_company_id,
+            roster_id: id,
+            start_date: scheduleItem.start_date,
+            end_date: scheduleItem.end_date,
+            shift: scheduleItem.shift,
+            status: scheduleItem.status,
+            created_by: scheduleItem.created_by,
+            updated_by: scheduleItem.updated_by
           },
         });
       }
