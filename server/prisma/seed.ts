@@ -1,65 +1,165 @@
-import { PrismaClient, Prisma } from '@prisma/client'
+import { PrismaClient, Prisma } from "@prisma/client";
+import { generateSalt, hashPassword } from "../src/utils/security";
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-const userData: Prisma.UserCreateInput[] = [
-  // {
-  //   id: 1,
-  //   fullname: 'Super Admin',
-  //   email: 'superadmin@simplymanaged.com',
-  //   password: 'simplymanagedsa',
-  //   role: 'SA',
+const subscriptionModelData: Prisma.SubscriptionModelCreateInput[] = [
+  {
+    name: "BASIC (SMALL)",
+    member_limit: 100000,
+    price: 10.99,
+    payment_cycle: "MONTHLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+  {
+    name: "BASIC (SMALL)",
+    member_limit: 100000,
+    price: 89.99,
+    payment_cycle: "ANNUALLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+  {
+    name: "BASIC (BIG)",
+    member_limit: 500000,
+    price: 19.99,
+    payment_cycle: "MONTHLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+  {
+    name: "BASIC (BIG)",
+    member_limit: 500000,
+    price: 159.99,
+    payment_cycle: "ANNUALLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+  {
+    name: "PREMIUM (SMALL)",
+    member_limit: 100000,
+    price: 30.99,
+    payment_cycle: "MONTHLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+  {
+    name: "PREMIUM (SMALL)",
+    member_limit: 100000,
+    price: 249.99,
+    payment_cycle: "ANNUALLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+  {
+    name: "PREMIUM (BIG)",
+    member_limit: 500000,
+    price: 36.99,
+    payment_cycle: "MONTHLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+  {
+    name: "PREMIUM (BIG)",
+    member_limit: 500000,
+    price: 399.99,
+    payment_cycle: "ANNUALLY",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+    created_date: new Date(),
+    updated_date: new Date(),
+  },
+];
 
-  // },
-  // {
-  //   name: 'Nilu',
-  //   email: 'nilu@prisma.io',
-  //   posts: {
-  //     create: [
-  //       {
-  //         title: 'Follow Prisma on Twitter',
-  //         content: 'https://www.twitter.com/prisma',
-  //         published: true,
-  //       },
-  //     ],
-  //   },
-  // },
-  // {
-  //   name: 'Mahmoud',
-  //   email: 'mahmoud@prisma.io',
-  //   posts: {
-  //     create: [
-  //       {
-  //         title: 'Ask a question about Prisma on GitHub',
-  //         content: 'https://www.github.com/prisma/prisma/discussions',
-  //         published: true,
-  //       },
-  //       {
-  //         title: 'Prisma on YouTube',
-  //         content: 'https://pris.ly/youtube',
-  //       },
-  //     ],
-  //   },
-  // },
-]
+const companyData: Prisma.CompanyCreateInput[] = [
+  {
+    name: "SimplyManaged",
+    uen: "T23LL1111N",
+    email: "teamsimplymanaged@gmail.com",
+    no_of_employees: 500000,
+    industry: "IT",
+    address: "Singapore",
+    contact_no: 81234567,
+    created_by: "SYSTEM",
+    created_date: new Date(),
+    updated_by: "SYSTEM",
+    updated_date: new Date(),
+    subscriptions: {
+      create: {
+        id: 1,
+        type: "PREMIUM (BIG)",
+        employee_quantity: 500000,
+        price: 0,
+        status: "A",
+        payment_cycle: "PERMANENT",
+        start_date: new Date(),
+        end_date: new Date(8640000000000000),
+        created_by: "SYSTEM",
+        updated_by: "SYSTEM",
+        created_date: new Date(),
+        updated_date: new Date(),
+      },
+    },
+    employees: {
+      create: {
+        id: 0,
+        email: "teamsimplymanaged@gmail.com",
+        contact_no: 81234567,
+        created_by: "SYSTEM",
+        created_date: new Date(),
+        fullname: "SimplyManaged Support Team",
+        position: "Support",
+        role: "SA",
+        status: "A",
+        updated_by: "SYSTEM",
+        updated_date: new Date(),
+        password: hashPassword(process.env.SA_PW || "password", generateSalt()),
+      },
+    },
+  },
+];
 
 async function main() {
-  console.log(`Start seeding ...`)
-  for (const u of userData) {
-    const user = await prisma.user.create({
-      data: u,
-    })
-    console.log(`Created user with id: ${user.id}`)
+  console.log(`Start seeding ...`);
+  for (const sm of subscriptionModelData) {
+    const subModel = await prisma.subscriptionModel.create({
+      data: sm,
+    });
+    console.log(`Created subscriptionModel with name: ${subModel.name}`);
   }
-  console.log(`Seeding finished.`)
+  for (const c of companyData) {
+    const simplyManaged = await prisma.company.create({
+      data: c,
+      include: {
+        employees: true,
+      },
+    });
+    console.log(`Created SimplyManaged with new User ID: ${simplyManaged.employees[0].email}`);
+  }
+  console.log(`Seeding finished.`);
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

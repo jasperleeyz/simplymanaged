@@ -107,15 +107,6 @@ export const USER_STATUS = {
   I: "INACTIVE",
 };
 
-export const REQUEST_STATUS = {
-  PENDING: "P",
-  APPROVED: "A",
-  REJECTED: "R",
-  R: "REJECTED",
-  P: "PENDING",
-  A: "APPROVED",
-};
-
 export const REQUEST = {
   STATUS: {
     PENDING: "P",

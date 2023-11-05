@@ -40,6 +40,7 @@ userRouter.get("/info", async (req, res) => {
         contact_no: "99999999",
         position: "STORE MANAGER",
         status: "A",
+        department_id: 1,
         employment_details: {
           user_id: 0,
           user_company_id: 0,
@@ -56,6 +57,7 @@ userRouter.get("/info", async (req, res) => {
           company_id: logged_in_user?.company_id,
           email: logged_in_user?.email,
         },
+        include: { employment_details: true, preferences: true, department_in_charge: true },
       });
     }
 

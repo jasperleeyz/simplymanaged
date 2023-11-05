@@ -5,12 +5,13 @@ import { capitalizeString } from "../../configs/utils";
 import UpcomingShiftComponent from "./upcoming-shift-component";
 import { HiClock } from "react-icons/hi";
 import PendingRequestComponent from "./pending-request-component";
-import { ROLES } from "../../configs/constants";
+import { REQUEST, ROLES } from "../../configs/constants";
 import { toast } from "react-toastify";
 import { IUserSchedule } from "../../shared/model/schedule.model";
-import IUser from "../../shared/model/user.model";
 import { getUserScheduleFromAndTo } from "../../shared/api/user-schedule.api";
 import moment from "moment";
+import { getAllPendingRequestByDepartmentId, getPersonalRequests } from "../../shared/api/request.api";
+import { IRequest } from "../../shared/model/request.model";
 
 const Home = () => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
@@ -49,15 +50,9 @@ const Home = () => {
   const [scheduleForTheWeek, setScheduleForTheWeek] = React.useState<
     IUserSchedule[]
   >([]);
-
-  // TODO: retrieve request pending approval
-  const pendingRequests = globalState?.requests?.filter(
-    (req) =>
-      req.status === "pending" &&
-      (globalState?.user?.role === ROLES.MANAGER
-        ? req.type !== "swap"
-        : req.type === "swap")
-  );
+  const [pendingRequests, setPendingRequests] = React.useState<IRequest[]>([]);
+  const [requestsPendingMyApproval, setRequestsPendingMyApproval] =
+    React.useState<IRequest[]>([]);
 
   const clockIn = () => {
     // if (scheduleForTheDay) {
@@ -87,23 +82,41 @@ const Home = () => {
 
   React.useEffect(() => {
     // TODO: retrieve schedules for the week
-    getUserScheduleFromAndTo(
-      user?.company_id || 0,
-      user?.id || 0,
-      new Date(),
-      moment(new Date()).add(7, "days").toDate()
-    )
-      .then((res) => {
+    Promise.all([
+      getUserScheduleFromAndTo(
+        user?.company_id || 0,
+        user?.id || 0,
+        new Date(),
+        moment(new Date()).add(7, "days").toDate()
+      ).then((res) => {
         setScheduleForTheWeek(res.data);
-      })
-      .catch((err) => {
-        toast.error("Error getting schedule for the week", {
-          toastId: "home-schedule-week",
-        });
+      }),
+      getPersonalRequests(1, 5, undefined, `equals(status,${REQUEST.STATUS.PENDING})`).then((res) => {
+        setPendingRequests(res.data);
+      }),
+    ]).catch((err) => {
+      toast.error("Error retrieving information. Please try again later.", {
+        toastId: "home",
       });
+    });
 
-    if (user?.role === ROLES.MANAGER) {
+    if (user?.role === ROLES.MANAGER && user?.department_in_charge) {
       // TODO: retrieve requests pending approval
+      getAllPendingRequestByDepartmentId(
+        user?.department_id || 0,
+        1,
+        5,
+        undefined,
+        "in(type,[leave,bid]"
+      )
+        .then((res) => {
+          setRequestsPendingMyApproval(res.data);
+        })
+        .catch((err) => {
+          toast.error("Error retrieving information. Please try again later.", {
+            toastId: "home",
+          });
+        });
     }
   }, []);
 
@@ -129,10 +142,10 @@ const Home = () => {
         <p className="header hidden md:block">Dashboard</p>
         {globalState?.user?.role !== ROLES.SYSADMIN && (
           <>
-            <div className="mt-6 md:min-h-max md:flex">
-              <div className="md:w-1/2 md:mr-5">
+            <div className="mt-6 grid md:grid-cols-2 md:gap-x-12 gap-y-6">
+              <div>
                 <p className="sub-header">Upcoming Schedules</p>
-                <Card className="md:w-11/12">
+                <Card>
                   {scheduleForTheWeek &&
                   scheduleForTheWeek.filter((s) => s.attendance === "N")
                     .length > 0 ? (
@@ -149,16 +162,35 @@ const Home = () => {
                   )}
                 </Card>
               </div>
-              <div className="mt-5 md:mt-0 md:w-1/2">
-                <p className="sub-header">Requests Pending Approval</p>
-                <Card className="md:w-11/12">
+              <div>
+                <p className="sub-header">Requests Pending For Approval</p>
+                <Card>
                   {pendingRequests && pendingRequests.length > 0 ? (
-                    <PendingRequestComponent requests={pendingRequests} />
+                    <PendingRequestComponent
+                      requests={pendingRequests}
+                      personalRequest={true}
+                    />
                   ) : (
                     <p>No pending requests found</p>
                   )}
                 </Card>
               </div>
+              {user?.role === ROLES.MANAGER && user?.department_in_charge ? (
+                <div>
+                  <p className="sub-header">Requests Pending Your Approval</p>
+                  <Card>
+                    {requestsPendingMyApproval &&
+                    requestsPendingMyApproval.length > 0 ? (
+                      <PendingRequestComponent
+                        requests={requestsPendingMyApproval}
+                        personalRequest={false}
+                      />
+                    ) : (
+                      <p>No pending requests found</p>
+                    )}
+                  </Card>
+                </div>
+              ) : null}
             </div>
           </>
         )}

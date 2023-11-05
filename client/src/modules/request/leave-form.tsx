@@ -96,12 +96,16 @@ const LeaveForm = () => {
         onSubmit={async (values, { setSubmitting }) => {
           try {
             setSubmitting(true);
-            values.total_leave_days = countNumberOfDays(
+            values.no_of_days = countNumberOfDays(
               values.start_date,
               values.end_date,
               values.half_day
             );
-            console.log(values);
+
+            if(user?.department_in_charge) {
+              values.status = "A";
+            }
+            
             await createLeaveRequest(
               user?.company_id || 0,
               user?.id || 0,

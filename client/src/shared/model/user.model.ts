@@ -20,7 +20,7 @@ interface IUser {
     department_id?: number;
     department?: IDepartment;
     company?: ICompany;
-    head_of_department?: IDepartment;
+    department_in_charge?: IDepartment;
     employment_details?: IEmployementDetails;
     schedules?: IUserSchedule[];
     requests?: IRequest[];

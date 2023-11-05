@@ -12,8 +12,8 @@ const RequestRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Requests />} />
-      <Route path={`/${PATHS.VIEW_REQUEST}/:id`} element={<RequestDetails />} />
       <Route path={`/${PATHS.VIEW_REQUEST}/personal/:id`} element={<PersonalRequestDetails />} />
+      <Route path={`/${PATHS.VIEW_REQUEST}/:id`} element={<RequestDetails />} />
       <Route path={`/${PATHS.ADD_REQUEST}`} element={<AddOrEditRequest />} />
     </Routes>
   );

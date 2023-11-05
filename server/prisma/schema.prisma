@@ -287,6 +287,7 @@ model LeaveRequest {
   end_date   DateTime
   half_day   String
   attachment Bytes?
+  no_of_days Int      @default(1)
   request    Request  @relation("leave_request", fields: [request_id], references: [id])
 
   @@index([request_id])

@@ -4,7 +4,6 @@ import { Button, Pagination, Table } from "flowbite-react";
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { IRequest } from "../../shared/model/request.model";
-import { capitalizeString } from "../../configs/utils";
 import { DATE, PATHS, REQUEST, ROLES } from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import ApproveButton from "../../shared/layout/buttons/approve-button";
@@ -12,19 +11,33 @@ import RejectButton from "../../shared/layout/buttons/reject-button";
 import { toast } from "react-toastify";
 import { HiCalendar } from "react-icons/hi";
 import PersonalRequests from "./personal-requests";
+import {
+  getAllPendingRequestByDepartmentId,
+  getPersonalRequests,
+  updateRequest,
+} from "../../shared/api/request.api";
+import moment from "moment";
+
+interface ILoading {
+  id: number;
+  status: string;
+}
 
 const Requests = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
-  // const [requests, setRequests] = React.useState<Request[]>([]);
-  const requests = globalState?.requests?.filter((req) => {
-    if (globalState.user?.role === "E") {
-      return req.type === "swap" ? req : null;
-    } else {
-      return req.type !== "swap" ? req : null;
-    }
-  });
   const navigate = useNavigate();
-  const [currentPage, setCurrentPage] = React.useState(1);
+  const [currentPage, setCurrentPage] = React.useState<number>(() => {
+    const cp = history.state["currentPage"];
+    if (!cp) return 1;
+    return cp;
+  });
+  const [sizePerPage, setSizePerPage] = React.useState<number>(() => {
+    const sp = history.state["sizePerPage"];
+    if (!sp) return 10;
+    return sp;
+  });
+  const [totalPages, setTotalPages] = React.useState(1);
+  const [requests, setRequests] = React.useState<IRequest[]>([]);
 
   const [isPersonal, setIsPersonal] = React.useState(() => {
     if (globalState?.user?.role === ROLES.EMPLOYEE) return true;
@@ -33,39 +46,98 @@ const Requests = () => {
     return ip;
   });
 
-  const updateStatus = (req: IRequest, status: string) => {
-    // TODO: replace with api call for updating status
-    req.status = status;
-    setGlobalState((prev) => ({
-      ...prev,
-      requests: prev.requests?.map((r) => (r.id === req.id ? req : r)),
-    }));
+  const [actionLoading, setActionLoading] = React.useState<ILoading[]>([]);
 
-    toast.success(`Successfully ${status} request`);
+  const updateStatus = (req: IRequest, status: string) => {
+    setActionLoading((prev) => [...prev, { id: req.id, status }]);
+    updateRequest({ ...req, status })
+      .then((res) => {
+        setRequests((prev) =>
+          prev.map((r) => (r.id === req.id ? res.data : r))
+        );
+        toast.success(
+          `Successfully ${REQUEST.STATUS[status]?.toLowerCase()} request`
+        );
+      })
+      .catch((err) => {
+        toast.error("Failed to update request. Please try again later.", {
+          toastId: "request-status-update",
+        });
+      })
+      .finally(() => {
+        setActionLoading((prev) =>
+          prev.filter((loading) => loading.id !== req.id)
+        );
+      });
   };
 
   // load initial request data from api
   React.useEffect(() => {
     // get requests
-  }, []);
+    if (isPersonal) {
+      // get personal requests
+      getPersonalRequests(
+        currentPage,
+        sizePerPage,
+        "desc(created_date)",
+        undefined
+      )
+        .then((res) => {
+          setRequests(res.data);
+          setTotalPages(res.totalPages);
+        })
+        .catch((err) => {
+          toast.error("Error retrieving requests. Please try again later.");
+        });
+    } else {
+      // get department's requests pending approval
+      getAllPendingRequestByDepartmentId(
+        globalState?.user?.department_id || 0,
+        currentPage,
+        sizePerPage,
+        "asc(created_date)",
+        `in(type,[${REQUEST.TYPE.BID},${REQUEST.TYPE.LEAVE}])`
+      )
+        .then((res) => {
+          setRequests(res.data);
+          setTotalPages(res.totalPages);
+        })
+        .catch((err) => {
+          toast.error("Error retrieving requests. Please try again later.");
+        });
+    }
+
+    history.replaceState({ isPersonal, currentPage, sizePerPage }, "");
+  }, [isPersonal, currentPage, sizePerPage]);
 
   return (
     <div id="request-main">
       <p className="header">{isPersonal ? `My ` : ""}Requests</p>
-      <div className="flex justify-end mb-3">
-        {isPersonal ? (
-          <>
-            <Button
-              size="sm"
-              onClick={() => {
-                navigate(`./${PATHS.ADD_LEAVE_REQUEST}`);
-              }}
-            >
-              <HiCalendar className="mr-2 my-auto" />
-              <p>Apply Leave</p>
-            </Button>
-          </>
+      <div className="flex justify-end mb-3 gap-2">
+        {globalState?.user?.role === ROLES.MANAGER &&
+        globalState?.user?.department_in_charge ? (
+          <Button
+            size="sm"
+            onClick={() => {
+              setIsPersonal((prev) => !prev);
+            }}
+          >
+            <p>View {isPersonal ? `Pending Approval` : `Personal`} Requests</p>
+          </Button>
         ) : null}
+        {/* {isPersonal ? ( */}
+        <>
+          <Button
+            size="sm"
+            onClick={() => {
+              navigate(`./${PATHS.ADD_LEAVE_REQUEST}`);
+            }}
+          >
+            <HiCalendar className="mr-2 my-auto" />
+            <p>Apply Leave</p>
+          </Button>
+        </>
+        {/* ) : null} */}
       </div>
       <div className="overflow-x-auto">
         {isPersonal ? (
@@ -76,67 +148,78 @@ const Requests = () => {
               <Table.HeadCell>Name of Requestor</Table.HeadCell>
               <Table.HeadCell>Details</Table.HeadCell>
               <Table.HeadCell>Request Type</Table.HeadCell>
+              <Table.HeadCell>Status</Table.HeadCell>
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
             <Table.Body>
               {requests &&
-              requests.filter((req) => req.status === "pending").length > 0 ? (
+              requests.filter((req) => req.status === REQUEST.STATUS.PENDING)
+                .length > 0 ? (
                 requests
-                  .filter((req) => req.status === "pending")
+                  .filter((req) => req.status === REQUEST.STATUS.PENDING)
                   .map((request, idx) => (
                     <Table.Row key={idx}>
                       <Table.Cell>{request.created_by}</Table.Cell>
                       <Table.Cell>
-                        {request.type === "leave" ? (
+                        {request.type.toUpperCase() === REQUEST.TYPE.LEAVE ? (
                           <>
-                            <p>{`${request.leave_request?.start_date.toLocaleDateString(
-                              DATE.LANGUAGE,
-                              DATE.DDMMYYYY_HHMM_A_OPTION
-                            )}`}</p>
-                            <p className="my-2">to</p>
-                            <p>{`${request.leave_request?.end_date.toLocaleTimeString(
-                              DATE.LANGUAGE,
-                              DATE.DDMMYYYY_HHMM_A_OPTION
-                            )}`}</p>
+                            <p>
+                              {`${moment(
+                                request.leave_request?.start_date
+                              ).format(DATE.MOMENT_DDMMYYYY)}`}{" "}
+                              to{" "}
+                              {`${moment(
+                                request.leave_request?.end_date
+                              ).format(DATE.MOMENT_DDMMYYYY)}`}
+                            </p>
+                            {request.leave_request?.half_day && (
+                              <p>{`Half-day?: ${request.leave_request?.half_day}`}</p>
+                            )}
                           </>
-                        ) : request.type === "shift" ? (
+                        ) : request.type.toUpperCase() === REQUEST.TYPE.BID ? (
                           <p>
-                            {`${request.bid_request?.start_date.toLocaleDateString()}, ${
-                              request.bid_request?.shift
-                            } Shift`}
+                            {`${moment(request.bid_request?.start_date).format(
+                              DATE.MOMENT_DDMMYYYY
+                            )}, ${request.bid_request?.shift} Shift`}
                           </p>
                         ) : (
                           <>
                             <p>
-                              {`His/Her schedule: ${request.swap_request?.requester_schedule.start_date.toLocaleDateString(
-                                DATE.LANGUAGE
-                              )}, ${request.swap_request?.requester_schedule.start_date.toLocaleDateString(
-                                DATE.LANGUAGE,
-                                { weekday: "long" }
-                              )},
+                              {`His/Her schedule: ${moment(
+                                request.swap_request?.requester_schedule
+                                  .start_date
+                              ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
+                                request.swap_request?.requester_schedule
+                                  .start_date
+                              ).format("dddd")},
                             ${request.swap_request?.requester_schedule.shift}
                           `}
                             </p>
-                            <p>{`Your schedule: ${request.swap_request?.requested_schedule.start_date.toLocaleDateString(
-                              DATE.LANGUAGE
-                            )}, ${request.swap_request?.requested_schedule.start_date.toLocaleDateString(
-                              DATE.LANGUAGE,
-                              { weekday: "long" }
-                            )},
+                            <p>{`Your schedule: ${moment(
+                              request.swap_request?.requested_schedule
+                                .start_date
+                            ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
+                              request.swap_request?.requested_schedule
+                                .start_date
+                            ).format("dddd")},
                             ${request.swap_request?.requested_schedule.shift}
                           `}</p>
                           </>
                         )}
                       </Table.Cell>
-                      <Table.Cell>{capitalizeString(request.type)}</Table.Cell>
+                      <Table.Cell>{request.type}</Table.Cell>
+                      <Table.Cell>{REQUEST.STATUS[request.status]}</Table.Cell>
                       <Table.Cell>
                         <div className="flex gap-2 items-center justify-center">
                           <Button
                             size="sm"
+                            disabled={
+                              actionLoading.find(
+                                (val) => val.id === request.id
+                              ) !== undefined
+                            }
                             onClick={() => {
-                              navigate(`./${PATHS.VIEW_REQUEST}`, {
-                                state: { request },
-                              });
+                              navigate(`./${PATHS.VIEW_REQUEST}/${request.id}`);
                             }}
                           >
                             View
@@ -145,14 +228,38 @@ const Requests = () => {
                             <>
                               <ApproveButton
                                 size="sm"
+                                disabled={
+                                  actionLoading.find(
+                                    (val) => val.id === request.id
+                                  ) !== undefined
+                                }
+                                isProcessing={
+                                  actionLoading.find(
+                                    (val) =>
+                                      val.id === request.id &&
+                                      val.status === REQUEST.STATUS.APPROVED
+                                  ) !== undefined
+                                }
                                 onClick={() =>
-                                  updateStatus(request, "approved")
+                                  updateStatus(request, REQUEST.STATUS.APPROVED)
                                 }
                               />
                               <RejectButton
                                 size="sm"
+                                disabled={
+                                  actionLoading.find(
+                                    (val) => val.id === request.id
+                                  ) !== undefined
+                                }
+                                isProcessing={
+                                  actionLoading.find(
+                                    (val) =>
+                                      val.id === request.id &&
+                                      val.status === REQUEST.STATUS.REJECTED
+                                  ) !== undefined
+                                }
                                 onClick={() =>
-                                  updateStatus(request, "rejected")
+                                  updateStatus(request, REQUEST.STATUS.REJECTED)
                                 }
                               />
                             </>
@@ -174,13 +281,13 @@ const Requests = () => {
       </div>
       <div className="flex mt-4 text-center justify-center items-center">
         <Pagination
-          currentPage={1}
+          currentPage={currentPage}
           layout="pagination"
           onPageChange={(page) => {
             setCurrentPage(page);
           }}
           showIcons
-          totalPages={1}
+          totalPages={totalPages}
         />
       </div>
     </div>

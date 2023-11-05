@@ -17,29 +17,28 @@ interface IProps {
 
 const PersonalRequests = ({ page, sizePerPage }: IProps) => {
   const navigate = useNavigate();
-  const user = React.useContext(GlobalStateContext)?.globalState?.user;
+  // const user = React.useContext(GlobalStateContext)?.globalState?.user;
   const [personalRequests, setPersonalRequests] = React.useState<IRequest[]>(
     []
   );
-  const [leaveTypeList, setLeaveTypeList] = React.useState<ICompanyCode[]>([]);
+  // const [leaveTypeList, setLeaveTypeList] = React.useState<ICompanyCode[]>([]);
 
   React.useEffect(() => {
-    // TODO: get personal requests
     Promise.all([
       getPersonalRequests(page, sizePerPage, undefined, undefined).then(
         (res) => {
           setPersonalRequests(res.data);
         }
       ),
-      getAllCompanyCodes(
-        user?.company_id || 0,
-        undefined,
-        undefined,
-        undefined,
-        "equals(code_type,leave_type)"
-      ).then((res) => {
-        setLeaveTypeList(res.data);
-      }),
+      // getAllCompanyCodes(
+      //   user?.company_id || 0,
+      //   undefined,
+      //   undefined,
+      //   undefined,
+      //   "equals(code_type,leave_type)"
+      // ).then((res) => {
+      //   setLeaveTypeList(res.data);
+      // }),
     ]).catch((err) => {
       toast.error("Error retrieving requests. Please try again later");
     });
@@ -59,41 +58,43 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
             <Table.Row key={idx}>
               <Table.Cell>{request.type}</Table.Cell>
               <Table.Cell>
-                {request.type.toLocaleLowerCase() === "leave" ? (
+                {request.type.toUpperCase() === REQUEST.TYPE.LEAVE ? (
                   <>
                     <p>
                       {`${moment(request.leave_request?.start_date).format(
-                        "DD/MM/YYYY"
+                        DATE.MOMENT_DDMMYYYY
                       )}`}{" "}
                       to{" "}
                       {`${moment(request.leave_request?.end_date).format(
-                        "DD/MM/YYYY"
+                        DATE.MOMENT_DDMMYYYY
                       )}`}
                     </p>
                     {request.leave_request?.half_day && (
                       <p>{`Half-day?: ${request.leave_request?.half_day}`}</p>
                     )}
                   </>
-                ) : request.type.toLocaleLowerCase() === "shift" ? (
+                ) : request.type.toUpperCase() === REQUEST.TYPE.BID ? (
                   <p>
                     {`${moment(request.bid_request?.start_date).format(
-                        "DD/MM/YYYY"
-                      )}, ${
-                      request.bid_request?.shift
-                    } Shift`}
+                      DATE.MOMENT_DDMMYYYY
+                    )}, ${request.bid_request?.shift} Shift`}
                   </p>
                 ) : (
                   <>
                     <p>
-                      {`His/Her schedule: ${moment(request.swap_request?.requester_schedule.start_date).format(
-                        "DD/MM/YYYY"
-                      )}, ${moment(request.swap_request?.requester_schedule.start_date).format("dddd")},
+                      {`His/Her schedule: ${moment(
+                        request.swap_request?.requester_schedule.start_date
+                      ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
+                        request.swap_request?.requester_schedule.start_date
+                      ).format("dddd")},
                             ${request.swap_request?.requester_schedule.shift}
                           `}
                     </p>
-                    <p>{`Your schedule: ${moment(request.swap_request?.requested_schedule.start_date).format(
-                        "DD/MM/YYYY"
-                      )}, ${moment(request.swap_request?.requested_schedule.start_date).format("dddd")},
+                    <p>{`Your schedule: ${moment(
+                      request.swap_request?.requested_schedule.start_date
+                    ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
+                      request.swap_request?.requested_schedule.start_date
+                    ).format("dddd")},
                             ${request.swap_request?.requested_schedule.shift}
                           `}</p>
                   </>
@@ -105,7 +106,9 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
                   <Button
                     size="sm"
                     onClick={() => {
-                      navigate(`./${PATHS.VIEW_REQUEST}/personal/${request.id}`);
+                      navigate(
+                        `./${PATHS.VIEW_REQUEST}/personal/${request.id}`
+                      );
                     }}
                   >
                     View

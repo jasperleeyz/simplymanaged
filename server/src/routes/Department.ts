@@ -93,7 +93,15 @@ departmentRouter.get("/:departmentId/head-of-department", async (req, res) => {
         id: Number(department_id),
         company_id: Number(company_id),
       },
-      include: { department_head: true },
+      include: { department_head: {
+        select: {
+          fullname: true,
+          profile_image: true,
+          email: true,
+          contact_no: true,
+          position: true,
+        }
+      } },
     }) as any;
 
     return res.status(200).json(generateResultJson(department.department_head));

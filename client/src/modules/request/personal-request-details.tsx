@@ -1,12 +1,10 @@
 "use client";
 
 import React from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { IRequest } from "../../shared/model/request.model";
 import { DATE, REQUEST } from "../../configs/constants";
 import BackButton from "../../shared/layout/buttons/back-button";
-import ApproveButton from "../../shared/layout/buttons/approve-button";
-import RejectButton from "../../shared/layout/buttons/reject-button";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { toast } from "react-toastify";
 import LabeledField from "../../shared/layout/fields/labeled-field";
@@ -70,7 +68,7 @@ const PersonalRequestDetails = () => {
     <div id="request-details-main">
       <p className="header">Request Details</p>
       <div className="mx-10">
-        {request.type !== "swap" && (
+        {request?.type?.toUpperCase() !== REQUEST.TYPE.SWAP && (
           <div className="grid gap-3 grid-cols-2">
             <LabeledField
               id="request-by"
@@ -92,7 +90,7 @@ const PersonalRequestDetails = () => {
               labelValue="Request Status"
               value={REQUEST.STATUS[request.status]}
             />
-            {request.type === REQUEST.TYPE.SWAP && (
+            {request?.type?.toUpperCase() === REQUEST.TYPE.SWAP && (
               <>
                 <LabeledField
                   id="request-shift-date"
@@ -108,7 +106,7 @@ const PersonalRequestDetails = () => {
                 />
               </>
             )}
-            {request.type === REQUEST.TYPE.LEAVE && (
+            {request?.type?.toUpperCase() === REQUEST.TYPE.LEAVE && (
               <>
                 <LabeledField
                   id="request-leave-type"
@@ -128,14 +126,14 @@ const PersonalRequestDetails = () => {
                   id="request-leave-from"
                   labelValue="From"
                   value={moment(request.leave_request?.start_date).format(
-                    "DD/MM/YYYY"
+                    DATE.MOMENT_DDMMYYYY
                   )}
                 />
                 <LabeledField
                   id="request-leave-to"
                   labelValue="To"
                   value={moment(request.leave_request?.end_date).format(
-                    "DD/MM/YYYY"
+                    DATE.MOMENT_DDMMYYYY
                   )}
                 />
                 <LabeledField
@@ -181,21 +179,9 @@ const PersonalRequestDetails = () => {
             )}
           </div>
         )}
-        {request.type === "swap" && <SwapRequestDetails request={request} />}
+        {request?.type?.toUpperCase() === REQUEST.TYPE.SWAP && <SwapRequestDetails request={request} />}
         <div className="flex mt-8 gap-3">
           <BackButton size="sm" />
-          {request.status === "pending" && (
-            <>
-              <ApproveButton
-                size="sm"
-                onClick={() => updateStatus(request, "approved")}
-              />
-              <RejectButton
-                size="sm"
-                onClick={() => updateStatus(request, "rejected")}
-              />
-            </>
-          )}
         </div>
       </div>
     </div>

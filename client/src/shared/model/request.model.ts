@@ -34,6 +34,7 @@ export interface ILeaveRequest {
     remarks?: string;
     half_day: string;
     attachment?: string;
+    no_of_days: number;
 }
 
 
