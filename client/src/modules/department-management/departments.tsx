@@ -31,16 +31,24 @@ const DepartmentsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [currentPage, setCurrentPage] = React.useState(
-    location?.state?.page || 1
-  );
-  const [sizePerPage, setSizePerPage] = React.useState(
-    location?.state?.sizePerPage || 10
-  );
+  const [currentPage, setCurrentPage] = React.useState<number>(() => {
+    const cp = history.state["currentPage"];
+    if (!cp) return 1;
+    return cp;
+  });
+  const [sizePerPage, setSizePerPage] = React.useState<number>(() => {
+    const sp = history.state["sizePerPage"];
+    if (!sp) return 10;
+    return sp;
+  });
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchTerm, setSearchTerm] = React.useState(() => {
+    const st = history.state["searchTerm"];
+    if (!st) return "";
+    return st;
+  });
   const [departmentList, setDepartmentList] = React.useState<IDepartment[]>([]);
 
   const generateBody = () => {
@@ -101,35 +109,7 @@ const DepartmentsPage = () => {
   }, []);
 
   React.useEffect(() => {
-    setLoading((prev) => true);
-    getAllDepartments(
-      logged_in_user?.company_id || 0,
-      1,
-      sizePerPage,
-      undefined,
-      searchTerm ? `contains(department_name,${searchTerm})` : undefined
-    )
-      .then((res) => {
-        setDepartmentList(res.data);
-        setTotalPages(res.totalPages);
-        setCurrentPage((prev) => 1);
-      })
-      .finally(() => {
-        setLoading((prev) => false);
-      });
-  }, [searchTerm]);
-
-  React.useEffect(() => {
-    if (
-      currentPage !== location?.state?.page ||
-      sizePerPage !== location?.state?.sizePerPage
-    ) {
-      location.state = {
-        ...location.state,
-        page: currentPage,
-        sizePerPage: sizePerPage,
-      };
-
+    if (searchTerm === "") {
       setLoading((prev) => true);
       getAllDepartments(
         logged_in_user?.company_id || 0,
@@ -143,8 +123,26 @@ const DepartmentsPage = () => {
         .finally(() => {
           setLoading((prev) => false);
         });
+    } else {
+      setLoading((prev) => true);
+      getAllDepartments(
+        logged_in_user?.company_id || 0,
+        currentPage,
+        sizePerPage,
+        undefined,
+        searchTerm ? `contains(department_name,${searchTerm})` : undefined
+      )
+        .then((res) => {
+          setDepartmentList(res.data);
+          setTotalPages(res.totalPages);
+          setCurrentPage((prev) => 1);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
-  }, [currentPage, sizePerPage]);
+    history.replaceState({ currentPage, sizePerPage, searchTerm }, "");
+  }, [currentPage, sizePerPage, searchTerm]);
 
   return (
     <div id="department-main">

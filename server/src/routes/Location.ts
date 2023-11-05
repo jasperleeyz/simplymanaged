@@ -17,7 +17,7 @@ locationRouter.get("/:company_id", async (req, res) => {
     findObject.where = { ...findObject.where, company_id: Number(company_id) };
 
     const locations = await prisma.$transaction([
-      prisma.companyLocation.count(...findObject.where),
+      prisma.companyLocation.count({where: findObject.where}),
       prisma.companyLocation.findMany(findObject),
     ]);
 

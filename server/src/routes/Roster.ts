@@ -61,7 +61,7 @@ RosterRouter.get("/get-roster-template-positions/:company_id/:roster_template_id
     };
 
     const rosterTemplatePosition = await prisma.$transaction([
-      prisma.rosterTemplatePosition.count(...findObject.where),
+      prisma.rosterTemplatePosition.count({where: findObject.where}),
       prisma.rosterTemplatePosition.findMany(findObject),
     ]);
 

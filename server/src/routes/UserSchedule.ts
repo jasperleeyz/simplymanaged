@@ -20,7 +20,7 @@ UserScheduleRouter.get("/get-schedule/:user_company_id/:user_id", async (req, re
     };
 
     const UserSchedules = await prisma.$transaction([
-      prisma.userSchedule.count(...findObject.where),
+      prisma.userSchedule.count({where: findObject.where}),
       prisma.userSchedule.findMany(findObject),
     ]);
 

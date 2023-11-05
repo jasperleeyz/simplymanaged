@@ -18,7 +18,7 @@ companyCodeTypeRouter.get("/:company_id", async (req, res) => {
     };
 
     const companyCodeTypes = await prisma.$transaction([
-      prisma.companyCodeType.count(...findObject.where),
+      prisma.companyCodeType.count({where: findObject.where}),
       prisma.companyCodeType.findMany(findObject),
     ]);
 

@@ -32,27 +32,33 @@ const EmployeesPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [currentPage, setCurrentPage] = useState(location?.state?.page || 1);
-  const [sizePerPage, setSizePerPage] = useState(
-    location?.state?.sizePerPage || 10
-  );
+  const [currentPage, setCurrentPage] = useState<number>(() => {
+    const cp = history.state["currentPage"];
+    if (!cp) return 1;
+    return cp;
+  });
+  const [sizePerPage, setSizePerPage] = useState<number>(() => {
+    const sp = history.state["sizePerPage"];
+    if (!sp) return 5;
+    return sp;
+  });
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
   // const [codeList, setCodeList] = useState<IApplicationCode[]>([]);
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(() => {
+    const st = history.state["searchTerm"];
+    if (!st) return "";
+    return st;
+  });
   const [filteredEmployees, setFilteredEmployees] = useState<IUser[]>([]);
 
   useEffect(() => {
     Promise.all([
       // get employees based on company id of current system admin logged in
-      getAllEmployees(
-        globalState?.user?.company_id || 0,
-        currentPage,
-        sizePerPage
-      ).then((res) => {
+      getAllEmployees(currentPage, sizePerPage).then((res) => {
         setEmployeeList(res.data);
         setTotalPages(res.totalPages);
       }),
@@ -62,48 +68,9 @@ const EmployeesPage = () => {
   }, []);
 
   useEffect(() => {
-    // When the searchTerm changes, update the filteredEmployees state.
-    // const filtered = employeeList.filter((emp) =>
-    //   emp.fullname.toLowerCase().includes(searchTerm.toLowerCase())
-    // );
-    // setFilteredEmployees(filtered);
-    // setCurrentPage(1);
-    // if (searchTerm !== "") {
-    setLoading((prev) => true);
-    getAllEmployees(
-      1,
-      sizePerPage,
-      undefined,
-      searchTerm ? `contains(fullname,${searchTerm})` : undefined
-    )
-      .then((res) => {
-        setEmployeeList(res.data);
-        setTotalPages(res.totalPages);
-        setCurrentPage((prev) => 1);
-      })
-      .finally(() => {
-        setLoading((prev) => false);
-      });
-    // }
-  }, [searchTerm]);
-
-  useEffect(() => {
-    if (
-      currentPage !== location?.state?.page ||
-      sizePerPage !== location?.state?.sizePerPage
-    ) {
-      location.state = {
-        ...location.state,
-        page: currentPage,
-        sizePerPage: sizePerPage,
-      };
-
+    if (searchTerm === "") {
       setLoading((prev) => true);
-      getAllEmployees(
-        globalState?.user?.company_id || 0,
-        currentPage,
-        sizePerPage
-      )
+      getAllEmployees(currentPage, sizePerPage)
         .then((res) => {
           setEmployeeList(res.data);
           setTotalPages(res.totalPages);
@@ -111,8 +78,27 @@ const EmployeesPage = () => {
         .finally(() => {
           setLoading((prev) => false);
         });
+    } else {
+      setLoading((prev) => true);
+      getAllEmployees(
+        currentPage,
+        sizePerPage,
+        undefined,
+        searchTerm ? `contains(fullname,${searchTerm})` : undefined
+      )
+        .then((res) => {
+          setEmployeeList(res.data);
+          setTotalPages(res.totalPages);
+          if(res.data.length === 0) {
+            setCurrentPage(1);
+          }
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
-  }, [currentPage, sizePerPage]);
+    history.replaceState({ searchTerm, currentPage, sizePerPage }, "");
+  }, [currentPage, sizePerPage, searchTerm]);
 
   const updateStatus = (employee: IUser, status: string) => {
     // setActionLoading((prev) => [...prev, employee.id]);

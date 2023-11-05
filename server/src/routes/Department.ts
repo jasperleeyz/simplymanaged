@@ -18,7 +18,7 @@ departmentRouter.get("/:company_id", async (req, res) => {
     findObject.include = { employees: true, department_head: true };
 
     const departments = await prisma.$transaction([
-      prisma.department.count(...findObject.where),
+      prisma.department.count({where: findObject.where}),
       prisma.department.findMany(findObject),
     ]);
 

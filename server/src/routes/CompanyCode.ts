@@ -20,7 +20,7 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
     };
 
     const companyCodes = await prisma.$transaction([
-      prisma.companyCode.count(...findObject.where),
+      prisma.companyCode.count({where: findObject.where}),
       prisma.companyCode.findMany(findObject),
     ]) as [number, any[]];
 

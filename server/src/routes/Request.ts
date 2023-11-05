@@ -28,7 +28,7 @@ requestRouter.get("/personal-request", async (req, res) => {
     };
 
     const requests = await prisma.$transaction([
-      prisma.request.count(...findObject.where),
+      prisma.request.count({where: findObject.where}),
       prisma.request.findMany(findObject),
     ]);
 

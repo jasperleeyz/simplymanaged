@@ -15,7 +15,10 @@ import ActivateButton from "../../shared/layout/buttons/activate-button";
 import { toast } from "react-toastify";
 import { ICompanyCode } from "../../shared/model/company.model";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { createUpdateCompanyCode, getAllCompanyCodes } from "../../shared/api/company-code.api";
+import {
+  createUpdateCompanyCode,
+  getAllCompanyCodes,
+} from "../../shared/api/company-code.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -29,19 +32,24 @@ const customTableTheme: CustomFlowbiteTheme["table"] = {
 const CompanyCodes = () => {
   const location = useLocation();
 
-  const [currentPage, setCurrentPage] = React.useState(
-    location?.state?.page || 1
-  );
-  const [sizePerPage, setSizePerPage] = React.useState(
-    location?.state?.sizePerPage || 10
-  );
+  const [currentPage, setCurrentPage] = React.useState<number>(() => {
+    const cp = history.state["currentPage"];
+    if (!cp) return 1;
+    return cp;
+  });
+  const [sizePerPage, setSizePerPage] = React.useState<number>(() => {
+    const sp = history.state["sizePerPage"];
+    if (!sp) return 10;
+    return sp;
+  });
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
   const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
   const [actionLoading, setActionLoading] = React.useState<number[]>([]);
 
-  const logged_in_user = React.useContext(GlobalStateContext)?.globalState?.user;
+  const logged_in_user =
+    React.useContext(GlobalStateContext)?.globalState?.user;
 
   const navigate = useNavigate();
 
@@ -91,7 +99,9 @@ const CompanyCodes = () => {
           <Table.Cell className="flex gap-2 justify-center">
             <Button
               size="sm"
-              onClick={() => navigate(`./${PATHS.VIEW_COMPANY_CODE}/${code.id}`)}
+              onClick={() =>
+                navigate(`./${PATHS.VIEW_COMPANY_CODE}/${code.id}`)
+              }
             >
               View
             </Button>
@@ -131,7 +141,12 @@ const CompanyCodes = () => {
   };
 
   React.useEffect(() => {
-    getAllCompanyCodes(logged_in_user?.company_id || 0, currentPage, sizePerPage, "asc(code_type)")
+    getAllCompanyCodes(
+      logged_in_user?.company_id || 0,
+      currentPage,
+      sizePerPage,
+      "asc(code_type)"
+    )
       .then((res) => {
         setCodeList(res.data);
         setTotalPages(res.totalPages);
@@ -142,18 +157,13 @@ const CompanyCodes = () => {
   }, []);
 
   React.useEffect(() => {
-    if (
-      currentPage !== location?.state?.page ||
-      sizePerPage !== location?.state?.sizePerPage
-    ) {
-      location.state = {
-        ...location.state,
-        page: currentPage,
-        sizePerPage: sizePerPage,
-      };
-
-      setLoading((prev) => true);
-      getAllCompanyCodes(logged_in_user?.company_id || 0, currentPage, sizePerPage, "asc(code_type)")
+    setLoading((prev) => true);
+    getAllCompanyCodes(
+      logged_in_user?.company_id || 0,
+      currentPage,
+      sizePerPage,
+      "asc(code_type)"
+    )
       .then((res) => {
         setCodeList(res.data);
         setTotalPages(res.totalPages);
@@ -161,7 +171,7 @@ const CompanyCodes = () => {
       .finally(() => {
         setLoading((prev) => false);
       });
-    }
+    history.replaceState({ currentPage, sizePerPage }, "");
   }, [currentPage, sizePerPage]);
 
   return (

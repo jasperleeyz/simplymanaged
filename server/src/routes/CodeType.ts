@@ -13,7 +13,7 @@ codeTypeRouter.get("/", async (req, res) => {
     const findObject = generateFindObject(page, size, sort, filter);
 
     const codeTypes = await prisma.$transaction([
-      prisma.codeType.count(...findObject.where),
+      prisma.codeType.count({where: findObject.where}),
       prisma.codeType.findMany(findObject),
     ]);
 

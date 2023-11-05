@@ -88,7 +88,7 @@ userRouter.get("/", async (req, res) => {
     findObject.include = { employment_details: true, preferences: true };
 
     const users = await prisma.$transaction([
-      prisma.user.count(...findObject.where),
+      prisma.user.count({where: findObject.where}),
       prisma.user.findMany(findObject),
     ]);
 

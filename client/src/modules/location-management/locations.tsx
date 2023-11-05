@@ -30,16 +30,24 @@ const LocationsPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [currentPage, setCurrentPage] = React.useState(
-    location?.state?.page || 1
-  );
-  const [sizePerPage, setSizePerPage] = React.useState(
-    location?.state?.sizePerPage || 10
-  );
+  const [currentPage, setCurrentPage] = React.useState<number>(() => {
+    const cp = history.state["currentPage"];
+    if (!cp) return 1;
+    return cp;
+  });
+  const [sizePerPage, setSizePerPage] = React.useState<number>(() => {
+    const sp = history.state["sizePerPage"];
+    if (!sp) return 10;
+    return sp;
+  });
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
-  const [searchTerm, setSearchTerm] = React.useState("");
+  const [searchTerm, setSearchTerm] = React.useState(() => {
+    const st = history.state["searchTerm"];
+    if (!st) return "";
+    return st;
+  });
   const [locationList, setLocationList] = React.useState<ICompanyLocation[]>(
     []
   );
@@ -97,35 +105,7 @@ const LocationsPage = () => {
   }, []);
 
   React.useEffect(() => {
-    setLoading((prev) => true);
-    getAllLocations(
-      logged_in_user?.company_id || 0,
-      1,
-      sizePerPage,
-      undefined,
-      searchTerm ? `contains(department_name,${searchTerm})` : undefined
-    )
-      .then((res) => {
-        setLocationList(res.data);
-        setTotalPages(res.totalPages);
-        setCurrentPage((prev) => 1);
-      })
-      .finally(() => {
-        setLoading((prev) => false);
-      });
-  }, [searchTerm]);
-
-  React.useEffect(() => {
-    if (
-      currentPage !== location?.state?.page ||
-      sizePerPage !== location?.state?.sizePerPage
-    ) {
-      location.state = {
-        ...location.state,
-        page: currentPage,
-        sizePerPage: sizePerPage,
-      };
-
+    if (searchTerm === "") {
       setLoading((prev) => true);
       getAllLocations(logged_in_user?.company_id || 0, currentPage, sizePerPage)
         .then((res) => {
@@ -135,8 +115,26 @@ const LocationsPage = () => {
         .finally(() => {
           setLoading((prev) => false);
         });
+    } else {
+      setLoading((prev) => true);
+      getAllLocations(
+        logged_in_user?.company_id || 0,
+        currentPage,
+        sizePerPage,
+        undefined,
+        searchTerm ? `contains(department_name,${searchTerm})` : undefined
+      )
+        .then((res) => {
+          setLocationList(res.data);
+          setTotalPages(res.totalPages);
+          setCurrentPage((prev) => 1);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
-  }, [currentPage, sizePerPage]);
+    history.replaceState({ searchTerm, currentPage, sizePerPage }, "");
+  }, [currentPage, sizePerPage, searchTerm]);
 
   return (
     <div id="location-main">

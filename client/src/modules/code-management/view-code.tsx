@@ -28,12 +28,16 @@ const customTableTheme: CustomFlowbiteTheme["table"] = {
 const ViewCode = () => {
   const location = useLocation();
 
-  const [currentPage, setCurrentPage] = React.useState(
-    location?.state?.page || 1
-  );
-  const [sizePerPage, setSizePerPage] = React.useState(
-    location?.state?.sizePerPage || 10
-  );
+  const [currentPage, setCurrentPage] = React.useState<number>(() => {
+    const cp = history.state["currentPage"];
+    if (!cp) return 1;
+    return cp;
+  });
+  const [sizePerPage, setSizePerPage] = React.useState<number>(() => {
+    const sp = history.state["sizePerPage"];
+    if (!sp) return 10;
+    return sp;
+  });
   const [totalPages, setTotalPages] = React.useState(1);
   const [loading, setLoading] = React.useState(true);
 
@@ -138,26 +142,16 @@ const ViewCode = () => {
   }, []);
 
   React.useEffect(() => {
-    if (
-      currentPage !== location?.state?.page ||
-      sizePerPage !== location?.state?.sizePerPage
-    ) {
-      location.state = {
-        ...location.state,
-        page: currentPage,
-        sizePerPage: sizePerPage,
-      };
-
-      setLoading((prev) => true);
-      getAllCodes(currentPage, sizePerPage, "asc(code_type)")
-        .then((res) => {
-          setCodeList(res.data);
-          setTotalPages(res.totalPages);
-        })
-        .finally(() => {
-          setLoading((prev) => false);
-        });
-    }
+    setLoading((prev) => true);
+    getAllCodes(currentPage, sizePerPage, "asc(code_type)")
+      .then((res) => {
+        setCodeList(res.data);
+        setTotalPages(res.totalPages);
+      })
+      .finally(() => {
+        setLoading((prev) => false);
+      });
+    history.replaceState({ currentPage, sizePerPage }, "");
   }, [currentPage, sizePerPage]);
 
   return (
