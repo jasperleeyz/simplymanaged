@@ -1,7 +1,0 @@
-#DATABASE_URL='mysql://3zd04brsmcj2ry63tb0q:pscale_pw_bVEO1L8pRYUDga18LvHif41BLqNDQOS3CqOnza2z0iF@aws.connect.psdb.cloud/simplymanaged?sslaccept=strict'
-
-DATABASE_URL='mysql://i74qgj8nvhukv7x1lorr:pscale_pw_IzKbiq8qISJWL9qqiMOMggZTTeOmKYjIN8bgyuHUasG@aws.connect.psdb.cloud/simplymanaged?sslaccept=strict'
-JWT_SECRET='WGKoWBlqncOgRFECdpEljeYJLLbGvh9Q'
-WEBPAGE_URL='http://localhost:5173'
-SMTP_USER='teamsimplymanaged@gmail.com'
-SMTP_PASS='egedocnbzzhokcsn'
