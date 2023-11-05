@@ -337,6 +337,58 @@ requestRouter.post("/update", async (req, res) => {
   }
 });
 
+// api to retrieve leave balance
+requestRouter.get("/leave-balance", async (req, res) => {
+  const logged_in_user = req.headers["x-access-user"] as any;
+  const company_id = logged_in_user["company_id"];
+  const user_id = logged_in_user["user_id"];
+
+  const leave_type = req.query.leave_type as string;
+
+  try {
+    const leave_balance = await prisma.companyLeaveBalance.findFirst({
+      where: {
+        company_id: Number(company_id),
+        leave_type: leave_type,
+      },
+    });
+
+    if(!leave_balance) {
+      throw new Error("Leave balance not found");
+    }
+
+    // find all pending and approved leave request for the user
+    const requests = await prisma.request.findMany({
+      where: {
+        company_id: Number(company_id),
+        user_id: Number(user_id),
+        type: "LEAVE",
+        status: {
+          in: ["P", "A"],
+        },
+        leave_request: {
+          type: leave_type,
+        }
+      },
+      include: {
+        leave_request: true,
+      },
+    });
+
+    let total_requested_days = 0.0;
+    for (const request of requests) {
+      total_requested_days += Number(request?.leave_request?.no_of_days) || 0.0;
+    }
+
+    const result = leave_balance.balance - total_requested_days;
+
+    return res.status(200).json(generateResultJson(result));
+  } catch (err) {
+    console.error(err);
+    return res.status(400).send("Error getting leave balance");
+  }
+});
+
 requestRouter.get("/:requestId", async (req, res) => {
   try {
     const request_id = req.params?.requestId;
@@ -359,3 +411,4 @@ requestRouter.get("/:requestId", async (req, res) => {
     return res.status(400).send("Error getting personal requests");
   }
 });
+

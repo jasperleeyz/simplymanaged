@@ -12,7 +12,10 @@ import moment from "moment";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { getAllCompanyCodes } from "../../shared/api/company-code.api";
-import { createLeaveRequest } from "../../shared/api/request.api";
+import {
+  createLeaveRequest,
+  getRemainingLeaveBalance,
+} from "../../shared/api/request.api";
 import {
   ATTACHMENT_REQUIRED_LEAVES,
   MAX_PROFILE_IMAGE_SIZE,
@@ -49,16 +52,15 @@ const LeaveForm = () => {
   const [leaveTypeList, setLeaveTypeList] = React.useState<ICompanyCode[]>([]);
 
   const handleChangeForLeaveType = (e: any) => {
-    // TODO: get leave balance
     const leaveType = e.target.value;
 
-    // getPersonalLeaveBalanceByType(user?.company_id || 0, user?.id || 0, leaveType)
-    //   .then((res) => {
-    //     setLeaveBalance(res.data);
-    //   })
-    //   .catch((err) => {
-    //     toast.error("Error encountered. Please try again later");
-    //   });
+    getRemainingLeaveBalance(leaveType)
+      .then((res) => {
+        setLeaveBalance(res.data);
+      })
+      .catch((err) => {
+        toast.error("Error retrieving leave balance. Please try again later");
+      });
   };
 
   const countNumberOfDays = (
@@ -95,25 +97,30 @@ const LeaveForm = () => {
         enableReinitialize
         onSubmit={async (values, { setSubmitting }) => {
           try {
-            setSubmitting(true);
             values.no_of_days = countNumberOfDays(
               values.start_date,
               values.end_date,
               values.half_day
             );
 
-            if(user?.department_in_charge) {
+            if (user?.department_in_charge) {
               values.status = "A";
             }
-            
-            await createLeaveRequest(
-              user?.company_id || 0,
-              user?.id || 0,
-              values
-            ).then(() => {
-              toast.success(`Leave request created successfully`);
-              navigate(`..`);
-            });
+
+            if (values.no_of_days > leaveBalance) {
+              toast.error("Insufficient leave balance");
+              return;
+            } else {
+              setSubmitting(true);
+              await createLeaveRequest(
+                user?.company_id || 0,
+                user?.id || 0,
+                values
+              ).then(() => {
+                toast.success(`Leave request created successfully`);
+                navigate(`..`);
+              });
+            }
           } catch (err) {
             toast.error("Error encountered. Please try again later");
           } finally {

@@ -123,6 +123,12 @@ export const REQUEST = {
   },
 }
 
+export const CODE_TYPE = {
+  LEAVE_TYPE: "LEAVE_TYPE",
+  POSITION: "POSITION",
+  EMPLOYMENT_TYPE: "EMPLOYMENT_TYPE",
+}
+
 export const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 
 export const ATTACHMENT_REQUIRED_LEAVES = ["MC", "HL"];

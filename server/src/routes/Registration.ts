@@ -266,6 +266,14 @@ const approveRegistration = async (registration_details: Registration) => {
         created_by: "SYSTEM",
         updated_by: "SYSTEM",
       },
+      {
+        id: await getNextSequenceValue(company.id, SEQUENCE_KEYS.COMPANY_CODE_TYPE_SEQUENCE),
+        company_id: company.id,
+        code_type: "LEAVE_TYPE",        
+        status: "A",
+        created_by: "SYSTEM",
+        updated_by: "SYSTEM",
+      },
     ];
 
     await prisma.companyCodeType.createMany({

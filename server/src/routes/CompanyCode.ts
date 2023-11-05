@@ -22,7 +22,20 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
     const companyCodes = await prisma.$transaction([
       prisma.companyCode.count(...findObject.where),
       prisma.companyCode.findMany(findObject),
-    ]);
+    ]) as [number, any[]];
+
+    for(let companyCode of companyCodes[1]) {
+      if (companyCode.code_type === "LEAVE_TYPE") {
+        const balance = await prisma.companyLeaveBalance.findFirst({
+          where: {
+            company_id: Number(company_id),
+            leave_type: companyCode.code,
+          },
+        });
+
+        companyCode.leave_balance = balance?.balance || 0;
+      }
+    }
 
     // create result object
     const result = generateResultJson(
@@ -40,7 +53,16 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
 });
 
 companyCodeRouter.post("/create-update", async (req, res) => {
-  let { id, company_id, code_type, code, description, status, code_type_other } = req.body;
+  let {
+    id,
+    company_id,
+    code_type,
+    code,
+    description,
+    status,
+    code_type_other,
+    leave_balance,
+  } = req.body;
   const logged_in_user = req.headers?.["x-access-user"] as any;
 
   try {
@@ -62,7 +84,10 @@ companyCodeRouter.post("/create-update", async (req, res) => {
         await prisma.$transaction(async (tx) => {
           return await tx.companyCodeType.create({
             data: {
-              id: await getNextSequenceValue(company_id, SEQUENCE_KEYS.COMPANY_CODE_TYPE_SEQUENCE),
+              id: await getNextSequenceValue(
+                company_id,
+                SEQUENCE_KEYS.COMPANY_CODE_TYPE_SEQUENCE
+              ),
               company_id: company_id,
               code_type: code_type_other.toLocaleUpperCase().trim(),
               status: "A",
@@ -75,7 +100,7 @@ companyCodeRouter.post("/create-update", async (req, res) => {
 
       code_type = code_type_other.toLocaleUpperCase().trim();
     }
-  
+
     let companyCode;
 
     if (id) {
@@ -95,6 +120,26 @@ companyCodeRouter.post("/create-update", async (req, res) => {
           // updated_date: new Date(),
         },
       });
+
+      await prisma.companyLeaveBalance.upsert({
+        where: {
+          company_id_leave_type: {
+            company_id: company_id,
+            leave_type: code,
+          },
+        },
+        create: {
+          balance: Number(leave_balance),
+          company_id: company_id,
+          leave_type: code,
+          created_by: logged_in_user?.name,
+          updated_by: logged_in_user?.name,
+        },
+        update: {
+          balance: Number(leave_balance),
+          updated_by: logged_in_user?.name,
+        },
+      });
     } else {
       companyCode = prisma.$transaction(async (tx) => {
         return await tx.companyCode.create({
@@ -107,15 +152,30 @@ companyCodeRouter.post("/create-update", async (req, res) => {
             updated_by: logged_in_user?.name,
             // created_date: new Date(),
             company_id: company_id,
-            id: await getNextSequenceValue(company_id, SEQUENCE_KEYS.COMPANY_CODE_SEQUENCE)
+            id: await getNextSequenceValue(
+              company_id,
+              SEQUENCE_KEYS.COMPANY_CODE_SEQUENCE
+            ),
           },
         });
       });
+
+      if (code_type === "LEAVE_TYPE") {
+        await prisma.companyLeaveBalance.create({
+          data: {
+            company_id: company_id,
+            leave_type: code,
+            balance: Number(leave_balance),
+            created_by: logged_in_user?.name,
+            updated_by: logged_in_user?.name,
+          },
+        });
+      }
     }
 
     res.status(200).json(generateResultJson(companyCode));
   } catch (error) {
     console.error(error);
-    res.status(400).send(`Error ${id ? "updating": "creating"} company code.`);
+    res.status(400).send(`Error ${id ? "updating" : "creating"} company code.`);
   }
 });

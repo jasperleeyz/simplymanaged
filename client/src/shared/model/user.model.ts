@@ -24,6 +24,7 @@ interface IUser {
     employment_details?: IEmployementDetails;
     schedules?: IUserSchedule[];
     requests?: IRequest[];
+    leave_balance?: IUserLeaveBalance[];
 }
 
 export default IUser;
@@ -46,4 +47,16 @@ export interface IEmployementDetails {
     user_company_id: number;
     working_hours: string;
     employment_type: string;
+}
+
+export interface IUserLeaveBalance {
+    id: number;
+    user_id: number;
+    user_company_id: number;
+    leave_type: string;
+    balance: number;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
 }

@@ -106,7 +106,7 @@ export const getAllPendingRequestByDepartmentId = async (
       else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
-}
+};
 
 export const getRequestById = async (requestId: number): Promise<any> => {
   const url = `/request/${requestId}`;
@@ -133,4 +133,19 @@ export const updateRequest = async (request: IRequest): Promise<any> => {
       else return response.text().then((text) => Promise.reject(text));
     })
     .catch((err) => Promise.reject(err));
-}
+};
+
+export const getRemainingLeaveBalance = async (
+  leave_type: string
+): Promise<any> => {
+  const url = `/request/leave-balance?leave_type=${leave_type}`;
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+};

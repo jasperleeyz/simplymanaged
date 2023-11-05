@@ -5,12 +5,16 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { Button, TextInput } from "flowbite-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PATHS } from "../../configs/constants";
+import { CODE_TYPE, PATHS } from "../../configs/constants";
 import LabeledTextInput from "../../shared/layout/form/labeled-text-input";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import { toast } from "react-toastify";
 import BackButton from "../../shared/layout/buttons/back-button";
-import { createUpdateCompanyCode, getAllCompanyCodeTypes, getAllCompanyCodes } from "../../shared/api/company-code.api";
+import {
+  createUpdateCompanyCode,
+  getAllCompanyCodeTypes,
+  getAllCompanyCodes,
+} from "../../shared/api/company-code.api";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 
 const CodeSchema = Yup.object().shape({
@@ -21,11 +25,19 @@ const CodeSchema = Yup.object().shape({
   }),
   code: Yup.string().required("Field is required"),
   description: Yup.string().required("Field is required"),
+  leave_balance: Yup.number()
+    .min(1, "Leave balance must be greater than 0")
+    .when("code_type", {
+      is: (val) => val === CODE_TYPE.LEAVE_TYPE,
+      then: (schema) => schema.required("Field is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
 });
 
 const AddOrEditCompanyCode = () => {
   const navigate = useNavigate();
-  const logged_in_user = React.useContext(GlobalStateContext)?.globalState?.user;
+  const logged_in_user =
+    React.useContext(GlobalStateContext)?.globalState?.user;
 
   const id = useParams()?.id;
 
@@ -39,6 +51,7 @@ const AddOrEditCompanyCode = () => {
     code: "",
     description: "",
     status: "A",
+    leave_balance: 0,
   });
 
   React.useEffect(() => {
@@ -57,7 +70,7 @@ const AddOrEditCompanyCode = () => {
         undefined,
         undefined,
         `equals(id,${id})`
-        )
+      )
         .then((res) => {
           setInitialValues(res.data[0]);
         })
@@ -181,6 +194,27 @@ const AddOrEditCompanyCode = () => {
                   ) : null
                 }
               />
+              {props.values.code_type === CODE_TYPE.LEAVE_TYPE ? (
+                <LabeledTextInput
+                  id="leave-balance"
+                  name="leave_balance"
+                  labelValue="Leave Balance"
+                  type={"number"}
+                  value={props.values.leave_balance}
+                  onChange={props.handleChange}
+                  onBlur={props.handleBlur}
+                  color={
+                    props.errors.leave_balance && props.touched.leave_balance
+                      ? "failure"
+                      : "gray"
+                  }
+                  helperText={
+                    props.errors.leave_balance && props.touched.leave_balance ? (
+                      <>{props.errors.leave_balance}</>
+                    ) : null
+                  }
+                />
+              ) : null}
             </div>
             <div className="flex justify-end mt-12 gap-3">
               <BackButton size="sm" color="light" />

@@ -65,26 +65,27 @@ model SubscriptionModel {
 }
 
 model Company {
-  id                 Int               @id @default(autoincrement())
-  uen                String            @unique
-  name               String
-  contact_no         Int
-  email              String
-  address            String
-  industry           String
-  no_of_employees    Int
-  created_by         String            @default("SYSTEM")
-  created_date       DateTime          @default(now())
-  updated_by         String
-  updated_date       DateTime          @updatedAt
-  subscriptions      Subscription[]    @relation("company_subscriptions")
-  company_code_types CompanyCodeType[] @relation("company_code_types")
-  company_codes      CompanyCode[]     @relation("company_codes")
-  employees          User[]            @relation("company_employees")
-  departments        Department[]      @relation("company_departments")
-  company_locations  CompanyLocation[] @relation("company_locations")
-  rosters            Roster[]          @relation("company_rosters")
-  roster_templates   RosterTemplate[]  @relation("company_roster_templates")
+  id                    Int                   @id @default(autoincrement())
+  uen                   String                @unique
+  name                  String
+  contact_no            Int
+  email                 String
+  address               String
+  industry              String
+  no_of_employees       Int
+  created_by            String                @default("SYSTEM")
+  created_date          DateTime              @default(now())
+  updated_by            String
+  updated_date          DateTime              @updatedAt
+  subscriptions         Subscription[]        @relation("company_subscriptions")
+  company_code_types    CompanyCodeType[]     @relation("company_code_types")
+  company_codes         CompanyCode[]         @relation("company_codes")
+  employees             User[]                @relation("company_employees")
+  departments           Department[]          @relation("company_departments")
+  company_locations     CompanyLocation[]     @relation("company_locations")
+  rosters               Roster[]              @relation("company_rosters")
+  roster_templates      RosterTemplate[]      @relation("company_roster_templates")
+  company_leave_balance CompanyLeaveBalance[] @relation("company_leave_balance")
 }
 
 model Subscription {
@@ -287,10 +288,25 @@ model LeaveRequest {
   end_date   DateTime
   half_day   String
   attachment Bytes?
-  no_of_days Int      @default(1)
+  no_of_days Decimal  @db.Decimal(3, 1) @default(1)
   request    Request  @relation("leave_request", fields: [request_id], references: [id])
 
   @@index([request_id])
+}
+
+model CompanyLeaveBalance {
+  id           Int      @id @default(autoincrement())
+  company_id   Int
+  leave_type   String
+  balance      Int
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_leave_balance", fields: [company_id], references: [id])
+
+  @@index([company_id])
+  @@unique([company_id, leave_type])
 }
 
 model SwapRequest {

@@ -38,6 +38,7 @@ export interface ICompany {
     rosters?: IRoster[]; 
     employees?: IUser[];
     actual_no_of_employees?: number;
+    company_leave_balance?: ICompanyLeaveBalance[];
 }
 
 export interface ISubscription {
@@ -92,3 +93,13 @@ export interface ICompanyLocation {
     updated_date?: Date;
 }
 
+export interface ICompanyLeaveBalance {
+    id: number;
+    company_id: number;
+    leave_type: string;
+    balance: number;
+    created_by?: string;
+    created_date?: Date;
+    updated_by?: string;
+    updated_date?: Date;
+}
