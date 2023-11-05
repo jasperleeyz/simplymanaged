@@ -2,7 +2,7 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { IDepartment } from "../../shared/model/company.model";
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { PATHS, ROLES } from "../../configs/constants";
+import { PATHS, ROLES, USER_STATUS } from "../../configs/constants";
 import { getAllEmployees } from "../../shared/api/user.api";
 import IUser from "../../shared/model/user.model";
 import { createUpdateDepartment, getAllDepartments } from "../../shared/api/department.api";
@@ -38,14 +38,19 @@ const AddOrEditDepartment = () => {
   React.useEffect(() => {
     Promise.all([
       getAllEmployees(
-        logged_in_user?.company_id || 0,
         undefined,
         undefined,
         undefined,
-        `equals(role,${ROLES.MANAGER})`
+        `equals(role,${ROLES.MANAGER}),equals(status,${USER_STATUS.ACTIVE})`
       )
         .then((res) => {
-          setManagerList(res.data);
+          if(!id) {
+            const filtered = res.data.filter((emp) => emp.department_in_charge === null);
+            setManagerList(filtered);
+          } else {
+            const filtered = res.data.filter((emp) => emp.department_in_charge === null || emp.department_in_charge.id === parseInt(id));
+            setManagerList(res.data);
+          }
         })
         .catch((err) => {
           toast.error("Error encountered. Please try again later");
@@ -138,7 +143,7 @@ const AddOrEditDepartment = () => {
                   ) : null
                 }
               >
-                <option value="" />
+                <option value="0" />
                 {managerList.map((emp, idx) => {
                   return (
                     <option key={idx} value={emp.id}>

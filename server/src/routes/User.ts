@@ -85,7 +85,7 @@ userRouter.get("/", async (req, res) => {
   try {
     const findObject = generateFindObject(page, size, sort, filter);
     findObject.where = { ...findObject.where, company_id: Number(company_id) };
-    findObject.include = { employment_details: true, preferences: true };
+    findObject.include = { employment_details: true, preferences: true, department_in_charge: true };
 
     const users = await prisma.$transaction([
       prisma.user.count({where: findObject.where}),

@@ -25,19 +25,6 @@ const PersonalRequestDetails = () => {
     {} as IUser
   );
 
-  const updateStatus = (req: IRequest, status: string) => {
-    req.status = status;
-    // TODO: replace with update status API
-    const updatedReq = req;
-    setGlobalState((prev) => ({
-      ...prev,
-      requests: prev.requests?.map((r) => (r.id === req.id ? updatedReq : r)),
-    }));
-    // navigate(".", { state: { request: updatedReq }, replace: true });
-
-    toast.success(`Successfully ${status} request`);
-  };
-
   React.useEffect(() => {
     Promise.all([
       getPersonalRequestById(Number(request_id)).then((res) => {
@@ -139,7 +126,11 @@ const PersonalRequestDetails = () => {
                 <LabeledField
                   id="approving-manager"
                   labelValue="Approving Manager"
-                  value={departmentHead.fullname}
+                  value={
+                    request.status === REQUEST.STATUS.PENDING
+                      ? departmentHead?.fullname || "N/A"
+                      : request.updated_by
+                  }
                 />
                 {request.leave_request?.remarks ? (
                   <div className="col-span-2">
@@ -179,7 +170,9 @@ const PersonalRequestDetails = () => {
             )}
           </div>
         )}
-        {request?.type?.toUpperCase() === REQUEST.TYPE.SWAP && <SwapRequestDetails request={request} />}
+        {request?.type?.toUpperCase() === REQUEST.TYPE.SWAP && (
+          <SwapRequestDetails request={request} />
+        )}
         <div className="flex mt-8 gap-3">
           <BackButton size="sm" />
         </div>
