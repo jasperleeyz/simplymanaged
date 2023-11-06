@@ -288,7 +288,7 @@ model LeaveRequest {
   end_date   DateTime
   half_day   String
   attachment Bytes?
-  no_of_days Decimal  @db.Decimal(3, 1) @default(1)
+  no_of_days Decimal  @default(1.0) @db.Decimal(3, 1)
   request    Request  @relation("leave_request", fields: [request_id], references: [id])
 
   @@index([request_id])
@@ -305,8 +305,8 @@ model CompanyLeaveBalance {
   updated_date DateTime @updatedAt
   company      Company  @relation("company_leave_balance", fields: [company_id], references: [id])
 
-  @@index([company_id])
   @@unique([company_id, leave_type])
+  @@index([company_id])
 }
 
 model SwapRequest {
