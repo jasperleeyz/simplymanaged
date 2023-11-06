@@ -39,26 +39,6 @@ const ScheduleDateBox = ({
                 >
                   View
                 </Dropdown.Item>
-                {date.isAfter(moment(new Date())) && (
-                  <>
-                    <Dropdown.Item
-                      onClick={() => {
-                        navigate(`./${PATHS.EDIT_SCHEDULE}`, {
-                          state: { roster },
-                        });
-                      }}
-                    >
-                      Edit
-                    </Dropdown.Item>
-                    <Dropdown.Item
-                      onClick={() => {
-                        setOpenModal((prev) => true);
-                      }}
-                    >
-                      Delete
-                    </Dropdown.Item>
-                  </>
-                )}
               </Dropdown>
             </div>
           )}

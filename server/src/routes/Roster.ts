@@ -237,7 +237,8 @@ RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
           include: {
             user: true
           }
-        }
+        },
+        //location: true
       },
     });
 

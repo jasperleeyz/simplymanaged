@@ -7,42 +7,49 @@ import DeleteButton from "../../../shared/layout/buttons/delete-button";
 import LabeledField from "../../../shared/layout/fields/labeled-field";
 import { Avatar, Label } from "flowbite-react";
 import { capitalizeString } from "../../../configs/utils";
+import moment from "moment";
 
 const ViewSchedule = () => {
   const location = useLocation();
   const roster = location.state?.roster as IRoster[];
   const type = location.state?.type as string;
+  const date = new Date();
   const startDate = new Date(roster[0].start_date);
-  console.log(roster)
+  const currentDate = new Date();
+  console.log(roster);
   return (
     <div id="schedule-details-main">
       <p className="header">Schedule Details</p>
-      <div className="md:mx-10 grid grid-cols-2 gap-4 md:w-1/2">
+      <div>
         <LabeledField
           id="schedule-date"
           labelValue="Date"
           value={startDate.toLocaleDateString()}
         />
-        <LabeledField
-          id="schedule-location"
-          labelValue="Location"
-          value= {roster[0].location?.name}
-        />
-        <div className="col-span-2">
+        <div>
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />
-          <div id="schedule-employees" className="grid grid-cols-2">
-            {
-            roster.map((rosteridx, idx) => (
-              rosteridx.schedules?.map((schedule, scheduleIdx) => (
-                <div key={scheduleIdx} className="flex mt-4">
-                  <p>{capitalizeString(schedule.user?.fullname)}</p>
-                  <p>{capitalizeString(schedule.user?.position)}</p>
-                  <p>{schedule.shift} Shift</p>
-                  <p>{schedule.user?.contact_no}</p>
+          <div id="schedule-employees">
+            {roster.map((rosteridx, idx) => (
+              <div className="border border-solid border-black p-2 mt-2">
+                <p>{rosteridx.type}</p>
+                <div key={idx} className=" grid grid-cols-5 gap-4">
+                  {rosteridx.schedules?.map((schedule, scheduleIdx) => (
+                    <div key={scheduleIdx}>
+                      <p>{capitalizeString(schedule.user?.fullname)}</p>
+                      <p>{capitalizeString(schedule.user?.position)}</p>
+                      <p>{schedule.shift} Shift</p>
+                      <p>{schedule.user?.contact_no}</p>
+                    </div>
+                  ))}
                 </div>
-              ))
-            ))
-            }
+                {startDate > currentDate && (
+                  <div className="mt-4 flex">
+                    <EditButton size="sm" />
+                    <DeleteButton size="sm" />
+                  </div>
+                )}
+              </div>
+            ))}
             {/* {schedule.employeesSelected.map((employee, idx) => (
               <div key={idx} className="flex mt-4">
                 <Avatar size="sm" img={employee.profileImage} rounded>
@@ -55,6 +62,7 @@ const ViewSchedule = () => {
             ))} */}
           </div>
         </div>
+        {/*
         <div className="mt-4 col-span-2">
           <div className="flex gap-4">
             <BackButton size="sm" />
@@ -62,6 +70,7 @@ const ViewSchedule = () => {
             <DeleteButton size="sm" />
           </div>
         </div>
+*/}
       </div>
     </div>
   );
