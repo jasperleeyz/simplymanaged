@@ -10,30 +10,30 @@ import React from "react";
 
 type IProps = {
   date?: moment.Moment;
-  schedule?: any;
+  roster?: any;
 };
 
 const ScheduleDateBox = ({
   date = moment(new Date()),
-  schedule = null,
+  roster = null,
 }: IProps) => {
   const navigate = useNavigate();
 
   const [openModal, setOpenModal] = React.useState(false);
-  const modalProps = { openModal, setOpenModal, schedule };
-
+  const modalProps = { openModal, setOpenModal, roster };
+  
   return (
     <>
       <div className="w-[110px] h-[110px] max-w-sm max-h-sm group">
         <div className="flex items-center justify-between">
           <p>{date.date()}</p>
-          {schedule && (
+          {roster && (
             <div className="rounded-full">
               <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
                 <Dropdown.Item
                   onClick={() => {
                     navigate(`./${PATHS.VIEW_SCHEDULE}`, {
-                      state: { schedule },
+                      state: { roster },
                     });
                   }}
                 >
@@ -44,7 +44,7 @@ const ScheduleDateBox = ({
                     <Dropdown.Item
                       onClick={() => {
                         navigate(`./${PATHS.EDIT_SCHEDULE}`, {
-                          state: { schedule },
+                          state: { roster },
                         });
                       }}
                     >
@@ -64,7 +64,7 @@ const ScheduleDateBox = ({
           )}
         </div>
         <br />
-        {!schedule && (
+        {!roster && (
           <div className="relative">
             <p className="absolute whitespace-normal">No schedule available</p>
             {date.isAfter(moment(new Date())) && (
@@ -83,7 +83,7 @@ const ScheduleDateBox = ({
             )}
           </div>
         )}
-        {schedule && (
+        {roster && (
           <div className="relative">
             {/* <p className="absolute whitespace-normal">No schedule for the day</p>
         <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
@@ -93,7 +93,7 @@ const ScheduleDateBox = ({
           </div>
         )}
       </div>
-      {schedule && <DeleteSchedulePrompt {...modalProps} />}
+      {roster && <DeleteSchedulePrompt {...modalProps} />}
     </>
   );
 };

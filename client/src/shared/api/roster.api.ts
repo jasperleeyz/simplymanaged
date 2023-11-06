@@ -71,3 +71,22 @@ export const getRosterById = async (companyId: number, rosterId: number): Promis
       })
       .catch((err) => Promise.reject(err));
   }
+
+  export const getRosterFromAndTo = async (
+    companyId: number,
+    from: Date = new Date(),
+    to: Date,
+  ) => {
+    let url = `/roster/get-roster-from-to/${companyId}?from=${from.toISOString()}`;
+    if (to) {
+      url += `&to=${to.toISOString()}`;
+    }
+    return await fetch(url, {
+      method: "GET",
+    })
+      .then((response) => {
+        if (response.ok) return Promise.resolve(response.json());
+        else return response.text().then((text) => Promise.reject(text));
+      })
+      .catch((err) => Promise.reject(err));
+  };

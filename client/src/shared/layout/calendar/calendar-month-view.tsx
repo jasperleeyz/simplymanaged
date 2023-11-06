@@ -6,8 +6,12 @@ import moment from "moment";
 import ScheduleDateBox from "./schedule-date-box";
 import React from "react";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
-import {getAllUserSchedule, getUserScheduleFromAndTo} from "../../../shared/api/user-schedule.api"
-import { IUserSchedule } from "../../model/schedule.model";
+import {
+  getAllUserSchedule,
+  getUserScheduleFromAndTo,
+} from "../../../shared/api/user-schedule.api";
+import { getRosterFromAndTo } from "../../api/roster.api";
+import { IRoster, IUserSchedule } from "../../model/schedule.model";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -33,7 +37,7 @@ const CalendarMonthView = ({
   month,
   year = new Date().getFullYear(),
   isPersonal,
-  location
+  location,
 }: IProps) => {
   const { globalState } = useContext(GlobalStateContext);
 
@@ -54,30 +58,33 @@ const CalendarMonthView = ({
   }
 
   const [scheduleList, setScheduleList] = useState<IUserSchedule[]>([]);
+  const [rosterList, setRosterList] = useState<IRoster[]>([]);
 
-    useEffect(() => {
-      const from = new Date(year, month)
-      const to = new Date(year, month+1)
-      getUserScheduleFromAndTo(0, globalState?.user?.id || 0, from, to)
-        .then((res) => {
-          console.log(res.data)
-          setScheduleList(res.data);
-        })
-        .finally(() => {
-        });
-    }, [isPersonal]);
-
-    useEffect(() => {
-      getAllUserSchedule(0, month+1, year)
+  useEffect(() => {
+    const from = new Date(year, month);
+    const to = new Date(year, month + 1);
+    if (isPersonal) {
+      getUserScheduleFromAndTo(
+        globalState?.user?.company_id || 0,
+        globalState?.user?.id || 0,
+        from,
+        to
+      )
         .then((res) => {
           //console.log(res.data)
-          //setScheduleList(res.data);
+          setScheduleList(res.data);
         })
-        .finally(() => {
-        });
-    }, [!isPersonal]);
-    
-    
+        .finally(() => {});
+    } else {
+      getRosterFromAndTo(globalState?.user?.company_id || 0, from, to)
+        .then((res) => {
+          //console.log(res.data);
+          setRosterList(res.data);
+        })
+        .finally(() => {});
+    }
+  }, [isPersonal]);
+
   /*const scheduleForMonth = scheduleList?.filter(
     (schedule) =>
       schedule.start_date?.getMonth() === month &&
@@ -104,9 +111,13 @@ const CalendarMonthView = ({
               <Table.Row key={idx}>
                 {week.days.map((day, didx) => {
                   const scheduleForDay = scheduleList?.filter((schedule) => {
-                    const startDate = new Date(schedule.start_date).getDate();
-                    const endDate = new Date(schedule.end_date).getDate(); 
-                    return startDate <= day.date() && day.date() <= endDate;
+                      const startDate = new Date(schedule.start_date).getDate();
+                      const endDate = new Date(schedule.end_date).getDate();
+                      return startDate <= day.date() && day.date() <= endDate;
+                  });
+                  const rosterForDay = rosterList?.filter((schedule) => {
+                      const startDate = new Date(schedule.start_date).getDate();
+                      return startDate === day.date();
                   });
                   return (
                     <Table.Cell key={didx}>
@@ -114,9 +125,9 @@ const CalendarMonthView = ({
                         !isPersonal ? (
                           <ScheduleDateBox
                             date={day}
-                            schedule={
-                              scheduleForDay?.length === 1
-                                ? scheduleForDay[0]
+                            roster={
+                              rosterForDay?.length >= 1
+                                ? rosterForDay
                                 : null
                             }
                           />
@@ -137,7 +148,6 @@ const CalendarMonthView = ({
               </Table.Row>
             );
           })}
-      
         </Table.Body>
       </Table>
     </div>

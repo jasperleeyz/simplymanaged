@@ -9,7 +9,7 @@ import { GlobalStateContext } from "../../../configs/global-state-provider";
 type IProps = {
   openModal: boolean;
   setOpenModal: React.Dispatch<React.SetStateAction<boolean>>;
-  schedule: IRoster | any;
+  roster: IRoster | any;
 };
 
 const DeleteSchedulePrompt = (props: IProps) => {
@@ -20,7 +20,7 @@ const DeleteSchedulePrompt = (props: IProps) => {
     setGlobalState((prev) => ({
       ...prev,
       schedule: prev.schedule?.filter(
-        (schedule) => schedule.start_date !== props.schedule.date
+        (schedule) => schedule.start_date !== props.roster.date
       ),
     }));
     props.setOpenModal((prev) => false);

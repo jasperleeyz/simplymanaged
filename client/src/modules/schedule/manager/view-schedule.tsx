@@ -10,9 +10,10 @@ import { capitalizeString } from "../../../configs/utils";
 
 const ViewSchedule = () => {
   const location = useLocation();
-  const schedule = location.state?.schedule as IUserSchedule;
+  const roster = location.state?.roster as IRoster[];
   const type = location.state?.type as string;
-  const startDate = new Date(schedule.start_date);
+  const startDate = new Date(roster[0].start_date);
+  console.log(roster)
   return (
     <div id="schedule-details-main">
       <p className="header">Schedule Details</p>
@@ -25,11 +26,23 @@ const ViewSchedule = () => {
         <LabeledField
           id="schedule-location"
           labelValue="Location"
-          value={schedule.roster?.location?.name}
+          value= {roster[0].location?.name}
         />
         <div className="col-span-2">
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />
           <div id="schedule-employees" className="grid grid-cols-2">
+            {
+            roster.map((rosteridx, idx) => (
+              rosteridx.schedules?.map((schedule, scheduleIdx) => (
+                <div key={scheduleIdx} className="flex mt-4">
+                  <p>{capitalizeString(schedule.user?.fullname)}</p>
+                  <p>{capitalizeString(schedule.user?.position)}</p>
+                  <p>{schedule.shift} Shift</p>
+                  <p>{schedule.user?.contact_no}</p>
+                </div>
+              ))
+            ))
+            }
             {/* {schedule.employeesSelected.map((employee, idx) => (
               <div key={idx} className="flex mt-4">
                 <Avatar size="sm" img={employee.profileImage} rounded>
