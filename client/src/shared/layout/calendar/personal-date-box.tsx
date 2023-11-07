@@ -8,6 +8,7 @@ import { HiDotsHorizontal } from "react-icons/hi";
 import { Dropdown } from "flowbite-react";
 import { toast } from "react-toastify";
 import { Label } from "flowbite-react";
+import { PATHS } from "../../../configs/constants";
 
 type IProps = {
   date?: moment.Moment;
@@ -42,11 +43,11 @@ const PersonalDateBox = ({
       <div className="flex items-center justify-between">
         <p>{date.date()}</p>
         <div className="rounded-full">
-          {rosterType === "SHIFT" && (
+          {rosterType === "SHIFT" && moment(schedule?.start_date).isAfter(new Date())  && (
             <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
               <Dropdown.Item
                 onClick={() => {
-                  console.log("Swap clicked");
+                  navigate(`/${PATHS.REQUESTS}/${PATHS.ADD_SWAP_REQUEST}`, {state: {schedule}})
                 }}
               >
                 Swap

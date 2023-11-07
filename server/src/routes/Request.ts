@@ -2,10 +2,73 @@ import { LeaveRequest, PrismaClient, Request } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { sendApproveRejectRequestEmail } from "../utils/email";
+import { ValidationError } from "../errors/validation-error";
 
 export const requestRouter = express.Router();
 
 const prisma = new PrismaClient();
+
+const generateScheduleInfoForSwapRequest = async (swap_request: any) => {
+    const requester_schedule = await prisma.userSchedule.findFirst({
+      where: {
+        id: swap_request.requester_schedule_id,
+      },
+      select: {
+        id: true,
+        user_id: true,
+        shift: true,
+        start_date: true,
+        end_date: true,
+        // roster: {
+        //   select: {
+        //     id: true,
+        //     location: {
+        //       select: {
+        //         name: true,
+        //       },
+        //     },
+        //   },
+        // },
+      }
+    });
+
+    const requested_schedule = await prisma.userSchedule.findFirst({
+      where: {
+        id: swap_request.requested_schedule_id,
+      },
+      select: {
+        id: true,
+        user_id: true,
+        shift: true,
+        start_date: true,
+        end_date: true,
+        roster: {
+          select: {
+            location_id: true,
+          },
+        },
+        // roster: {
+        //   select: {
+        //     id: true,
+        //     location: {
+        //       select: {
+        //         name: true,
+        //       },
+        //     },
+        //   },
+        // },
+        user: {
+          select: {
+            fullname: true,
+          },
+        },
+      }
+    });
+
+    swap_request.requester_schedule = requester_schedule;
+    swap_request.requested_schedule = requested_schedule;
+}
+
 
 requestRouter.get("/personal-request", async (req, res) => {
   try {
@@ -32,12 +95,16 @@ requestRouter.get("/personal-request", async (req, res) => {
       prisma.request.findMany(findObject),
     ]);
 
-    requests[1].forEach((request: any) => {
-      if (request.leave_request) {
-        request.leave_request.attachment =
-          (request.leave_request.attachment?.toString() as any) || null;
+    for (const request of requests[1]) {
+      if ((request as any).leave_request) {
+        (request as any).leave_request.attachment =
+          ((request as any).leave_request.attachment?.toString() as any) || null;
       }
-    });
+
+      if ((request as any).swap_request) {
+        await generateScheduleInfoForSwapRequest((request as any).swap_request);
+      }
+    }
 
     return res
       .status(200)
@@ -65,9 +132,13 @@ requestRouter.get("/personal-request/:requestId", async (req, res) => {
       include: { leave_request: true, swap_request: true, bid_request: true },
     })) as any;
 
-    if (request.leave_request) {
-      request.leave_request.attachment =
-        (request.leave_request.attachment?.toString() as any) || null;
+    if ((request as any).leave_request) {
+      (request as any).leave_request.attachment =
+        ((request as any).leave_request.attachment?.toString() as any) || null;
+    }
+
+    if ((request as any).swap_request) {
+      await generateScheduleInfoForSwapRequest((request as any).swap_request);
     }
 
     return res.status(200).json(generateResultJson(request));
@@ -386,6 +457,72 @@ requestRouter.get("/leave-balance", async (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(400).send("Error getting leave balance");
+  }
+});
+
+requestRouter.post("/create-swap", async (req, res) => {
+  try {
+    const logged_in_user = req.headers["x-access-user"] as any;
+    const user = logged_in_user["name"];
+    const { reason, requester_schedule_id, requested_user_id, requested_schedule_id } = req.body;
+
+    // if(!reason || !requester_schedule_id || !requested_user_id || !requested_schedule_id) {
+    //   throw new ValidationError("Required fields are missing.");
+    // } else 
+    if (Number(requester_schedule_id) === Number(requested_schedule_id)) {
+      throw new ValidationError("Selected schedule is the same as your schedule.");
+    } else if (Number(requested_user_id) === Number(logged_in_user["user_id"])) {
+      throw new ValidationError("Not allowed to swap your own schedule.");
+    }
+
+    // check if there's a duplicate swap request
+    const existing_swap_request = await prisma.request.findFirst({
+      where: {
+        company_id: Number(logged_in_user["company_id"]),
+        user_id: Number(logged_in_user["user_id"]),
+        type: "SWAP",
+        status: "P",
+        swap_request: {
+          requester_user_id: Number(logged_in_user["user_id"]),
+          requester_schedule_id: Number(requester_schedule_id),
+          requested_user_id: Number(requested_user_id),
+          requested_schedule_id: Number(requested_schedule_id),
+        },
+      },
+    });
+
+    if(existing_swap_request) {
+      throw new ValidationError("There is already an existing request.");
+    }
+
+    const result = await prisma.request.create({
+      data: {
+        company_id: Number(logged_in_user["company_id"]),
+        user_id: Number(logged_in_user["user_id"]),
+        type: "SWAP",
+        status: "P",
+        created_by: user,
+        updated_by: user,
+        swap_request: {
+          create: {
+            reason: reason,
+            requester_user_id: Number(logged_in_user["user_id"]),
+            requester_schedule_id: Number(requester_schedule_id),
+            requested_user_id: Number(requested_user_id),
+            requested_schedule_id: Number(requested_schedule_id),
+          },
+        },
+      },
+    });
+
+    return res.status(200).json(generateResultJson(result));
+  } catch (error) {
+    console.error(error);
+    let message = "Error creating swap request. Please try again later.";
+    if(error instanceof ValidationError) {
+      message = error.message;
+    }
+    res.status(400).send(message);
   }
 });
 

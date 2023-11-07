@@ -1,4 +1,4 @@
-import { months } from "moment";
+import moment, { months } from "moment";
 import { IUserSchedule } from "../model/schedule.model";
 
 export const getUserSchedule = async (
@@ -142,7 +142,7 @@ export const getUserScheduleFromAndTo = async (
   companyId: number,
   userId: number,
   from: Date = new Date(),
-  to: Date,
+  to: Date
 ) => {
   let url = `/user-schedule/get-schedule-from-to/${companyId}/${userId}?from=${from.toISOString()}`;
   if (to) {
@@ -157,3 +157,28 @@ export const getUserScheduleFromAndTo = async (
     })
     .catch((err) => Promise.reject(err));
 };
+
+export const getAllUpcomingShiftSchedules = async (): Promise<any> => {
+  const url = `/user-schedule/all-upcoming-shift-schedules`;
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+};
+
+export const getAvailableShiftSchedulesForSwapping = async (shift: string|undefined, date: Date|undefined): Promise<any> => {
+  const url = `/user-schedule/available-shift-schedules-for-swapping?shift=${shift ? shift : ""}&date=${date ? moment(date).format('YYYY-MM-DD') : ""}`;
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+}

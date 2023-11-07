@@ -40,9 +40,13 @@ export interface ILeaveRequest {
 
 export interface ISwapRequest {
     request_id: number;
-    requester: IUser;
-    requester_schedule: IUserSchedule; 
-    requested_user: IUser; // employee who owns the requested shift
-    requested_schedule: IUserSchedule; 
+    requester_user_id: number; // employee who requested the shift
+    requester_schedule_id: number;
+    requested_user_id: number; // employee who owns the requested shift
+    requested_schedule_id: number;
     reason: string;
+    requester?: IUser;
+    requester_schedule?: IUserSchedule; 
+    requested_user?: IUser; // employee who owns the requested shift
+    requested_schedule?: IUserSchedule; 
 }

@@ -191,34 +191,38 @@ const SwapRequestDetails = ({ request }: ISwapRequestDetailsProps) => {
   return (
     <div className="grid gap-5">
       <LabeledField
-        id="request-swap-requestor"
-        labelValue="Requestor"
+        id="request-swap-requester"
+        labelValue="Requester"
         value={request.created_by}
       />
       <LabeledField
-        id="request-swap-requestor-shift-date"
-        labelValue="Requestor's Shift"
+        id="request-swap-requester-shift-date"
+        labelValue="Requester's Shift"
         value={
-          moment(request.swap_request?.requester_schedule.start_date)
+          moment(request.swap_request?.requester_schedule?.start_date)
             .toDate()
             .toLocaleDateString(DATE.LANGUAGE) +
-          `, ${moment(request.swap_request?.requester_schedule.start_date)
-            .toDate()
-            .toLocaleDateString(DATE.LANGUAGE, { weekday: "long" })}, ` +
-          request.swap_request?.requester_schedule.shift
+          `, ${moment(request.swap_request?.requester_schedule?.start_date)
+            .format("dddd")}, ` +
+          request.swap_request?.requester_schedule?.shift
         }
+      />
+      <LabeledField
+        id="request-swap-requested-user"
+        labelValue="User of Requested Shift"
+        value={request.swap_request?.requested_schedule?.user?.fullname}
       />
       <LabeledField
         id="request-swap-requested-shift-date"
         labelValue="Requested Shift"
         value={
-          moment(request.swap_request?.requested_schedule.start_date)
+          moment(request.swap_request?.requested_schedule?.start_date)
             .toDate()
             .toLocaleDateString(DATE.LANGUAGE) +
-          `, ${moment(request.swap_request?.requested_schedule.start_date)
+          `, ${moment(request.swap_request?.requested_schedule?.start_date)
             .toDate()
             .toLocaleDateString(DATE.LANGUAGE, { weekday: "long" })}, ` +
-          request.swap_request?.requested_schedule.shift
+          request.swap_request?.requested_schedule?.shift
         }
       />
       <LabeledField

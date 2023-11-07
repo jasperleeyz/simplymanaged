@@ -186,23 +186,19 @@ const Requests = () => {
                           <>
                             <p>
                               {`His/Her schedule: ${moment(
-                                request.swap_request?.requester_schedule
-                                  .start_date
+                                request.swap_request?.requester_schedule?.start_date
                               ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
-                                request.swap_request?.requester_schedule
-                                  .start_date
+                                request.swap_request?.requester_schedule?.start_date
                               ).format("dddd")},
-                            ${request.swap_request?.requester_schedule.shift}
+                            ${request.swap_request?.requester_schedule?.shift}
                           `}
                             </p>
                             <p>{`Your schedule: ${moment(
-                              request.swap_request?.requested_schedule
-                                .start_date
+                              request.swap_request?.requested_schedule?.start_date
                             ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
-                              request.swap_request?.requested_schedule
-                                .start_date
+                              request.swap_request?.requested_schedule?.start_date
                             ).format("dddd")},
-                            ${request.swap_request?.requested_schedule.shift}
+                            ${request.swap_request?.requested_schedule?.shift}s
                           `}</p>
                           </>
                         )}

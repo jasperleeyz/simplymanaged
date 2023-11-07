@@ -1,6 +1,7 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LeaveForm from "./leave-form";
+import SwapForm from "./swap-form";
 
 const AddOrEditRequest = () => {
   const location = useLocation();
@@ -12,7 +13,7 @@ const AddOrEditRequest = () => {
   return (
     (type && type === "leave") ? (<LeaveForm />) 
     : (type && type === "shift") ? (<></>) 
-    : type && type === "swap" ? (<></>) 
+    : type && type === "swap" ? (<SwapForm />) 
     : null
   );
 };

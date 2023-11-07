@@ -101,7 +101,6 @@ const Home = () => {
     });
 
     if (user?.role === ROLES.MANAGER && user?.department_in_charge) {
-      // TODO: retrieve requests pending approval
       getAllPendingRequestByDepartmentId(
         user?.department_id || 0,
         1,

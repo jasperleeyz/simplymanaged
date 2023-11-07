@@ -1,4 +1,4 @@
-import { ILeaveRequest, IRequest } from "../model/request.model";
+import { IBidRequest, ILeaveRequest, IRequest, ISwapRequest } from "../model/request.model";
 
 export const createLeaveRequest = async (
   companyId: number,
@@ -142,6 +142,21 @@ export const getRemainingLeaveBalance = async (
 
   return await fetch(url, {
     method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+};
+
+export const createSwapRequest = async (request: any): Promise<any> => {
+  const url = `/request/create-swap`;
+
+  console.log(request);
+  return await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(request),
   })
     .then((response) => {
       if (response.ok) return Promise.resolve(response.json());
