@@ -1,4 +1,4 @@
-import { LeaveRequest, PrismaClient, Request } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { sendApproveRejectRequestEmail } from "../utils/email";
@@ -9,66 +9,65 @@ export const requestRouter = express.Router();
 const prisma = new PrismaClient();
 
 const generateScheduleInfoForSwapRequest = async (swap_request: any) => {
-    const requester_schedule = await prisma.userSchedule.findFirst({
-      where: {
-        id: swap_request.requester_schedule_id,
-      },
-      select: {
-        id: true,
-        user_id: true,
-        shift: true,
-        start_date: true,
-        end_date: true,
-        // roster: {
-        //   select: {
-        //     id: true,
-        //     location: {
-        //       select: {
-        //         name: true,
-        //       },
-        //     },
-        //   },
-        // },
-      }
-    });
+  const requester_schedule = await prisma.userSchedule.findFirst({
+    where: {
+      id: swap_request.requester_schedule_id,
+    },
+    select: {
+      id: true,
+      user_id: true,
+      shift: true,
+      start_date: true,
+      end_date: true,
+      // roster: {
+      //   select: {
+      //     id: true,
+      //     location: {
+      //       select: {
+      //         name: true,
+      //       },
+      //     },
+      //   },
+      // },
+    },
+  });
 
-    const requested_schedule = await prisma.userSchedule.findFirst({
-      where: {
-        id: swap_request.requested_schedule_id,
-      },
-      select: {
-        id: true,
-        user_id: true,
-        shift: true,
-        start_date: true,
-        end_date: true,
-        roster: {
-          select: {
-            location_id: true,
-          },
+  const requested_schedule = await prisma.userSchedule.findFirst({
+    where: {
+      id: swap_request.requested_schedule_id,
+    },
+    select: {
+      id: true,
+      user_id: true,
+      shift: true,
+      start_date: true,
+      end_date: true,
+      roster: {
+        select: {
+          location_id: true,
         },
-        // roster: {
-        //   select: {
-        //     id: true,
-        //     location: {
-        //       select: {
-        //         name: true,
-        //       },
-        //     },
-        //   },
-        // },
-        user: {
-          select: {
-            fullname: true,
-          },
+      },
+      // roster: {
+      //   select: {
+      //     id: true,
+      //     location: {
+      //       select: {
+      //         name: true,
+      //       },
+      //     },
+      //   },
+      // },
+      user: {
+        select: {
+          fullname: true,
         },
-      }
-    });
+      },
+    },
+  });
 
-    swap_request.requester_schedule = requester_schedule;
-    swap_request.requested_schedule = requested_schedule;
-}
-
+  swap_request.requester_schedule = requester_schedule;
+  swap_request.requested_schedule = requested_schedule;
+};
 
 requestRouter.get("/personal-request", async (req, res) => {
   try {
@@ -91,14 +90,15 @@ requestRouter.get("/personal-request", async (req, res) => {
     };
 
     const requests = await prisma.$transaction([
-      prisma.request.count({where: findObject.where}),
+      prisma.request.count({ where: findObject.where }),
       prisma.request.findMany(findObject),
     ]);
 
     for (const request of requests[1]) {
       if ((request as any).leave_request) {
         (request as any).leave_request.attachment =
-          ((request as any).leave_request.attachment?.toString() as any) || null;
+          ((request as any).leave_request.attachment?.toString() as any) ||
+          null;
       }
 
       if ((request as any).swap_request) {
@@ -191,6 +191,157 @@ requestRouter.post("/create-leave/:companyId/:userId", async (req, res) => {
     return res
       .status(400)
       .send("Error creating leave request. Please try again later.");
+  }
+});
+
+requestRouter.get("/pending-request/manager", async (req, res) => {
+  try {
+    const { page, size, sort, filter } = req.query;
+    const logged_in_user = req.headers["x-access-user"] as any;
+    const company_id = logged_in_user["company_id"];
+    const user_id = logged_in_user["user_id"];
+
+    // retrieve logged in manager's profile
+    const manager = await prisma.user.findFirst({
+      where: {
+        id: Number(user_id),
+        company_id: Number(company_id),
+      },
+      include: {
+        department: {
+          include: {
+            employees: {
+              select: {
+                id: true,
+              },
+            },
+          },
+        },
+        department_in_charge: true,
+      },
+    });
+
+    const is_head_of_department = manager?.department_in_charge !== null;
+
+    const findObject = generateFindObject(page, size, sort, filter);
+
+    // for head-of-department, will have the ability to approve leave requests for all employees in the department,
+    // approve swap requests, and approve bid requests
+    if (is_head_of_department) {
+      findObject.where = {
+        OR: [
+          {
+            type: "SWAP",
+            swap_request: {
+              requested_user_id: Number(logged_in_user["user_id"]),
+            },
+          },
+          {
+            type: "BID",
+          },
+          {
+            type: "LEAVE",
+            user_id: {
+              in: manager?.department?.employees?.map(
+                (employee) => employee.id
+              ),
+            },
+          },
+        ],
+        AND: {
+          status: "P",
+          company_id: Number(company_id),
+        },
+      };
+    } else {
+      // for non-head-of-department, will only be able to approve swap and bid requests
+      findObject.where = {
+        OR: [
+          {
+            type: "SWAP",
+            swap_request: {
+              requested_user_id: Number(logged_in_user["user_id"]),
+            },
+          },
+          {
+            type: "BID",
+          },
+        ],
+        AND: {
+          status: "P",
+          company_id: Number(company_id),
+        },
+      };
+    }
+    findObject.include = {
+      leave_request: true,
+      swap_request: true,
+      bid_request: true,
+    };
+
+    const requests = await prisma.$transaction([
+      prisma.request.count({ where: findObject.where }),
+      prisma.request.findMany(findObject),
+    ]);
+
+    for (const request of requests[1]) {
+      if ((request as any).leave_request) {
+        (request as any).leave_request.attachment =
+          ((request as any).leave_request.attachment?.toString() as any) ||
+          null;
+      }
+
+      if ((request as any).swap_request) {
+        await generateScheduleInfoForSwapRequest((request as any).swap_request);
+      }
+    }
+
+    return res
+      .status(200)
+      .json(generateResultJson(requests[1], requests[0], page, size));
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send("Error getting pending requests");
+  }
+});
+
+requestRouter.get("/pending-request/employee", async (req, res) => {
+  try {
+    const { page, size, sort, filter } = req.query;
+    const logged_in_user = req.headers["x-access-user"] as any;
+    const company_id = logged_in_user["company_id"];
+
+    // for employee, will be able to approve swap requests only
+    const findObject = generateFindObject(page, size, sort, filter);
+    findObject.where = {
+      status: "P",
+      company_id: Number(company_id),
+      type: "SWAP",
+      swap_request: {
+        requested_user_id: Number(logged_in_user["user_id"]),
+      },
+    };
+    findObject.include = {
+      swap_request: true,
+    };
+
+    const requests = await prisma.$transaction([
+      prisma.request.count({ where: findObject.where }),
+      prisma.request.findMany(findObject),
+    ]);
+
+    for (const request of requests[1]) {
+      if ((request as any).swap_request) {
+        await generateScheduleInfoForSwapRequest((request as any).swap_request);
+      }
+    }
+
+    return res
+      .status(200)
+      .json(generateResultJson(requests[1], requests[0], page, size));
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send("Error getting pending requests");
   }
 });
 
@@ -339,29 +490,62 @@ requestRouter.post("/update", async (req, res) => {
     }
 
     if (swap_request) {
-      const { request_id: swap_request_id, ...swap_request_without_id } =
+      const { request_id: swap_request_id, requester_schedule, requested_schedule, ...swap_request_without_id } =
         swap_request;
 
-      result = await prisma.request.update({
-        where: {
-          id: Number(id),
-          company_id: Number(company_id),
-          user_id: Number(user_id),
-        },
-        data: {
-          type: type,
-          status: status,
-          updated_by: user,
-          swap_request: {
-            update: {
-              data: swap_request_without_id,
+      result = await prisma.$transaction(async (tx) => {
+
+        // check if its approved
+        if(status === "A") {
+          // swap the requests
+          // update requester schedule's user id to requested user id
+          await tx.userSchedule.update({
+            where: {
+              id: Number(swap_request_without_id.requester_schedule_id),
+              user_company_id: Number(company_id),
+              user_id: Number(swap_request_without_id.requester_user_id),
+            },
+            data: {
+              user_id: Number(swap_request_without_id.requested_user_id),
+            }
+          });
+
+          // update requested schedule's user id to requester user id
+          await tx.userSchedule.update({
+            where: {
+              id: Number(swap_request_without_id.requested_schedule_id),
+              user_company_id: Number(company_id),
+              user_id: Number(swap_request_without_id.requested_user_id),
+            },
+            data: {
+              user_id: Number(swap_request_without_id.requester_user_id),
+            }
+          });
+        }
+
+        // update request status
+        return await tx.request.update({
+          where: {
+            id: Number(id),
+            company_id: Number(company_id),
+            user_id: Number(user_id),
+          },
+          data: {
+            type: type,
+            status: status,
+            updated_by: user,
+            swap_request: {
+              update: {
+                data: swap_request_without_id,
+              },
             },
           },
-        },
-        include: { swap_request: true },
+          include: { swap_request: true },
+        });
       });
 
       updatedRequest = result;
+      await generateScheduleInfoForSwapRequest((updatedRequest as any).swap_request);
     }
 
     if (bid_request) {
@@ -400,7 +584,7 @@ requestRouter.post("/update", async (req, res) => {
         updatedRequest
       );
     }
-    
+
     return res.status(200).json(generateResultJson(result));
   } catch (err) {
     console.error(err);
@@ -424,7 +608,7 @@ requestRouter.get("/leave-balance", async (req, res) => {
       },
     });
 
-    if(!leave_balance) {
+    if (!leave_balance) {
       throw new Error("Leave balance not found");
     }
 
@@ -439,7 +623,7 @@ requestRouter.get("/leave-balance", async (req, res) => {
         },
         leave_request: {
           type: leave_type,
-        }
+        },
       },
       include: {
         leave_request: true,
@@ -464,14 +648,23 @@ requestRouter.post("/create-swap", async (req, res) => {
   try {
     const logged_in_user = req.headers["x-access-user"] as any;
     const user = logged_in_user["name"];
-    const { reason, requester_schedule_id, requested_user_id, requested_schedule_id } = req.body;
+    const {
+      reason,
+      requester_schedule_id,
+      requested_user_id,
+      requested_schedule_id,
+    } = req.body;
 
     // if(!reason || !requester_schedule_id || !requested_user_id || !requested_schedule_id) {
     //   throw new ValidationError("Required fields are missing.");
-    // } else 
+    // } else
     if (Number(requester_schedule_id) === Number(requested_schedule_id)) {
-      throw new ValidationError("Selected schedule is the same as your schedule.");
-    } else if (Number(requested_user_id) === Number(logged_in_user["user_id"])) {
+      throw new ValidationError(
+        "Selected schedule is the same as your schedule."
+      );
+    } else if (
+      Number(requested_user_id) === Number(logged_in_user["user_id"])
+    ) {
       throw new ValidationError("Not allowed to swap your own schedule.");
     }
 
@@ -491,7 +684,7 @@ requestRouter.post("/create-swap", async (req, res) => {
       },
     });
 
-    if(existing_swap_request) {
+    if (existing_swap_request) {
       throw new ValidationError("There is already an existing request.");
     }
 
@@ -519,7 +712,7 @@ requestRouter.post("/create-swap", async (req, res) => {
   } catch (error) {
     console.error(error);
     let message = "Error creating swap request. Please try again later.";
-    if(error instanceof ValidationError) {
+    if (error instanceof ValidationError) {
       message = error.message;
     }
     res.status(400).send(message);
@@ -542,10 +735,13 @@ requestRouter.get("/:requestId", async (req, res) => {
         (request.leave_request.attachment?.toString() as any) || null;
     }
 
+    if ((request as any).swap_request) {
+      await generateScheduleInfoForSwapRequest((request as any).swap_request);
+    }
+
     return res.status(200).json(generateResultJson(request));
   } catch (err) {
     console.error(err);
     return res.status(400).send("Error getting personal requests");
   }
 });
-

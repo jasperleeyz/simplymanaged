@@ -1,8 +1,8 @@
 "use strict";
 
-import { Request } from "@prisma/client";
 import AccountDetails from "../typings/account-details";
 import { DATE } from "./constants";
+import moment from "moment";
 
 const nodemailer = require("nodemailer");
 
@@ -154,30 +154,46 @@ export const sendApproveRejectRequestEmail = async (
         return type === "text"
           ? `
             Type: ${request.leave_request.type}
-            Start Date: ${request.leave_request.start_date.toLocaleDateString(DATE.LANGUAGE, DATE.DDMMYYYY_OPTION)}
-            End Date: ${request.leave_request.end_date.toLocaleDateString(DATE.LANGUAGE, DATE.DDMMYYYY_OPTION)}
+            Start Date: ${request.leave_request.start_date.toLocaleDateString(
+              DATE.LANGUAGE,
+              DATE.DDMMYYYY_OPTION
+            )}
+            End Date: ${request.leave_request.end_date.toLocaleDateString(
+              DATE.LANGUAGE,
+              DATE.DDMMYYYY_OPTION
+            )}
             Remarks: ${request.leave_request.remarks || "N/A"}
         `
           : `Type: <b>${
               request.leave_request.type
-            }</b><br/>Start Date: <b>${
-              request.leave_request.start_date.toLocaleDateString(DATE.LANGUAGE, DATE.DDMMYYYY_OPTION)
-            }</b><br/>End Date: <b>${
-              request.leave_request.end_date.toLocaleDateString(DATE.LANGUAGE, DATE.DDMMYYYY_OPTION)
-            }</b><br/>Remarks: <b>${
+            }</b><br/>Start Date: <b>${request.leave_request.start_date.toLocaleDateString(
+              DATE.LANGUAGE,
+              DATE.DDMMYYYY_OPTION
+            )}</b><br/>End Date: <b>${request.leave_request.end_date.toLocaleDateString(
+              DATE.LANGUAGE,
+              DATE.DDMMYYYY_OPTION
+            )}</b><br/>Remarks: <b>${
               request.leave_request.remarks || "N/A"
             }</b>`;
       } else if (requestType.toLowerCase() === "swap") {
         return type === "text"
           ? `
-            Your shift: ${request.swap_request.start_date}
-            Requested Shift: ${request.swap_request.end_date}
+            Your shift: ${moment(request.swap_request.requester_schedule.start_date).format(
+              "DD/MM/YYYY"
+            )}, ${request.swap_request.requester_schedule.shift}
+            Requested Shift: ${moment(
+              request.swap_request.requested_schedule.end_date
+            ).format("DD/MM/YYYY")}, ${request.swap_request.requested_schedule.shift}
             Reason: ${request.swap_request.reason || "N/A"}
         `
-          : `Your shift: <b>${
-              request.swap_request.start_date
-            }</b><br/>Requested Shift: <b>${
-              request.swap_request.end_date
+          : `Your shift: <b>${moment(
+              request.swap_request.requester_schedule.start_date
+            ).format("DD/MM/YYYY")}, ${
+              request.swap_request.requester_schedule.shift
+            }</b><br/>Requested Shift: <b>${moment(
+              request.swap_request.requested_schedule.end_date
+            ).format("DD/MM/YYYY")}, ${
+              request.swap_request.requested_schedule.shift
             }</b><br/>Reason: <b>${request.swap_request.reason || "N/A"}</b>`;
       } else if (requestType.toLowerCase() === "bid") {
         return type === "text"
@@ -195,22 +211,38 @@ export const sendApproveRejectRequestEmail = async (
       text: `
             Hi ${name},
 
-            Your ${requestType.toLowerCase()} request has been ${requestStatus === "A" ? "approved" : "rejected"}.
+            Your ${requestType.toLowerCase()} request has been ${
+        requestStatus === "A" ? "approved" : "rejected"
+      }.
 
             Your request details:
             Request Type: ${requestType}
             ${getAdditionalRequestDetails(requestType, "text")}
+            ${
+              requestStatus === "A" && requestType.toLowerCase() === "swap"
+                ? `
             
+            Please login to SimplyManaged and check for your updated schedule.
+            
+            `
+                : ""
+            }
             Best Regards,
             SimplyManaged Team`,
       html: `
         <div>
             <p>Hi <b>${name}</b>,</p>
-            <p>Your ${requestType.toLowerCase()} request has been <b>${requestStatus === "A" ? "approved" : "rejected"}</b>.</p>
+            <p>Your ${requestType.toLowerCase()} request has been <b>${
+        requestStatus === "A" ? "approved" : "rejected"
+      }</b>.</p>
             <p>Your request details:<br/>Request Type: <b>${requestType}</b><br/>${getAdditionalRequestDetails(
         requestType,
         "html"
-      )}</p>
+      )}</p>${
+        requestStatus === "A" && requestType.toLowerCase() === "swap"
+          ? `<p>Please login to SimplyManaged and check for your updated schedule.</p>`
+          : ""
+      }
             <br/>
             <p>Best Regards,<br/>SimplyManaged Team</p>
         </div>

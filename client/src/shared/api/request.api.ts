@@ -164,3 +164,79 @@ export const createSwapRequest = async (request: any): Promise<any> => {
     })
     .catch((err) => Promise.reject(err));
 };
+
+export const getAllRequestPendingManagerApproval = async (
+  page?: number,
+  size?: number,
+  sort?: string,
+  filter?: string
+) => {
+  let url = `/request/pending-request/manager`;
+
+  if (page || size || sort || filter) {
+    url += `?`;
+
+    if (page) {
+      url += `page=${page}&size=${size}&`;
+    }
+
+    if (sort) {
+      url += `sort=${sort}&`;
+    }
+
+    if (filter) {
+      url += `filter=${filter}&`;
+    }
+  }
+
+  if (url.endsWith("&")) {
+    url = url.slice(0, -1);
+  }
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+}
+
+export const getAllRequestPendingEmployeeApproval = async (
+  page?: number,
+  size?: number,
+  sort?: string,
+  filter?: string
+) => {
+  let url = `/request/pending-request/employee`;
+
+  if (page || size || sort || filter) {
+    url += `?`;
+
+    if (page) {
+      url += `page=${page}&size=${size}&`;
+    }
+
+    if (sort) {
+      url += `sort=${sort}&`;
+    }
+
+    if (filter) {
+      url += `filter=${filter}&`;
+    }
+  }
+
+  if (url.endsWith("&")) {
+    url = url.slice(0, -1);
+  }
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+}

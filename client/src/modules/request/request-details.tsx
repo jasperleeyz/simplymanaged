@@ -68,7 +68,7 @@ const RequestDetails = () => {
   return (
     <div id="request-details-main">
       <p className="header">Request Details</p>
-      <div className="mx-10">
+      <div className="md:mx-10">
         {request?.type?.toUpperCase() !== REQUEST.TYPE.SWAP && (
           <div className="grid gap-3 grid-cols-2">
             <LabeledField
@@ -91,7 +91,7 @@ const RequestDetails = () => {
               labelValue="Request Status"
               value={REQUEST.STATUS[request.status]}
             />
-            {request?.type?.toUpperCase() === REQUEST.TYPE.SWAP && (
+            {request?.type?.toUpperCase() === REQUEST.TYPE.BID && (
               <>
                 <LabeledField
                   id="request-shift-date"
@@ -210,36 +210,56 @@ interface ISwapRequestDetailsProps {
 
 const SwapRequestDetails = ({ request }: ISwapRequestDetailsProps) => {
   return (
-    <div className="grid gap-5">
+    <div className="grid grid-cols-2 gap-3">
       <LabeledField
-        id="request-swap-requestor"
-        labelValue="Requestor"
+        id="request-swap-requester"
+        labelValue="Requester"
         value={request.created_by}
       />
       <LabeledField
-        id="request-swap-requestor-shift-date"
-        labelValue="Requestor's Shift"
+        id="request-date"
+        labelValue="Request Date"
+        value={moment(request.created_date).toDate().toLocaleDateString()}
+      />
+      <LabeledField
+        id="request-type"
+        labelValue="Request Type"
+        value={request.type}
+      />
+      <LabeledField
+        id="request-status"
+        labelValue="Request Status"
+        value={REQUEST.STATUS[request.status]}
+      />
+      <LabeledField
+        id="request-swap-requester-shift-date"
+        labelValue="Requester's Shift"
         value={
-          moment(request.swap_request?.requester_schedule.start_date)
+          moment(request.swap_request?.requester_schedule?.start_date)
             .toDate()
             .toLocaleDateString(DATE.LANGUAGE) +
-          `, ${moment(request.swap_request?.requester_schedule.start_date)
-            .toDate()
-            .toLocaleDateString(DATE.LANGUAGE, { weekday: "long" })}, ` +
-          request.swap_request?.requester_schedule.shift
+          `, ${moment(
+            request.swap_request?.requester_schedule?.start_date
+          ).format("dddd")}, ` +
+          request.swap_request?.requester_schedule?.shift
         }
+      />
+      <LabeledField
+        id="request-swap-requested-user"
+        labelValue="User of Requested Shift"
+        value={request.swap_request?.requested_schedule?.user?.fullname}
       />
       <LabeledField
         id="request-swap-requested-shift-date"
         labelValue="Requested Shift"
         value={
-          moment(request.swap_request?.requested_schedule.start_date)
+          moment(request.swap_request?.requested_schedule?.start_date)
             .toDate()
             .toLocaleDateString(DATE.LANGUAGE) +
-          `, ${moment(request.swap_request?.requested_schedule.start_date)
+          `, ${moment(request.swap_request?.requested_schedule?.start_date)
             .toDate()
             .toLocaleDateString(DATE.LANGUAGE, { weekday: "long" })}, ` +
-          request.swap_request?.requested_schedule.shift
+          request.swap_request?.requested_schedule?.shift
         }
       />
       <LabeledField

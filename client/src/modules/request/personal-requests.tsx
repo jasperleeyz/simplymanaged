@@ -1,4 +1,4 @@
-import { Button, Table } from "flowbite-react";
+import { Button, Spinner, Table } from "flowbite-react";
 import React from "react";
 import { IRequest } from "../../shared/model/request.model";
 import { DATE, PATHS, REQUEST } from "../../configs/constants";
@@ -6,9 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { getPersonalRequests } from "../../shared/api/request.api";
 import { toast } from "react-toastify";
 import moment from "moment";
-import { ICompanyCode } from "../../shared/model/company.model";
-import { getAllCompanyCodes } from "../../shared/api/company-code.api";
-import { GlobalStateContext } from "../../configs/global-state-provider";
 
 interface IProps {
   page: number;
@@ -21,9 +18,11 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
   const [personalRequests, setPersonalRequests] = React.useState<IRequest[]>(
     []
   );
+  const [requestLoading, setRequestLoading] = React.useState<boolean>(false);
   // const [leaveTypeList, setLeaveTypeList] = React.useState<ICompanyCode[]>([]);
 
   React.useEffect(() => {
+    setRequestLoading(true);
     Promise.all([
       getPersonalRequests(page, sizePerPage, undefined, undefined).then(
         (res) => {
@@ -39,10 +38,14 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
       // ).then((res) => {
       //   setLeaveTypeList(res.data);
       // }),
-    ]).catch((err) => {
-      toast.error("Error retrieving requests. Please try again later");
-    });
-  }, []);
+    ])
+      .catch((err) => {
+        toast.error("Error retrieving requests. Please try again later");
+      })
+      .finally(() => {
+        setRequestLoading(false);
+      });
+  }, [page, sizePerPage]);
 
   return (
     <Table striped>
@@ -53,7 +56,13 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
         <Table.HeadCell></Table.HeadCell>
       </Table.Head>
       <Table.Body>
-        {personalRequests && personalRequests.length > 0 ? (
+        {requestLoading ? (
+          <Table.Row>
+            <Table.Cell align="center" colSpan={4}>
+              <Spinner />
+            </Table.Cell>
+          </Table.Row>
+        ) : personalRequests && personalRequests.length > 0 ? (
           personalRequests.map((request, idx) => (
             <Table.Row key={idx}>
               <Table.Cell>{request.type}</Table.Cell>

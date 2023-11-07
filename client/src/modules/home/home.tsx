@@ -10,7 +10,11 @@ import { toast } from "react-toastify";
 import { IUserSchedule } from "../../shared/model/schedule.model";
 import { getUserScheduleFromAndTo } from "../../shared/api/user-schedule.api";
 import moment from "moment";
-import { getAllPendingRequestByDepartmentId, getPersonalRequests } from "../../shared/api/request.api";
+import {
+  getAllRequestPendingEmployeeApproval,
+  getAllRequestPendingManagerApproval,
+  getPersonalRequests,
+} from "../../shared/api/request.api";
 import { IRequest } from "../../shared/model/request.model";
 
 const Home = () => {
@@ -91,32 +95,48 @@ const Home = () => {
       ).then((res) => {
         setScheduleForTheWeek(res.data);
       }),
-      getPersonalRequests(1, 5, undefined, `equals(status,${REQUEST.STATUS.PENDING})`).then((res) => {
+      getPersonalRequests(
+        1,
+        5,
+        undefined,
+        `equals(status,${REQUEST.STATUS.PENDING})`
+      ).then((res) => {
         setPendingRequests(res.data);
       }),
+      user?.role === ROLES.MANAGER
+        ? getAllRequestPendingManagerApproval(1, 5, "asc(created_date)").then(
+            (res) => {
+              setRequestsPendingMyApproval(res.data);
+            }
+          )
+        : getAllRequestPendingEmployeeApproval(1, 5, "asc(created_date)").then(
+            (res) => {
+              setRequestsPendingMyApproval(res.data);
+            }
+          ),
     ]).catch((err) => {
       toast.error("Error retrieving information. Please try again later.", {
         toastId: "home",
       });
     });
 
-    if (user?.role === ROLES.MANAGER && user?.department_in_charge) {
-      getAllPendingRequestByDepartmentId(
-        user?.department_id || 0,
-        1,
-        5,
-        undefined,
-        "in(type,[leave,bid]"
-      )
-        .then((res) => {
-          setRequestsPendingMyApproval(res.data);
-        })
-        .catch((err) => {
-          toast.error("Error retrieving information. Please try again later.", {
-            toastId: "home",
-          });
-        });
-    }
+    // if (user?.role === ROLES.MANAGER) {
+    //   getAllPendingRequestByDepartmentId(
+    //     user?.department_id || 0,
+    //     1,
+    //     5,
+    //     undefined,
+    //     "in(type,[leave,bid]"
+    //   )
+    //     .then((res) => {
+    //       setRequestsPendingMyApproval(res.data);
+    //     })
+    //     .catch((err) => {
+    //       toast.error("Error retrieving information. Please try again later.", {
+    //         toastId: "home",
+    //       });
+    //     });
+    // }
   }, []);
 
   return (
@@ -146,8 +166,8 @@ const Home = () => {
                 <p className="sub-header">Upcoming Schedules</p>
                 <Card>
                   {scheduleForTheWeek &&
-                  scheduleForTheWeek.filter((s) => s.status === "")
-                    .length > 0 ? (
+                  scheduleForTheWeek.filter((s) => s.status === "").length >
+                    0 ? (
                     scheduleForTheWeek
                       .filter((s) => s.status === "")
                       .map((shift, idx) => (
@@ -174,22 +194,20 @@ const Home = () => {
                   )}
                 </Card>
               </div>
-              {user?.role === ROLES.MANAGER && user?.department_in_charge ? (
-                <div>
-                  <p className="sub-header">Requests Pending Your Approval</p>
-                  <Card>
-                    {requestsPendingMyApproval &&
-                    requestsPendingMyApproval.length > 0 ? (
-                      <PendingRequestComponent
-                        requests={requestsPendingMyApproval}
-                        personalRequest={false}
-                      />
-                    ) : (
-                      <p>No pending requests found</p>
-                    )}
-                  </Card>
-                </div>
-              ) : null}
+              <div>
+                <p className="sub-header">Requests Pending Your Approval</p>
+                <Card>
+                  {requestsPendingMyApproval &&
+                  requestsPendingMyApproval.length > 0 ? (
+                    <PendingRequestComponent
+                      requests={requestsPendingMyApproval}
+                      personalRequest={false}
+                    />
+                  ) : (
+                    <p>No pending requests found</p>
+                  )}
+                </Card>
+              </div>
             </div>
           </>
         )}

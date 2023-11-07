@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Pagination, Table } from "flowbite-react";
+import { Button, Pagination, Spinner, Table } from "flowbite-react";
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { IRequest } from "../../shared/model/request.model";
@@ -12,8 +12,8 @@ import { toast } from "react-toastify";
 import { HiCalendar } from "react-icons/hi";
 import PersonalRequests from "./personal-requests";
 import {
-  getAllPendingRequestByDepartmentId,
-  getPersonalRequests,
+  getAllRequestPendingEmployeeApproval,
+  getAllRequestPendingManagerApproval,
   updateRequest,
 } from "../../shared/api/request.api";
 import moment from "moment";
@@ -37,22 +37,22 @@ const Requests = () => {
     return sp;
   });
   const [totalPages, setTotalPages] = React.useState(1);
-  const [requests, setRequests] = React.useState<IRequest[]>([]);
+  const [requestList, setRequestList] = React.useState<IRequest[]>([]);
 
   const [isPersonal, setIsPersonal] = React.useState(() => {
-    if (globalState?.user?.role === ROLES.EMPLOYEE) return true;
     const ip = history.state["isPersonal"];
     if (!ip) return false;
     return ip;
   });
 
+  const [requestLoading, setRequestLoading] = React.useState<boolean>(false);
   const [actionLoading, setActionLoading] = React.useState<ILoading[]>([]);
 
   const updateStatus = (req: IRequest, status: string) => {
     setActionLoading((prev) => [...prev, { id: req.id, status }]);
     updateRequest({ ...req, status })
       .then((res) => {
-        setRequests((prev) =>
+        setRequestList((prev) =>
           prev.map((r) => (r.id === req.id ? res.data : r))
         );
         toast.success(
@@ -73,38 +73,43 @@ const Requests = () => {
 
   // load initial request data from api
   React.useEffect(() => {
+    setRequestLoading((prev) => true);
     // get requests
-    if (isPersonal) {
-      // get personal requests
-      getPersonalRequests(
-        currentPage,
-        sizePerPage,
-        "desc(created_date)",
-        undefined
-      )
-        .then((res) => {
-          setRequests(res.data);
-          setTotalPages(res.totalPages);
-        })
-        .catch((err) => {
-          toast.error("Error retrieving requests. Please try again later.");
-        });
-    } else {
-      // get department's requests pending approval
-      getAllPendingRequestByDepartmentId(
-        globalState?.user?.department_id || 0,
-        currentPage,
-        sizePerPage,
-        "asc(created_date)",
-        `in(type,[${REQUEST.TYPE.BID},${REQUEST.TYPE.LEAVE}])`
-      )
-        .then((res) => {
-          setRequests(res.data);
-          setTotalPages(res.totalPages);
-        })
-        .catch((err) => {
-          toast.error("Error retrieving requests. Please try again later.");
-        });
+    if (!isPersonal) {
+      if (globalState?.user?.role === ROLES.MANAGER) {
+        // get swap and bid requests pending manager approval,
+        // additionally get leave requests pending head of department approval if manager is head of department
+        getAllRequestPendingManagerApproval(
+          currentPage,
+          sizePerPage,
+          "asc(created_date)",
+          undefined
+        )
+          .then((res) => {
+            setRequestList(res.data);
+            setTotalPages(res.totalPages);
+          })
+          .catch((err) => {
+            toast.error("Error retrieving requests. Please try again later.");
+          })
+          .finally(() => setRequestLoading((prev) => false));
+      } else {
+        // get swap requests pending approval
+        getAllRequestPendingEmployeeApproval(
+          currentPage,
+          sizePerPage,
+          "asc(created_date)",
+          undefined
+        )
+          .then((res) => {
+            setRequestList(res.data);
+            setTotalPages(res.totalPages);
+          })
+          .catch((err) => {
+            toast.error("Error retrieving requests. Please try again later.");
+          })
+          .finally(() => setRequestLoading((prev) => false));
+      }
     }
 
     history.replaceState({ isPersonal, currentPage, sizePerPage }, "");
@@ -114,30 +119,23 @@ const Requests = () => {
     <div id="request-main">
       <p className="header">{isPersonal ? `My ` : ""}Requests</p>
       <div className="flex justify-end mb-3 gap-2">
-        {globalState?.user?.role === ROLES.MANAGER &&
-        globalState?.user?.department_in_charge ? (
-          <Button
-            size="sm"
-            onClick={() => {
-              setIsPersonal((prev) => !prev);
-            }}
-          >
-            <p>View {isPersonal ? `Pending Approval` : `Personal`} Requests</p>
-          </Button>
-        ) : null}
-        {/* {isPersonal ? ( */}
-        <>
-          <Button
-            size="sm"
-            onClick={() => {
-              navigate(`./${PATHS.ADD_LEAVE_REQUEST}`);
-            }}
-          >
-            <HiCalendar className="mr-2 my-auto" />
-            <p>Apply Leave</p>
-          </Button>
-        </>
-        {/* ) : null} */}
+        <Button
+          size="sm"
+          onClick={() => {
+            setIsPersonal((prev) => !prev);
+          }}
+        >
+          <p>View {isPersonal ? `Pending Approval` : `Personal`} Requests</p>
+        </Button>
+        <Button
+          size="sm"
+          onClick={() => {
+            navigate(`./${PATHS.ADD_LEAVE_REQUEST}`);
+          }}
+        >
+          <HiCalendar className="mr-2 my-auto" />
+          <p>Apply Leave</p>
+        </Button>
       </div>
       <div className="overflow-x-auto">
         {isPersonal ? (
@@ -152,124 +150,153 @@ const Requests = () => {
               <Table.HeadCell></Table.HeadCell>
             </Table.Head>
             <Table.Body>
-              {requests &&
-              requests.filter((req) => req.status === REQUEST.STATUS.PENDING)
-                .length > 0 ? (
-                requests
-                  .filter((req) => req.status === REQUEST.STATUS.PENDING)
-                  .map((request, idx) => (
-                    <Table.Row key={idx}>
-                      <Table.Cell>{request.created_by}</Table.Cell>
-                      <Table.Cell>
-                        {request.type.toUpperCase() === REQUEST.TYPE.LEAVE ? (
-                          <>
-                            <p>
-                              {`${moment(
-                                request.leave_request?.start_date
-                              ).format(DATE.MOMENT_DDMMYYYY)}`}{" "}
-                              to{" "}
-                              {`${moment(
-                                request.leave_request?.end_date
-                              ).format(DATE.MOMENT_DDMMYYYY)}`}
-                            </p>
-                            {request.leave_request?.half_day && (
-                              <p>{`Half-day?: ${request.leave_request?.half_day}`}</p>
-                            )}
-                          </>
-                        ) : request.type.toUpperCase() === REQUEST.TYPE.BID ? (
-                          <p>
-                            {`${moment(request.bid_request?.start_date).format(
-                              DATE.MOMENT_DDMMYYYY
-                            )}, ${request.bid_request?.shift} Shift`}
-                          </p>
-                        ) : (
-                          <>
-                            <p>
-                              {`His/Her schedule: ${moment(
-                                request.swap_request?.requester_schedule?.start_date
-                              ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
-                                request.swap_request?.requester_schedule?.start_date
-                              ).format("dddd")},
-                            ${request.swap_request?.requester_schedule?.shift}
-                          `}
-                            </p>
-                            <p>{`Your schedule: ${moment(
-                              request.swap_request?.requested_schedule?.start_date
-                            ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
-                              request.swap_request?.requested_schedule?.start_date
-                            ).format("dddd")},
-                            ${request.swap_request?.requested_schedule?.shift}s
-                          `}</p>
-                          </>
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>{request.type}</Table.Cell>
-                      <Table.Cell>{REQUEST.STATUS[request.status]}</Table.Cell>
-                      <Table.Cell>
-                        <div className="flex gap-2 items-center justify-center">
-                          <Button
-                            size="sm"
-                            disabled={
-                              actionLoading.find(
-                                (val) => val.id === request.id
-                              ) !== undefined
-                            }
-                            onClick={() => {
-                              navigate(`./${PATHS.VIEW_REQUEST}/${request.id}`);
-                            }}
-                          >
-                            View
-                          </Button>
-                          {request.status === REQUEST.STATUS.PENDING && (
-                            <>
-                              <ApproveButton
-                                size="sm"
-                                disabled={
-                                  actionLoading.find(
-                                    (val) => val.id === request.id
-                                  ) !== undefined
-                                }
-                                isProcessing={
-                                  actionLoading.find(
-                                    (val) =>
-                                      val.id === request.id &&
-                                      val.status === REQUEST.STATUS.APPROVED
-                                  ) !== undefined
-                                }
-                                onClick={() =>
-                                  updateStatus(request, REQUEST.STATUS.APPROVED)
-                                }
-                              />
-                              <RejectButton
-                                size="sm"
-                                disabled={
-                                  actionLoading.find(
-                                    (val) => val.id === request.id
-                                  ) !== undefined
-                                }
-                                isProcessing={
-                                  actionLoading.find(
-                                    (val) =>
-                                      val.id === request.id &&
-                                      val.status === REQUEST.STATUS.REJECTED
-                                  ) !== undefined
-                                }
-                                onClick={() =>
-                                  updateStatus(request, REQUEST.STATUS.REJECTED)
-                                }
-                              />
-                            </>
-                          )}
-                        </div>
-                      </Table.Cell>
-                    </Table.Row>
-                  ))
-              ) : (
+              {requestLoading ? (
                 <Table.Row>
-                  <Table.Cell align="center" colSpan={4}>
-                    No results
+                  <Table.Cell align="center" colSpan={5}>
+                    <Spinner />
                   </Table.Cell>
                 </Table.Row>
+              ) : (
+                <>
+                  {requestList &&
+                  requestList.filter(
+                    (req) => req.status === REQUEST.STATUS.PENDING
+                  ).length > 0 ? (
+                    requestList
+                      .filter((req) => req.status === REQUEST.STATUS.PENDING)
+                      .map((request, idx) => (
+                        <Table.Row key={idx}>
+                          <Table.Cell>{request.created_by}</Table.Cell>
+                          <Table.Cell>
+                            {request.type.toUpperCase() ===
+                            REQUEST.TYPE.LEAVE ? (
+                              <>
+                                <p>
+                                  {`${moment(
+                                    request.leave_request?.start_date
+                                  ).format(DATE.MOMENT_DDMMYYYY)}`}{" "}
+                                  to{" "}
+                                  {`${moment(
+                                    request.leave_request?.end_date
+                                  ).format(DATE.MOMENT_DDMMYYYY)}`}
+                                </p>
+                                {request.leave_request?.half_day && (
+                                  <p>{`Half-day?: ${request.leave_request?.half_day}`}</p>
+                                )}
+                              </>
+                            ) : request.type.toUpperCase() ===
+                              REQUEST.TYPE.BID ? (
+                              <p>
+                                {`${moment(
+                                  request.bid_request?.start_date
+                                ).format(DATE.MOMENT_DDMMYYYY)}, ${
+                                  request.bid_request?.shift
+                                } Shift`}
+                              </p>
+                            ) : (
+                              <>
+                                <p>
+                                  {`His/Her schedule: ${moment(
+                                    request.swap_request?.requester_schedule
+                                      ?.start_date
+                                  ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
+                                    request.swap_request?.requester_schedule
+                                      ?.start_date
+                                  ).format("dddd")},
+                            ${request.swap_request?.requester_schedule?.shift}
+                          `}
+                                </p>
+                                <p>{`Your schedule: ${moment(
+                                  request.swap_request?.requested_schedule
+                                    ?.start_date
+                                ).format(DATE.MOMENT_DDMMYYYY)}, ${moment(
+                                  request.swap_request?.requested_schedule
+                                    ?.start_date
+                                ).format("dddd")},
+                            ${request.swap_request?.requested_schedule?.shift}
+                          `}</p>
+                              </>
+                            )}
+                          </Table.Cell>
+                          <Table.Cell>{request.type}</Table.Cell>
+                          <Table.Cell>
+                            {REQUEST.STATUS[request.status]}
+                          </Table.Cell>
+                          <Table.Cell>
+                            <div className="flex gap-2 items-center justify-center">
+                              <Button
+                                size="sm"
+                                disabled={
+                                  actionLoading.find(
+                                    (val) => val.id === request.id
+                                  ) !== undefined
+                                }
+                                onClick={() => {
+                                  navigate(
+                                    `./${PATHS.VIEW_REQUEST}/${request.id}`
+                                  );
+                                }}
+                              >
+                                View
+                              </Button>
+                              {request.status === REQUEST.STATUS.PENDING && (
+                                <>
+                                  <ApproveButton
+                                    size="sm"
+                                    disabled={
+                                      actionLoading.find(
+                                        (val) => val.id === request.id
+                                      ) !== undefined
+                                    }
+                                    isProcessing={
+                                      actionLoading.find(
+                                        (val) =>
+                                          val.id === request.id &&
+                                          val.status === REQUEST.STATUS.APPROVED
+                                      ) !== undefined
+                                    }
+                                    onClick={() =>
+                                      updateStatus(
+                                        request,
+                                        REQUEST.STATUS.APPROVED
+                                      )
+                                    }
+                                  />
+                                  <RejectButton
+                                    size="sm"
+                                    disabled={
+                                      actionLoading.find(
+                                        (val) => val.id === request.id
+                                      ) !== undefined
+                                    }
+                                    isProcessing={
+                                      actionLoading.find(
+                                        (val) =>
+                                          val.id === request.id &&
+                                          val.status === REQUEST.STATUS.REJECTED
+                                      ) !== undefined
+                                    }
+                                    onClick={() =>
+                                      updateStatus(
+                                        request,
+                                        REQUEST.STATUS.REJECTED
+                                      )
+                                    }
+                                  />
+                                </>
+                              )}
+                            </div>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))
+                  ) : (
+                    <Table.Row>
+                      <Table.Cell align="center" colSpan={5}>
+                        No results
+                      </Table.Cell>
+                    </Table.Row>
+                  )}
+                </>
               )}
             </Table.Body>
           </Table>
