@@ -25,6 +25,7 @@ const ShowRosterTemplateModal = (props: IProps) => {
   const [loading, setLoading] =
     React.useState(false);
   useEffect(() => {
+    if(showConfirmationModal == false){
     setLoading((prev) => true);
     getRosterTemplate(globalState?.user?.company_id || 0)
       .then((res) => {
@@ -33,6 +34,7 @@ const ShowRosterTemplateModal = (props: IProps) => {
       .finally(() => {
         setLoading((prev) => false);
       });
+    }
   }, [props.showRosterTemplateModal, showConfirmationModal]);
 
   const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();

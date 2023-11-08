@@ -26,6 +26,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
   }>({});
   const [showConfirmationModal, setShowConfirmationModal] =
     React.useState(false);
+
   useEffect(() => {
     getAllEmployees(globalState?.user?.company_id || 0)
       .then((res) => {
@@ -37,7 +38,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
         setTemplatePositions(templatePosition);
       })
       .finally(() => {});
-  }, []);
+  }, [props.createRosterTemplateModal]);
 
   const [rosterTemplate, setRosterTemplate] = React.useState<IRosterTemplate>({
     company_id: globalState?.user?.company_id || 0,
@@ -61,7 +62,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
       positions: [],
     }));
     setPositionSelectedCount([]);
-  }, []);
+  }, [props.createRosterTemplateModal]);
 
   const [positionSelectedCount, setPositionSelectedCount] = React.useState({});
 
@@ -113,6 +114,17 @@ const CreateRosterTemplateModal = (props: IProps) => {
       }));
     }
   };
+
+  const [submitLoading, setSubmitLoading] = React.useState(false);
+  useEffect(() => {
+    if(submitLoading){
+      createRosterTemplate(rosterTemplate).finally(()=>{
+        toast.success("Template create successfully");
+        setShowConfirmationModal(false);
+        props.setCreateRosterTemplateModal((prev) => false);
+      })
+    }
+  }, [submitLoading]);
 
   return (
     <div>
@@ -171,9 +183,10 @@ const CreateRosterTemplateModal = (props: IProps) => {
             <Label
               className="mr-2 text-l"
               htmlFor="shift-template"
-              value="Shfit-Based"
+              value="Shfit"
             />
             <Checkbox
+              className="flex w-10 h-10"
               value={rosterTemplate.roster_type}
               checked={rosterTemplate.roster_type == "SHIFT"}
               onChange={() => {
@@ -238,13 +251,9 @@ const CreateRosterTemplateModal = (props: IProps) => {
               color="success"
               className="w-full mr-3"
               size="sm"
+              disabled={submitLoading}
               onClick={() => {
-                if (rosterTemplate) {
-                  createRosterTemplate(rosterTemplate);
-                  toast.success("Template create successfully");
-                  setShowConfirmationModal(false);
-                  props.setCreateRosterTemplateModal((prev) => false);
-                }
+                setSubmitLoading(true)
               }}
             >
               Yes

@@ -193,7 +193,7 @@ const AddSchedule = () => {
         key={idx}
         className="bg-white dark:border-gray-700 dark:bg-gray-800"
       >
-        <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+        <Table.Cell style={{ height: '73px' }} className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
           {emp.fullname}
         </Table.Cell>
         <Table.Cell>
@@ -247,21 +247,24 @@ const AddSchedule = () => {
               <Table.Head>
                 <Table.HeadCell>Employee</Table.HeadCell>
                 <Table.HeadCell>Position</Table.HeadCell>
-                <Table.HeadCell className="text-center">Shift</Table.HeadCell>
+                {scheduleDetailsState.type === "SHIFT" && (
+  <Table.HeadCell className="text-center">Shift</Table.HeadCell>
+)}
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y">
                 {scheduleDetailsState.employees.map((emp, idx) => (
                   <Table.Row
                     key={idx}
-                    className="bg-white dark:border-gray-700 dark.bg-gray-800"
+                    style={{ height: '73px' }} className="bg-white dark:border-gray-700 dark.bg-gray-800"
                   >
-                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
+                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white" >
                       {emp.fullname}
                     </Table.Cell>
                     <Table.Cell>
                       <label>{emp.position}</label>
                     </Table.Cell>
+                    {scheduleDetailsState.type === "SHIFT" && (
                     <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
                       <table>
                         <tbody>
@@ -302,6 +305,7 @@ const AddSchedule = () => {
                         </tbody>
                       </table>
                     </Table.Cell>
+                    )}
                   </Table.Row>
                 ))}
               </Table.Body>
@@ -345,55 +349,29 @@ const AddSchedule = () => {
           </div>
         </Modal.Body>
         <Modal.Footer>
-  <Label
-    className="mr-2 text-l"
-    htmlFor="shift-template"
-    value="Shift-Based"
-  />
-  <Checkbox
-    value={scheduleDetailsState.type}
-    checked={scheduleDetailsState.type === "SHIFT"}
-    onChange={() => {
-      if (scheduleDetailsState.type === "SHIFT") {
-        setScheduleDetailsState((prev) => ({
-          ...prev,
-          type: "PROJECT",
-        }));
-      } else {
-        setScheduleDetailsState((prev) => ({
-          ...prev,
-          type: "SHIFT",
-        }));
-      }
-    }}
-  />
-  <div className="w-full md:w-1/2 ms-auto flex">
-    <Button
-      color="success"
-      className="w-full mr-3"
-      size="sm"
-      onClick={() => {
-        setSubmitLoading(true)
-      }}
-      disabled={
-        submitLoading
-      }
-    >
-      Yes
-    </Button>
-    <Button
-      color="failure"
-      className="w-full"
-      size="sm"
-      onClick={() => setShowSubmitModal(false)}
-      disabled={
-        submitLoading
-      }
-    >
-      No
-    </Button>
-  </div>
-</Modal.Footer>
+          <div className="w-full md:w-1/2 ms-auto flex">
+            <Button
+              color="success"
+              className="w-full mr-3"
+              size="sm"
+              onClick={() => {
+                setSubmitLoading(true);
+              }}
+              disabled={submitLoading}
+            >
+              Yes
+            </Button>
+            <Button
+              color="failure"
+              className="w-full"
+              size="sm"
+              onClick={() => setShowSubmitModal(false)}
+              disabled={submitLoading}
+            >
+              No
+            </Button>
+          </div>
+        </Modal.Footer>
       </Modal>
     );
   };
@@ -401,18 +379,15 @@ const AddSchedule = () => {
   const [submitLoading, setSubmitLoading] = React.useState(false);
 
   useEffect(() => {
-    if(submitLoading)
-    {
+    if (submitLoading) {
       createRoster(scheduleDetailsState).finally(() => {
-        setSubmitLoading(false)
-        setShowSubmitModal(false)
-        toast.success('Roster created')
+        setSubmitLoading(false);
+        setShowSubmitModal(false);
+        toast.success("Roster created");
         navigate(`/${PATHS.SCHEDULE}`, { replace: true });
-      })
+      });
     }
-  }, [
-    submitLoading
-  ]);
+  }, [submitLoading]);
 
   const autoAssignModal = () => {
     const [positionCount, setPositionCount] = useState({});
@@ -902,8 +877,29 @@ const AddSchedule = () => {
               }}
             />
           </div>
+          <div className="mr-5 text-center">
+            <Label htmlFor="Shift" value="Shift" />
+            <Checkbox
+              className="flex w-10 h-10" 
+              value={scheduleDetailsState.type}
+            checked={scheduleDetailsState.type === "SHIFT"}
+            onChange={() => {
+              if (scheduleDetailsState.type === "SHIFT") {
+                setScheduleDetailsState((prev) => ({
+                  ...prev,
+                  type: "PROJECT",
+                }));
+              } else {
+                setScheduleDetailsState((prev) => ({
+                  ...prev,
+                  type: "SHIFT",
+                }));
+              }
+            }}
+            />
+          </div>
           {templateList.length > 0 && (
-            <div className="mr-5">
+            <div style={{ marginLeft: 'auto' }}>
               <Label htmlFor="employees-template" value="Template" />
               <Select
                 onChange={(e) => {
@@ -946,33 +942,34 @@ const AddSchedule = () => {
               />
             </div>
           </div>
-          <div id="people-section" className="overflow-x-auto flex">
-            <div className = "my-10">
-            <Table theme={customTableTheme}>
-              <Table.Head>
-                <Table.HeadCell>Employee</Table.HeadCell>
-                <Table.HeadCell>Position</Table.HeadCell>
-                <Table.HeadCell></Table.HeadCell>
-              </Table.Head>
-              <Table.Body className="divide-y">
-                {loading ? (
-                  <Table.Row>
-                    <Table.Cell colSpan={6} className="text-center">
-                      <Spinner size="xl" />
-                    </Table.Cell>
-                  </Table.Row>
-                ) : (
-                  generateEmployeeList()
-                )}
-              </Table.Body>
-            </Table>
+          <div id="people-section" className="overflow-x-auto flex" >
+            <div className="my-10 ">
+              <Table theme={customTableTheme}>
+                <Table.Head>
+                  <Table.HeadCell>Employee</Table.HeadCell>
+                  <Table.HeadCell>Position</Table.HeadCell>
+                  <Table.HeadCell></Table.HeadCell>
+                </Table.Head>
+                <Table.Body className="divide-y">
+                  {loading ? (
+                    <Table.Row>
+                      <Table.Cell colSpan={6} className="text-center">
+                        <Spinner size="xl" />
+                      </Table.Cell>
+                    </Table.Row>
+                  ) : (
+                    generateEmployeeList()
+                  )}
+                </Table.Body>
+              </Table>
             </div>
             <div className = "mx-20">
             {generateSelectedEmployeeList()}
             </div>
-
+          
           </div>
-          <div className="mx-10">
+          <div className="flex">
+          <div className="mx-20">
             <Pagination
               currentPage={currentPage}
               // layout="pagination"
@@ -982,6 +979,18 @@ const AddSchedule = () => {
               showIcons
               totalPages={totalPages}
             />
+          </div>
+          <div className="mx-80">
+            <Pagination
+              currentPage={currentPage}
+              // layout="pagination"
+              onPageChange={(page) => {
+                setCurrentPage(page);
+              }}
+              showIcons
+              totalPages={totalPages}
+            />
+          </div>
           </div>
         </div>
         {/*

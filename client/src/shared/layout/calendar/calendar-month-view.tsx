@@ -75,7 +75,7 @@ const CalendarMonthView = ({
         .then((res) => {
           setScheduleList(res.data);
         })
-        .finally(() => {});
+        .finally(() => {setLoading((prev) => false);});
     } else {
       getRosterFromAndTo(globalState?.user?.company_id || 0, from, to)
         .then((res) => {
