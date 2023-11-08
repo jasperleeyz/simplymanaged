@@ -32,6 +32,7 @@ export const PATHS = {
 
   MY_PROFILE: "my-profile",
   EDIT_PROFILE: "edit",
+  CHANGE_PASSWORD: "change-password",
 
   REQUESTS: "requests",
   VIEW_REQUEST: "view",
