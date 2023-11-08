@@ -21,6 +21,13 @@ export interface IRosterTemplatePosition {
   count: number;
 }
 
+export interface IRosterPosition {
+  roster_id?: number;
+  company_id: number;
+  position: string;
+  count: number;
+}
+
 export interface IRoster {
   id?: number;
   company_id: number;
@@ -36,6 +43,7 @@ export interface IRoster {
   employees?: IUser[];
   schedules?:IUserSchedule[];
   location?: ICompanyLocation;
+  positions?: IRosterPosition[];
 }
 
 export interface IUserSchedule {

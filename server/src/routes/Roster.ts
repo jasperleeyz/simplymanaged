@@ -140,7 +140,8 @@ RosterRouter.post("/create/roster", async (req, res) => {
       type,
       created_by,
       updated_by,
-      schedules
+      schedules,
+      positions
     } = req.body;
 
     const id = await getNextSequenceValue(
@@ -148,8 +149,8 @@ RosterRouter.post("/create/roster", async (req, res) => {
       SEQUENCE_KEYS.USER_SEQUENCE
     )
     
-    const rosterTemplate = await prisma.$transaction(async (tx) => {
-      const createdTemplate = await tx.roster.create({
+    const roster = await prisma.$transaction(async (tx) => {
+      const created = await tx.roster.create({
         data: {
           id: id,
           company_id,
@@ -162,28 +163,38 @@ RosterRouter.post("/create/roster", async (req, res) => {
           updated_by
         },
       });
-      for (const scheduleItem of schedules) {
+      for (const schedule of schedules) {
         await tx.userSchedule.create({
           data: {
-            user_id: scheduleItem.user_id,
-            user_company_id: scheduleItem.user_company_id,
+            user_id: schedule.user_id,
+            user_company_id: schedule.user_company_id,
             roster_id: id,
-            start_date: scheduleItem.start_date,
-            end_date: scheduleItem.end_date,
-            shift: scheduleItem.shift,
-            status: scheduleItem.status,
-            created_by: scheduleItem.created_by,
-            updated_by: scheduleItem.updated_by
+            start_date: schedule.start_date,
+            end_date: schedule.end_date,
+            shift: schedule.shift,
+            status: schedule.status,
+            created_by: schedule.created_by,
+            updated_by: schedule.updated_by
           },
         });
-      }
+      };
+      for (const position of positions) {
+        await tx.rosterPosition.create({
+          data: {
+            roster_id: id,
+            company_id: position.company_id,
+            position: position.position,
+            count: position.count,
+          },
+        });
+      };
     });
     res.status(200).json({
-      rosterTemplate: rosterTemplate,
+      roster: roster,
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating roster template.");
+    res.status(400).send("Error creating roster");
   }
 });
 

@@ -395,3 +395,13 @@ model Sequences {
   updated_by     String   @default("SYSTEM")
   updated_date   DateTime @updatedAt
 }
+
+model RosterPosition {
+  roster_id  Int
+  company_id Int
+  position   String
+  count      Int
+
+  @@id([roster_id, company_id, position])
+  @@index([roster_id, company_id])
+}
