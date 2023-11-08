@@ -29,6 +29,7 @@ const ViewSchedule = () => {
         toast.success("Roster delete successfully");
         navigate(`/${PATHS.SCHEDULE}`, { replace: true });
         setRosterToDelete(null)
+        setSubmitLoading(false)
       })
     }
   }, [submitLoading]);

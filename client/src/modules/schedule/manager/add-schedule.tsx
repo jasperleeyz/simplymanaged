@@ -60,7 +60,6 @@ const AddSchedule = () => {
   const location = useLocation();
 
   const date: Date = location.state?.date;
-  const isEdit = location.pathname.endsWith(PATHS.EDIT_SCHEDULE);
 
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -704,49 +703,9 @@ const AddSchedule = () => {
     });
   };
 
-  //  TODO: to invoke API to create schedule
-  const createSchedule = () => {
-    if (isEdit) {
-      // setGlobalState((prev) => ({
-      //   ...prev,
-      //   schedule: prev.schedule.map((s) => {
-      //     if (s.id === scheduleDetailsState.id) {
-      //       return scheduleDetailsState;
-      //     } else {
-      //       return s;
-      //     }
-      //   }),
-      // }));
-
-      toast.success("Schedule updated successfully");
-    } else {
-      if (scheduleDetailsState.schedules) {
-        if (scheduleDetailsState.schedules.length > 0) {
-          scheduleDetailsState.schedules.forEach((schedule) => {
-            createUserSchedule(schedule);
-          });
-          toast.success("Schedule created successfully");
-          navigate(`/${PATHS.SCHEDULE}`, { replace: true });
-        }
-      }
-      const id = globalState?.schedule?.length
-        ? globalState?.schedule?.length + 1
-        : 1;
-
-      // setGlobalState((prev) => ({
-      //   ...prev,
-      //   // TODO: add schedule to global state
-      //   schedule: [
-      //     ...prev.schedule,
-      //     { ...scheduleDetailsState, id: id, attendance: "N" },
-      //   ],
-      // }));
-    }
-  };
-
   return (
     <div>
-      <p className="header">{`${isEdit ? "Edit" : "Create"} Schedule`}</p>
+      <p className="header">Create Schedule</p>
       <div className="mb-3 flex justify-between items-center">
         <BackButton size="sm" />
 

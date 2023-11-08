@@ -280,3 +280,59 @@ RosterRouter.delete("/delete/roster", async (req, res) => {
     res.status(500).send("Error deleting roster template.");
   }
 });
+
+RosterRouter.post("/update/roster", async (req, res) => {
+  const user = req.headers["x-access-user"] as any;
+  try {
+    const {
+      id,
+      company_id,
+      type,
+      schedules
+    } = req.body;
+
+
+    const roster = await prisma.$transaction(async (tx) => {
+      const updatedRoster = await tx.roster.update({
+        where: {
+          id_company_id: {
+            company_id,
+            id : id
+          },
+        },
+        data: {
+          type,
+          updated_by: user["name"]
+        },
+      });
+      await tx.userSchedule.deleteMany({
+        where: {
+          roster_id: id,
+        }
+      });
+      for (const scheduleItem of schedules) {
+        await tx.userSchedule.create({
+          data: {
+            user_id: scheduleItem.user_id,
+            user_company_id: scheduleItem.user_company_id,
+            roster_id: id,
+            start_date: scheduleItem.start_date,
+            end_date: scheduleItem.end_date,
+            shift: scheduleItem.shift,
+            status: scheduleItem.status,
+            created_by: scheduleItem.created_by,
+            created_date: scheduleItem.created_date,
+            updated_by: user["name"],
+            updated_date: new Date()
+          },
+        });
+      }
+    });
+    res.status(200).json({
+      roster: roster,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error updating Roster.");
+  }
+});

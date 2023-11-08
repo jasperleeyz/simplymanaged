@@ -103,3 +103,16 @@ export const getRosterById = async (companyId: number, rosterId: number): Promis
       })
       .catch((err) => Promise.reject(err));
   };
+
+  export const updateRoster = async (roster: IRoster) => {
+    const url = `/roster/update/roster`;
+    return await fetch(url, {
+      method: "POST",
+      body: JSON.stringify(roster),
+    })
+      .then((response) => {
+        if (response.ok) return Promise.resolve(response.json());
+        else return response.text().then((text) => Promise.reject(text));
+      })
+      .catch((err) => Promise.reject(err));
+  }
