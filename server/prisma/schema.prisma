@@ -8,14 +8,14 @@ datasource db {
   relationMode = "prisma"
 }
 
-model BidRequest {
-  request_id          Int      @id
-  requested_roster_id Int
-  shift               String
-  start_date          DateTime
-  end_date            DateTime
-
-  @@index([request_id])
+model CodeType {
+  id           Int      @id @default(autoincrement())
+  code_type    String   @unique
+  status       String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
 }
 
 model Code {
@@ -27,132 +27,9 @@ model Code {
   created_by   String
   created_date DateTime @default(now())
   updated_by   String
-  updated_date DateTime
+  updated_date DateTime @updatedAt
 
   @@unique([code_type, code])
-}
-
-model CodeType {
-  id           Int      @id @default(autoincrement())
-  code_type    String   @unique
-  status       String
-  created_by   String
-  created_date DateTime @default(now())
-  updated_by   String
-  updated_date DateTime
-}
-
-model Company {
-  id              Int      @id @default(autoincrement())
-  uen             String   @unique
-  name            String
-  contact_no      Int
-  email           String
-  address         String
-  industry        String
-  no_of_employees Int
-  created_by      String   @default("SYSTEM")
-  created_date    DateTime @default(now())
-  updated_by      String
-  updated_date    DateTime
-}
-
-model CompanyCode {
-  id           Int
-  company_id   Int
-  code_type    String
-  code         String
-  description  String
-  status       String
-  created_by   String
-  created_date DateTime @default(now())
-  updated_by   String
-  updated_date DateTime
-
-  @@id([company_id, id])
-  @@unique([company_id, code_type, code])
-  @@index([company_id])
-}
-
-model CompanyCodeType {
-  id           Int
-  company_id   Int
-  code_type    String
-  status       String
-  created_by   String
-  created_date DateTime @default(now())
-  updated_by   String
-  updated_date DateTime
-
-  @@id([id, company_id])
-  @@unique([company_id, code_type])
-  @@index([company_id])
-}
-
-model CompanyLeaveBalance {
-  id           Int      @id @default(autoincrement())
-  company_id   Int
-  leave_type   String
-  balance      Int
-  created_by   String
-  created_date DateTime @default(now())
-  updated_by   String
-  updated_date DateTime
-
-  @@unique([company_id, leave_type])
-  @@index([company_id])
-}
-
-model CompanyLocation {
-  id           Int
-  company_id   Int
-  name         String
-  address      String
-  created_by   String
-  created_date DateTime @default(now())
-  updated_by   String
-  updated_date DateTime
-
-  @@id([id, company_id])
-  @@index([company_id])
-}
-
-model Department {
-  id                 Int
-  company_id         Int
-  department_name    String
-  department_head_id Int?
-  created_by         String
-  created_date       DateTime @default(now())
-  updated_by         String
-  updated_date       DateTime
-
-  @@id([company_id, id])
-  @@unique([department_head_id, company_id])
-  @@index([company_id])
-}
-
-model EmploymentDetails {
-  user_id         Int
-  user_company_id Int
-  working_hours   Decimal @db.Decimal(5, 2)
-  employment_type String
-
-  @@id([user_id, user_company_id])
-  @@index([user_id, user_company_id])
-}
-
-model LeaveRequest {
-  request_id Int      @id
-  type       String
-  remarks    String?
-  start_date DateTime
-  end_date   DateTime
-  half_day   String
-  attachment Bytes?
-  no_of_days Decimal  @default(1.0) @db.Decimal(3, 1)
-
-  @@index([request_id])
 }
 
 model Registration {
@@ -170,87 +47,45 @@ model Registration {
   created_by            String   @default("SYSTEM")
   created_date          DateTime @default(now())
   updated_by            String
-  updated_date          DateTime
+  updated_date          DateTime @updatedAt
 }
 
-model Request {
-  id           Int      @id @default(autoincrement())
-  user_id      Int
-  company_id   Int
-  type         String
-  status       String
-  created_by   String
-  created_date DateTime @default(now())
-  updated_by   String
-  updated_date DateTime
-
-  @@index([user_id, company_id])
-}
-
-model Roster {
-  id            Int
-  company_id    Int
-  location_id   Int
-  department_id Int
-  start_date    DateTime
-  end_date      DateTime
-  type          String
+model SubscriptionModel {
+  id            Int      @id @default(autoincrement())
+  name          String
+  member_limit  Int
+  payment_cycle String
+  price         Decimal  @db.Decimal(6, 2)
   created_by    String
   created_date  DateTime @default(now())
   updated_by    String
-  updated_date  DateTime
+  updated_date  DateTime @updatedAt
 
-  @@id([id, company_id])
-  @@index([company_id])
-  @@index([department_id, company_id])
-  @@index([location_id, company_id])
+  @@unique([name, payment_cycle])
 }
 
-model RosterPosition {
-  roster_id  Int
-  company_id Int
-  position   String
-  count      Int
-
-  @@id([roster_id, company_id, position])
-  @@index([roster_id, company_id])
-}
-
-model RosterTemplate {
-  id              Int
-  company_id      Int
-  roster_type     String
-  name            String
-  no_of_employees Int
-  created_by      String
-  created_date    DateTime @default(now())
-  updated_by      String
-  updated_date    DateTime
-
-  @@id([id, company_id])
-  @@unique([name, company_id])
-  @@index([company_id])
-}
-
-model RosterTemplatePosition {
-  roster_template_id Int
-  company_id         Int
-  position           String
-  count              Int
-
-  @@id([roster_template_id, company_id, position])
-  @@index([roster_template_id, company_id])
-}
-
-model Sequences {
-  id             Int      @id @default(autoincrement())
-  company_id     Int
-  sequence_key   String   @unique
-  sequence_value Int      @default(1)
-  created_by     String   @default("SYSTEM")
-  created_date   DateTime @default(now())
-  updated_by     String   @default("SYSTEM")
-  updated_date   DateTime
+model Company {
+  id                    Int                   @id @default(autoincrement())
+  uen                   String                @unique
+  name                  String
+  contact_no            Int
+  email                 String
+  address               String
+  industry              String
+  no_of_employees       Int
+  created_by            String                @default("SYSTEM")
+  created_date          DateTime              @default(now())
+  updated_by            String
+  updated_date          DateTime              @updatedAt
+  subscriptions         Subscription[]        @relation("company_subscriptions")
+  company_code_types    CompanyCodeType[]     @relation("company_code_types")
+  company_codes         CompanyCode[]         @relation("company_codes")
+  employees             User[]                @relation("company_employees")
+  departments           Department[]          @relation("company_departments")
+  company_locations     CompanyLocation[]     @relation("company_locations")
+  rosters               Roster[]              @relation("company_rosters")
+  roster_templates      RosterTemplate[]      @relation("company_roster_templates")
+  company_leave_balance CompanyLeaveBalance[] @relation("company_leave_balance")
 }
 
 model Subscription {
@@ -266,52 +101,104 @@ model Subscription {
   created_by        String   @default("SYSTEM")
   created_date      DateTime @default(now())
   updated_by        String
-  updated_date      DateTime
+  updated_date      DateTime @updatedAt
+  company           Company  @relation("company_subscriptions", fields: [company_id], references: [id])
 
   @@index([company_id])
 }
 
-model SubscriptionModel {
-  id            Int      @id @default(autoincrement())
-  name          String
-  member_limit  Int
-  payment_cycle String
-  price         Decimal  @db.Decimal(6, 2)
-  created_by    String
-  created_date  DateTime @default(now())
-  updated_by    String
-  updated_date  DateTime
+model CompanyCodeType {
+  id           Int
+  company_id   Int
+  code_type    String
+  status       String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_code_types", fields: [company_id], references: [id])
 
-  @@unique([name, payment_cycle])
+  @@id([id, company_id])
+  @@unique([company_id, code_type])
+  @@index([company_id])
 }
 
-model SwapRequest {
-  request_id            Int    @id
-  requester_user_id     Int
-  requester_schedule_id Int
-  requested_user_id     Int
-  requested_schedule_id Int
-  reason                String
+model CompanyCode {
+  id           Int
+  company_id   Int
+  code_type    String
+  code         String
+  description  String
+  status       String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_codes", fields: [company_id], references: [id])
 
-  @@index([request_id])
+  @@id([company_id, id])
+  @@unique([company_id, code_type, code])
+  @@index([company_id])
+}
+
+model CompanyLocation {
+  id           Int
+  company_id   Int
+  name         String
+  address      String
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_locations", fields: [company_id], references: [id])
+  rosters      Roster[] @relation("location_rosters")
+
+  @@id([id, company_id])
+  @@index([company_id])
+}
+
+model Department {
+  id                 Int
+  company_id         Int
+  department_name    String
+  department_head_id Int?
+  created_by         String
+  created_date       DateTime @default(now())
+  updated_by         String
+  updated_date       DateTime @updatedAt
+  company            Company  @relation("company_departments", fields: [company_id], references: [id])
+  employees          User[]   @relation("user_department")
+  department_head    User?    @relation("department_head", fields: [department_head_id, company_id], references: [id, company_id], onDelete: NoAction, onUpdate: NoAction)
+  rosters            Roster[] @relation("department_rosters")
+
+  @@id([company_id, id])
+  @@unique([department_head_id, company_id])
+  @@index([company_id])
 }
 
 model User {
-  id            Int
-  email         String
-  company_id    Int
-  contact_no    Int
-  created_by    String
-  created_date  DateTime @default(now())
-  department_id Int?
-  fullname      String
-  position      String
-  role          String
-  status        String
-  updated_by    String
-  updated_date  DateTime
-  password      String
-  profile_image Bytes?
+  id                   Int
+  email                String
+  company_id           Int
+  contact_no           Int
+  created_by           String
+  created_date         DateTime           @default(now())
+  department_id        Int?
+  fullname             String
+  position             String
+  role                 String
+  status               String
+  updated_by           String
+  updated_date         DateTime           @updatedAt
+  password             String
+  profile_image        Bytes?
+  preferences          UserPreference[]   @relation("user_preferences")
+  company              Company            @relation("company_employees", fields: [company_id], references: [id])
+  department           Department?        @relation("user_department", fields: [company_id, department_id], references: [company_id, id])
+  department_in_charge Department?        @relation("department_head")
+  employment_details   EmploymentDetails? @relation("employment_details")
+  schedules            UserSchedule[]     @relation("user_schedules")
+  requests             Request[]          @relation("user_requests")
 
   @@id([id, company_id])
   @@unique([email, company_id])
@@ -327,8 +214,20 @@ model UserPreference {
   created_by      String
   created_date    DateTime @default(now())
   updated_by      String
-  updated_date    DateTime
+  updated_date    DateTime @updatedAt
+  user            User     @relation("user_preferences", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
+  @@index([user_id, user_company_id])
+}
+
+model EmploymentDetails {
+  user_id         Int
+  user_company_id Int
+  working_hours   Decimal @db.Decimal(5, 2)
+  employment_type String
+  user            User    @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
+
+  @@id([user_id, user_company_id])
   @@index([user_id, user_company_id])
 }
 
@@ -344,8 +243,155 @@ model UserSchedule {
   created_by      String
   created_date    DateTime @default(now())
   updated_by      String
-  updated_date    DateTime
+  updated_date    DateTime @updatedAt
+  user            User     @relation("user_schedules", fields: [user_id, user_company_id], references: [id, company_id])
+  roster          Roster   @relation("roster_schedules", fields: [roster_id, user_company_id], references: [id, company_id])
 
-  @@index([roster_id, user_company_id])
   @@index([user_id, user_company_id])
+  @@index([roster_id, user_company_id])
+}
+
+model Request {
+  id            Int           @id @default(autoincrement())
+  user_id       Int
+  company_id    Int
+  type          String
+  status        String
+  created_by    String
+  created_date  DateTime      @default(now())
+  updated_by    String
+  updated_date  DateTime      @updatedAt
+  user          User          @relation("user_requests", fields: [user_id, company_id], references: [id, company_id])
+  bid_request   BidRequest?   @relation("bid_request")
+  leave_request LeaveRequest? @relation("leave_request")
+  swap_request  SwapRequest?  @relation("swap_request")
+
+  @@index([user_id, company_id])
+}
+
+model BidRequest {
+  request_id          Int      @id
+  requested_roster_id Int
+  shift               String
+  start_date          DateTime
+  end_date            DateTime
+  request             Request  @relation("bid_request", fields: [request_id], references: [id])
+
+  @@index([request_id])
+}
+
+model LeaveRequest {
+  request_id Int      @id
+  type       String
+  remarks    String?
+  start_date DateTime
+  end_date   DateTime
+  half_day   String
+  attachment Bytes?
+  no_of_days Decimal  @default(1.0) @db.Decimal(3, 1)
+  request    Request  @relation("leave_request", fields: [request_id], references: [id])
+
+  @@index([request_id])
+}
+
+model CompanyLeaveBalance {
+  id           Int      @id @default(autoincrement())
+  company_id   Int
+  leave_type   String
+  balance      Int
+  created_by   String
+  created_date DateTime @default(now())
+  updated_by   String
+  updated_date DateTime @updatedAt
+  company      Company  @relation("company_leave_balance", fields: [company_id], references: [id])
+
+  @@unique([company_id, leave_type])
+  @@index([company_id])
+}
+
+model SwapRequest {
+  request_id            Int     @id
+  requester_user_id     Int
+  requester_schedule_id Int
+  requested_user_id     Int
+  requested_schedule_id Int
+  reason                String
+  request               Request @relation("swap_request", fields: [request_id], references: [id])
+
+  @@index([request_id])
+}
+
+model Roster {
+  id            Int
+  company_id    Int
+  location_id   Int
+  department_id Int
+  start_date    DateTime
+  end_date      DateTime
+  type          String
+  created_by    String
+  created_date  DateTime         @default(now())
+  updated_by    String
+  updated_date  DateTime         @updatedAt
+  schedules     UserSchedule[]   @relation("roster_schedules")
+  company       Company          @relation("company_rosters", fields: [company_id], references: [id])
+  department    Department       @relation("department_rosters", fields: [department_id, company_id], references: [id, company_id])
+  location      CompanyLocation  @relation("location_rosters", fields: [location_id, company_id], references: [id, company_id])
+  positions     RosterPosition[] @relation("roster_positions")
+
+  @@id([id, company_id])
+  @@index([company_id])
+  @@index([department_id, company_id])
+  @@index([location_id, company_id])
+}
+
+model RosterPosition {
+  roster_id  Int
+  company_id Int
+  position   String
+  count      Int
+  roster     Roster @relation("roster_positions", fields: [roster_id, company_id], references: [id, company_id])
+
+  @@id([roster_id, company_id, position])
+  @@index([roster_id, company_id])
+}
+
+model RosterTemplate {
+  id              Int
+  company_id      Int
+  roster_type     String
+  name            String
+  no_of_employees Int
+  created_by      String
+  created_date    DateTime                 @default(now())
+  updated_by      String
+  updated_date    DateTime                 @updatedAt
+  company         Company                  @relation("company_roster_templates", fields: [company_id], references: [id])
+  positions       RosterTemplatePosition[] @relation("roster_template_positions")
+
+  @@id([id, company_id])
+  @@unique([name, company_id])
+  @@index([company_id])
+}
+
+model RosterTemplatePosition {
+  roster_template_id Int
+  company_id         Int
+  position           String
+  count              Int
+  roster_template    RosterTemplate @relation("roster_template_positions", fields: [roster_template_id, company_id], references: [id, company_id])
+
+  @@id([roster_template_id, company_id, position])
+  @@index([roster_template_id, company_id])
+}
+
+model Sequences {
+  id             Int      @id @default(autoincrement())
+  company_id     Int
+  sequence_key   String   @unique
+  sequence_value Int      @default(1)
+  created_by     String   @default("SYSTEM")
+  created_date   DateTime @default(now())
+  updated_by     String   @default("SYSTEM")
+  updated_date   DateTime @updatedAt
 }
