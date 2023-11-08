@@ -1,5 +1,11 @@
-import { Prisma, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import express from "express";
+import { routes } from "./routes/index";
+import { checkPassword, generatePasswordResetToken, generateSalt, hashPassword, verifyPasswordResetToken } from "./utils/security";
+import { sendPasswordResetEmail, sendRejectedEmail } from "./utils/email";
+import { USER_STATUS } from "./utils/constants";
+import { ValidationError } from "./errors/validation-error";
+
 const path = require("path");
 const cors = require("cors");
 const bodyParser = require("body-parser");
@@ -8,11 +14,6 @@ const multer = require("multer");
 const upload = multer();
 const jwt = require("jsonwebtoken");
 const auth = require("./middleware/auth");
-
-import { routes } from "./routes/index";
-import { checkPassword, generateSalt, hashPassword } from "./utils/security";
-import { sendApprovedEmail, sendRegistrationEmail, sendRejectedEmail } from "./utils/email";
-import { USER_STATUS } from "./utils/constants";
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
@@ -86,8 +87,7 @@ app.post(`/api/login`, async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      res.status(400).send("Both email and password are required");
-      throw new Error("Both email and password are required");
+      throw new ValidationError("Both email and password are required");
     }
 
     // TODO: to remove after testing
@@ -159,128 +159,119 @@ app.post(`/api/login`, async (req, res) => {
     }
   } catch (error) {
     console.error(error);
+    let message = "Error encountered. Please try again later.";
+    if (error instanceof ValidationError) {
+      message = error.message;
+    }
+    res.status(400).send(message);
   }
 });
 
-// app.post(`/post`, async (req, res) => {
-//   const { title, content, authorEmail } = req.body
-//   const result = await prisma.post.create({
-//     data: {
-//       title,
-//       content,
-//       author: { connect: { email: authorEmail } },
-//     },
-//   })
-//   res.json(result)
-// })
 
-// app.put('/post/:id/views', async (req, res) => {
-//   const { id } = req.params
+app.post('/api/forget-password', async (req, res) => {
+  try{
+    const { email } = req.body;
+    if (!email) {
+      throw new ValidationError("Email is required");
+    }
 
-//   try {
-//     const post = await prisma.post.update({
-//       where: { id: Number(id) },
-//       data: {
-//         viewCount: {
-//           increment: 1,
-//         },
-//       },
-//     })
+    const user = await prisma.user.findFirst({
+      where: {
+        email: email,
+        status: USER_STATUS.ACTIVE,
+      },
+    });
 
-//     res.json(post)
-//   } catch (error) {
-//     res.json({ error: `Post with ID ${id} does not exist in the database` })
-//   }
-// })
+    if(user) {
+      // generate token for password reset validation
+      const token = generatePasswordResetToken(email);
+      await sendPasswordResetEmail(email, user.fullname, token);
+    }
 
-// app.put('/publish/:id', async (req, res) => {
-//   const { id } = req.params
+    res.status(200).json({data: "success"});
+  } catch (error) {
+    console.error(error);
+    let message = "Error encountered. Please try again later.";
+    if (error instanceof ValidationError) {
+      message = error.message;
+    }
+    res.status(400).send(message);
+  }
+});
 
-//   try {
-//     const postData = await prisma.post.findUnique({
-//       where: { id: Number(id) },
-//       select: {
-//         published: true,
-//       },
-//     })
+app.post("/api/reset-password", async (req, res) => {
+  try{
+    const { user, password: passwordB64, confirm_password: confirmPasswordB64 } = req.body;
 
-//     const updatedPost = await prisma.post.update({
-//       where: { id: Number(id) || undefined },
-//       data: { published: !postData?.published },
-//     })
-//     res.json(updatedPost)
-//   } catch (error) {
-//     res.json({ error: `Post with ID ${id} does not exist in the database` })
-//   }
-// })
+    if (!user || !passwordB64 || !confirmPasswordB64) {
+      throw new ValidationError("Missing required params.");
+    }
+    if(passwordB64 !== confirmPasswordB64) {
+      throw new ValidationError("Passwords do not match.");
+    }
 
-// app.delete(`/post/:id`, async (req, res) => {
-//   const { id } = req.params
-//   const post = await prisma.post.delete({
-//     where: {
-//       id: Number(id),
-//     },
-//   })
-//   res.json(post)
-// })
+    // decode password
+    const newPassword = Buffer.from(passwordB64, "base64").toString();
 
-// app.get('/users', async (req, res) => {
-//   const users = await prisma.user.findMany()
-//   res.json(users)
-// })
+    await prisma.user.update({
+      where: {
+        id_company_id: {
+          id: user.id,
+          company_id: user.company_id,
+        },
+        status: USER_STATUS.ACTIVE,
+        email: user.email,
+      },
+      data: {
+        password: hashPassword(newPassword, generateSalt()),
+      },
+    });
 
-// app.get('/user/:id/drafts', async (req, res) => {
-//   const { id } = req.params
+    res.status(200).json({data: "success"});
+  } catch (error) {
+    console.error(error);
+    let message = "Error encountered. Please try again later.";
+    if (error instanceof ValidationError) {
+      message = error.message;
+    }
+    res.status(400).send(message);
+  }
+});
 
-//   const drafts = await prisma.user
-//     .findUnique({
-//       where: {
-//         id: Number(id),
-//       },
-//     })
-//     .posts({
-//       where: { published: false },
-//     })
 
-//   res.json(drafts)
-// })
+app.post("/api/reset-password/:token", async (req, res) => {
+  try{
+    const { token } = req.params;
+    const decoded = verifyPasswordResetToken(token);
 
-// app.get(`/post/:id`, async (req, res) => {
-//   const { id }: { id?: string } = req.params
+    const { email } = decoded as any;
 
-//   const post = await prisma.post.findUnique({
-//     where: { id: Number(id) },
-//   })
-//   res.json(post)
-// })
+    const user = await prisma.user.findFirst({
+      where: {
+        email: email,
+        status: USER_STATUS.ACTIVE,
+      },
+      select: {
+        id: true,
+        email: true,
+        fullname: true,
+        company_id: true,
+      }
+    });
 
-// app.get('/feed', async (req, res) => {
-//   const { searchString, skip, take, orderBy } = req.query
+    res.status(200).json({data: user});
+  } catch (error) {
+    console.error(error);
+    let message = "Error encountered. Please try again later.";
+    if (error instanceof jwt.TokenExpiredError) {
+      message = "expired";
+    } else if (error instanceof jwt.JsonWebTokenError) {
+      message = "invalid";
+    }
+    res.status(400).send(message);
+  }
+});
 
-//   const or: Prisma.PostWhereInput = searchString
-//     ? {
-//         OR: [
-//           { title: { contains: searchString as string } },
-//           { content: { contains: searchString as string } },
-//         ],
-//       }
-//     : {}
-
-//   const posts = await prisma.post.findMany({
-//     where: {
-//       published: true,
-//       ...or,
-//     },
-//     include: { author: true },
-//     take: Number(take) || undefined,
-//     skip: Number(skip) || undefined,
-//     orderBy: {
-//       updatedAt: orderBy as Prisma.SortOrder,
-//     },
-//   })
-
-//   res.json(posts)
-// })
 
 app.get("*", (req, res) => {
   // res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'))
