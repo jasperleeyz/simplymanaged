@@ -80,12 +80,30 @@ const CalendarMonthView = ({
     } else {
       getRosterFromAndTo(globalState?.user?.company_id || 0, from, to)
         .then((res) => {
-          if(globalState?.user?.position == ROLES.MANAGER)
+          if(globalState?.user?.role == ROLES.MANAGER)
           {
             setRosterList(res.data);
           }
           else{
-            //const tempList : <IRoster> = res.data
+            const resData: IRoster[] = res.data as IRoster[];
+            const schedulesToRemove: number[] = [];
+            resData.map((ros, ridx) =>{
+              const filteredPositions = ros.positions?.filter((pos) => {
+                // Replace 'yourCondition' with your actual condition
+                return pos.position === globalState?.user?.position; // Example condition
+              });
+              const filteredSchedulePositions = ros.schedules?.filter((sch) =>{
+                return sch.user?.position === globalState?.user?.position;
+              })
+              if(filteredPositions && filteredSchedulePositions){
+                if(filteredSchedulePositions?.length < filteredPositions[0]?.count)
+                {
+                  schedulesToRemove.push(ridx)
+                }
+              }
+            });
+            const filteredResData = resData.filter((_, ridx) => schedulesToRemove.includes(ridx));
+            setRosterList(filteredResData)
           }
         })
         .finally(() => {setLoading((prev) => false);});

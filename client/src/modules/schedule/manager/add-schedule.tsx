@@ -23,7 +23,7 @@ import {
   IRoster,
   IRosterTemplate,
   IRosterTemplatePosition,
-  IRosterPosition 
+  IRosterPosition,
 } from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
@@ -45,7 +45,7 @@ import {
   deleteRosterTemplate,
   createRoster,
 } from "../../../shared/api/roster.api";
-import CreateScheduleModal from "./create-schedule-modal"
+import CreateScheduleModal from "./create-schedule-modal";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -105,37 +105,38 @@ const AddSchedule = () => {
       const scheduleIndex = updatedSchedules.findIndex(
         (schedule) => schedule.user_id === user.id
       );
-      const updatedPosition = { ...prevState.positions };
+      const updatedPosition = [...(prevState.positions || [])];
+      const posCount = updatedPosition.findIndex((pos) => pos.position === user.position);
       if (userIndex !== -1) {
         // User is already in the employees array, remove them
         updatedEmployees.splice(userIndex, 1);
         // Remove the associated IUserSchedule
         updatedSchedules.splice(scheduleIndex, 1);
       } else {
-
-        const maxCount = updatedPosition[user.position]?.count || 0;
-        const currentCount = updatedEmployees.filter(
-          (emp) => emp.position === user.position
-        ).length;
-        if (currentCount < maxCount) {
-        // User is not in the employees array, add them
-        updatedEmployees.push(user);
-        // Create an associated IUserSchedule
-        updatedSchedules.push({
-          user_id: user.id,
-          user_company_id: user.company_id,
-          roster_id: 0,
-          start_date: prevState.start_date,
-          end_date: prevState.end_date,
-          shift: "FULL",
-          status: "",
-          created_by: globalState?.user?.fullname || "",
-          updated_by: globalState?.user?.fullname || "",
-        });
-      } else {
-        // Handle case when roster position is at its maximum
-        console.log(`Maximum allowed count.`);
-      }
+          const maxCount = updatedPosition[posCount].count;
+          const currentCount = updatedEmployees.filter(
+            (emp) => emp.position === user.position
+          ).length;
+          if (currentCount < maxCount || 0) {
+            // User is not in the employees array, add them
+            updatedEmployees.push(user);
+            // Create an associated IUserSchedule
+            updatedSchedules.push({
+              user_id: user.id,
+              user_company_id: user.company_id,
+              roster_id: 0,
+              start_date: prevState.start_date,
+              end_date: prevState.end_date,
+              shift: "FULL",
+              status: "",
+              created_by: globalState?.user?.fullname || "",
+              updated_by: globalState?.user?.fullname || "",
+            });
+          }
+          else {
+          // Handle case when roster position is at its maximum
+          //console.log(`Maximum allowed count.`);
+        }
       }
 
       return {
@@ -147,15 +148,22 @@ const AddSchedule = () => {
   };
 
   const [createScheduleModal, setCreateScheduleModal] = React.useState(true);
-  const [rosterPosition, setRosterPosition] = React.useState<IRosterPosition[]>([]);
-  const modalProps = { createScheduleModal, setCreateScheduleModal, rosterPosition, setRosterPosition };
+  const [rosterPosition, setRosterPosition] = React.useState<IRosterPosition[]>(
+    []
+  );
+  const modalProps = {
+    createScheduleModal,
+    setCreateScheduleModal,
+    rosterPosition,
+    setRosterPosition,
+  };
 
   useEffect(() => {
     setScheduleDetailsState((prev) => ({
       ...prev,
       positions: rosterPosition,
     }));
-    console.log(scheduleDetailsState)
+    console.log(scheduleDetailsState);
   }, [rosterPosition]);
 
   const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
@@ -217,7 +225,10 @@ const AddSchedule = () => {
         key={idx}
         className="bg-white dark:border-gray-700 dark:bg-gray-800"
       >
-        <Table.Cell style={{ height: '73px' }} className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+        <Table.Cell
+          style={{ height: "73px" }}
+          className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
+        >
           {emp.fullname}
         </Table.Cell>
         <Table.Cell>
@@ -272,63 +283,64 @@ const AddSchedule = () => {
                 <Table.HeadCell>Employee</Table.HeadCell>
                 <Table.HeadCell>Position</Table.HeadCell>
                 {scheduleDetailsState.type === "SHIFT" && (
-  <Table.HeadCell className="text-center">Shift</Table.HeadCell>
-)}
+                  <Table.HeadCell className="text-center">Shift</Table.HeadCell>
+                )}
                 <Table.HeadCell></Table.HeadCell>
               </Table.Head>
               <Table.Body className="divide-y">
                 {scheduleDetailsState.employees.map((emp, idx) => (
                   <Table.Row
                     key={idx}
-                    style={{ height: '73px' }} className="bg-white dark:border-gray-700 dark.bg-gray-800"
+                    style={{ height: "73px" }}
+                    className="bg-white dark:border-gray-700 dark.bg-gray-800"
                   >
-                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white" >
+                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
                       {emp.fullname}
                     </Table.Cell>
                     <Table.Cell>
                       <label>{emp.position}</label>
                     </Table.Cell>
                     {scheduleDetailsState.type === "SHIFT" && (
-                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
-                      <table>
-                        <tbody>
-                          <tr>
-                            <td style={{ padding: "0 10px" }}>AM</td>
-                            <td style={{ padding: "0 10px" }}>PM</td>
-                            <td style={{ padding: "0 10px" }}>FULL</td>
-                          </tr>
-                          <tr>
-                            <td style={{ padding: "0 12px" }}>
-                              <Checkbox
-                                value={emp.id}
-                                checked={selectEmployeeShift(emp, "AM")}
-                                onChange={() =>
-                                  handleEmployeeShiftChange(emp, "AM")
-                                }
-                              />
-                            </td>
-                            <td style={{ padding: "0 12px" }}>
-                              <Checkbox
-                                value={emp.id}
-                                checked={selectEmployeeShift(emp, "PM")}
-                                onChange={() =>
-                                  handleEmployeeShiftChange(emp, "PM")
-                                }
-                              />
-                            </td>
-                            <td style={{ padding: "0 15px" }}>
-                              <Checkbox
-                                value={emp.id}
-                                checked={selectEmployeeShift(emp, "FULL")}
-                                onChange={() =>
-                                  handleEmployeeShiftChange(emp, "FULL")
-                                }
-                              />
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </Table.Cell>
+                      <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
+                        <table>
+                          <tbody>
+                            <tr>
+                              <td style={{ padding: "0 10px" }}>AM</td>
+                              <td style={{ padding: "0 10px" }}>PM</td>
+                              <td style={{ padding: "0 10px" }}>FULL</td>
+                            </tr>
+                            <tr>
+                              <td style={{ padding: "0 12px" }}>
+                                <Checkbox
+                                  value={emp.id}
+                                  checked={selectEmployeeShift(emp, "AM")}
+                                  onChange={() =>
+                                    handleEmployeeShiftChange(emp, "AM")
+                                  }
+                                />
+                              </td>
+                              <td style={{ padding: "0 12px" }}>
+                                <Checkbox
+                                  value={emp.id}
+                                  checked={selectEmployeeShift(emp, "PM")}
+                                  onChange={() =>
+                                    handleEmployeeShiftChange(emp, "PM")
+                                  }
+                                />
+                              </td>
+                              <td style={{ padding: "0 15px" }}>
+                                <Checkbox
+                                  value={emp.id}
+                                  checked={selectEmployeeShift(emp, "FULL")}
+                                  onChange={() =>
+                                    handleEmployeeShiftChange(emp, "FULL")
+                                  }
+                                />
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </Table.Cell>
                     )}
                   </Table.Row>
                 ))}
@@ -421,8 +433,7 @@ const AddSchedule = () => {
         const updatedPositionCount = {};
         scheduleDetailsState.positions.forEach((emp, idx) => {
           updatedPositionCount[emp.position] = emp.count;
-          }
-        );
+        });
         setPositionCount(updatedPositionCount);
       }
     }, [scheduleDetailsState.positions]);
@@ -433,9 +444,8 @@ const AddSchedule = () => {
       setSelectedPosition(Object.keys(positionCount)[0]);
     }, [positionCount]);
 
-    const [positionSelectedCount, setPositionSelectedCount] = React.useState(
-positionCount
-    );
+    const [positionSelectedCount, setPositionSelectedCount] =
+      React.useState(positionCount);
 
     const incrementSelectedCount = (position) => {
       const currentCount = positionSelectedCount[position] || 0;
@@ -460,8 +470,10 @@ positionCount
     return (
       <Modal
         show={showAutoAssignModal}
-        onClose={() => {setAutoAssignShowModal(false)
-          setPositionSelectedCount(positionCount);}}
+        onClose={() => {
+          setAutoAssignShowModal(false);
+          setPositionSelectedCount(positionCount);
+        }}
       >
         <Modal.Header>Auto Assign</Modal.Header>
         <Modal.Body>
@@ -860,26 +872,26 @@ positionCount
           <div className="mr-5 text-center">
             <Label htmlFor="Shift" value="Shift" />
             <Checkbox
-              className="flex w-10 h-10" 
+              className="flex w-10 h-10"
               value={scheduleDetailsState.type}
-            checked={scheduleDetailsState.type === "SHIFT"}
-            onChange={() => {
-              if (scheduleDetailsState.type === "SHIFT") {
-                setScheduleDetailsState((prev) => ({
-                  ...prev,
-                  type: "PROJECT",
-                }));
-              } else {
-                setScheduleDetailsState((prev) => ({
-                  ...prev,
-                  type: "SHIFT",
-                }));
-              }
-            }}
+              checked={scheduleDetailsState.type === "SHIFT"}
+              onChange={() => {
+                if (scheduleDetailsState.type === "SHIFT") {
+                  setScheduleDetailsState((prev) => ({
+                    ...prev,
+                    type: "PROJECT",
+                  }));
+                } else {
+                  setScheduleDetailsState((prev) => ({
+                    ...prev,
+                    type: "SHIFT",
+                  }));
+                }
+              }}
             />
           </div>
           {templateList.length > 0 && (
-            <div style={{ marginLeft: 'auto' }}>
+            <div style={{ marginLeft: "auto" }}>
               <Label htmlFor="employees-template" value="Template" />
               <Select
                 onChange={(e) => {
@@ -922,7 +934,7 @@ positionCount
               />
             </div>
           </div>
-          <div id="people-section" className="overflow-x-auto flex" >
+          <div id="people-section" className="overflow-x-auto flex">
             <div className="my-10 ">
               <Table theme={customTableTheme}>
                 <Table.Head>
@@ -943,34 +955,31 @@ positionCount
                 </Table.Body>
               </Table>
             </div>
-            <div className = "mx-20">
-            {generateSelectedEmployeeList()}
-            </div>
-          
+            <div className="mx-20">{generateSelectedEmployeeList()}</div>
           </div>
           <div className="flex">
-          <div className="mx-20">
-            <Pagination
-              currentPage={currentPage}
-              // layout="pagination"
-              onPageChange={(page) => {
-                setCurrentPage(page);
-              }}
-              showIcons
-              totalPages={totalPages}
-            />
-          </div>
-          <div className="mx-80">
-            <Pagination
-              currentPage={currentPage}
-              // layout="pagination"
-              onPageChange={(page) => {
-                setCurrentPage(page);
-              }}
-              showIcons
-              totalPages={totalPages}
-            />
-          </div>
+            <div className="mx-20">
+              <Pagination
+                currentPage={currentPage}
+                // layout="pagination"
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                }}
+                showIcons
+                totalPages={totalPages}
+              />
+            </div>
+            <div className="mx-80">
+              <Pagination
+                currentPage={currentPage}
+                // layout="pagination"
+                onPageChange={(page) => {
+                  setCurrentPage(page);
+                }}
+                showIcons
+                totalPages={totalPages}
+              />
+            </div>
           </div>
         </div>
         {/*
@@ -1166,7 +1175,7 @@ positionCount
           </Modal.Body>
         </Modal>
       )}
-        {<CreateScheduleModal {...modalProps} />}
+      {<CreateScheduleModal {...modalProps} />}
     </div>
   );
 };

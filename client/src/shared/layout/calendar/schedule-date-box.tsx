@@ -111,7 +111,7 @@ const ScheduleDateBox = ({
                       });
                     }}
                   >
-                    View
+                    Bid
                   </Dropdown.Item>
                 </Dropdown>
               </div>
@@ -123,20 +123,6 @@ const ScheduleDateBox = ({
               <p className="absolute whitespace-normal">
                 No schedule available
               </p>
-              {date.isAfter(moment(new Date())) && (
-                <Button
-                  size="sm"
-                  className="absolute hidden group-hover:block"
-                  color="info"
-                  onClick={() => {
-                    navigate(`./${PATHS.CREATE_SCHEDULE}`, {
-                      state: { date: date.toDate() },
-                    });
-                  }}
-                >
-                  Add schedule
-                </Button>
-              )}
             </div>
           )}
           {roster && (
@@ -152,7 +138,6 @@ const ScheduleDateBox = ({
                 <p>Schedule ended</p>
                 </div>
               )}
-
             </div>
           )}
         </div>
