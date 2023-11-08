@@ -101,12 +101,13 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
       const createdTemplate = await tx.rosterTemplate.create({
         data: {
           id: id,
-          company_id,
-          roster_type,
-          name,
-          no_of_employees,
-          created_by,
-          updated_by
+          company_id: company_id,
+          roster_type: roster_type,
+          name: name,
+          no_of_employees: no_of_employees,
+          created_by: created_by,
+          updated_by: updated_by,
+          updated_date: new Date()
         },
       });
       for (const positionItem of positions) {
@@ -153,14 +154,15 @@ RosterRouter.post("/create/roster", async (req, res) => {
       const created = await tx.roster.create({
         data: {
           id: id,
-          company_id,
-          location_id,
-          department_id,
-          start_date,
-          end_date,
-          type,
-          created_by,
-          updated_by
+          company_id: company_id,
+          location_id: location_id,
+          department_id: department_id,
+          start_date: start_date,
+          end_date: end_date,
+          type: type,
+          created_by: created_by,
+          updated_by: updated_by,
+          updated_date: new Date()
         },
       });
       for (const schedule of schedules) {
@@ -174,7 +176,8 @@ RosterRouter.post("/create/roster", async (req, res) => {
             shift: schedule.shift,
             status: schedule.status,
             created_by: schedule.created_by,
-            updated_by: schedule.updated_by
+            updated_by: schedule.updated_by,
+            updated_date: new Date()
           },
         });
       };
@@ -249,6 +252,7 @@ RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
             user: true
           }
         },
+      positions: true
         //location: true
       },
     });

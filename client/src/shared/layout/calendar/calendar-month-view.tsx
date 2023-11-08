@@ -5,6 +5,7 @@ import PersonalDateBox from "./personal-date-box";
 import moment from "moment";
 import ScheduleDateBox from "./schedule-date-box";
 import React from "react";
+import { ROLES } from "../../../configs/constants";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import {
   getAllUserSchedule,
@@ -79,7 +80,13 @@ const CalendarMonthView = ({
     } else {
       getRosterFromAndTo(globalState?.user?.company_id || 0, from, to)
         .then((res) => {
-          setRosterList(res.data);
+          if(globalState?.user?.position == ROLES.MANAGER)
+          {
+            setRosterList(res.data);
+          }
+          else{
+            //const tempList : <IRoster> = res.data
+          }
         })
         .finally(() => {setLoading((prev) => false);});
     }
