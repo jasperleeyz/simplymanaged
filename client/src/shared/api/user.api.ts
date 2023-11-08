@@ -121,3 +121,23 @@ export const resetPassword = async ({
     })
     .catch((err) => Promise.reject(err));
 };
+
+export const changePassword = async ({
+  current_password,
+  password,
+  confirm_password,
+}: {
+  current_password: string;
+  password: string;
+  confirm_password: string;
+}): Promise<any> => {
+  return await fetch(`/user/change-password`, {
+    method: "POST",
+    body: JSON.stringify({ current_password, password, confirm_password }),
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+};

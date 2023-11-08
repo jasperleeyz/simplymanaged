@@ -93,6 +93,10 @@ const Header = () => {
                   My profile
                 </Dropdown.Item>
                 <Dropdown.Divider />
+                <Dropdown.Item onClick={() => navigate(`./${PATHS.CHANGE_PASSWORD}`)}>
+                  Change password
+                </Dropdown.Item>
+                <Dropdown.Divider />
                 <Dropdown.Item onClick={() => signOut()}>
                   Sign out
                 </Dropdown.Item>

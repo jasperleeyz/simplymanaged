@@ -48,6 +48,9 @@ app.use(cookieParser());
 // use auth middleware
 app.use(auth);
 
+// create logger
+
+
 // use master router
 app.use("/api", routes);
 
@@ -83,7 +86,6 @@ app.post(`/test/encoding`, async (req, res) => {
 });
 
 app.post(`/api/login`, async (req, res) => {
-  console.info("In " + req.path);
   try {
     const { email, password } = req.body;
     if (!email || !password) {

@@ -18,6 +18,7 @@ import CompanyCodeManagementRoutes from "./modules/company-code-management";
 import CompanyManagementRoutes from "./modules/company-management";
 import ForgetPassword from "./shared/auth/forget-password";
 import ResetPassword from "./shared/auth/reset-password";
+import ChangePassword from "./modules/profile/change-password";
 
 const AppRoutes = () => {
   return (
@@ -49,6 +50,14 @@ const AppRoutes = () => {
             element={
               <PrivateRoute>
                 <ProfileRoutes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={`/${PATHS.CHANGE_PASSWORD}`}
+            element={
+              <PrivateRoute>
+                <ChangePassword />
               </PrivateRoute>
             }
           />
