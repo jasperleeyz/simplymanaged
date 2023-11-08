@@ -23,6 +23,7 @@ import {
   IRoster,
   IRosterTemplate,
   IRosterTemplatePosition,
+  IRosterPosition 
 } from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
@@ -44,6 +45,7 @@ import {
   deleteRosterTemplate,
   createRoster,
 } from "../../../shared/api/roster.api";
+import CreateScheduleModal from "./create-schedule-modal"
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -103,12 +105,19 @@ const AddSchedule = () => {
       const scheduleIndex = updatedSchedules.findIndex(
         (schedule) => schedule.user_id === user.id
       );
+      const updatedPosition = { ...prevState.positions };
       if (userIndex !== -1) {
         // User is already in the employees array, remove them
         updatedEmployees.splice(userIndex, 1);
         // Remove the associated IUserSchedule
         updatedSchedules.splice(scheduleIndex, 1);
       } else {
+
+        const maxCount = updatedPosition[user.position]?.count || 0;
+        const currentCount = updatedEmployees.filter(
+          (emp) => emp.position === user.position
+        ).length;
+        if (currentCount < maxCount) {
         // User is not in the employees array, add them
         updatedEmployees.push(user);
         // Create an associated IUserSchedule
@@ -123,6 +132,10 @@ const AddSchedule = () => {
           created_by: globalState?.user?.fullname || "",
           updated_by: globalState?.user?.fullname || "",
         });
+      } else {
+        // Handle case when roster position is at its maximum
+        console.log(`Maximum allowed count.`);
+      }
       }
 
       return {
@@ -132,6 +145,18 @@ const AddSchedule = () => {
       };
     });
   };
+
+  const [createScheduleModal, setCreateScheduleModal] = React.useState(true);
+  const [rosterPosition, setRosterPosition] = React.useState<IRosterPosition[]>([]);
+  const modalProps = { createScheduleModal, setCreateScheduleModal, rosterPosition, setRosterPosition };
+
+  useEffect(() => {
+    setScheduleDetailsState((prev) => ({
+      ...prev,
+      positions: rosterPosition,
+    }));
+    console.log(scheduleDetailsState)
+  }, [rosterPosition]);
 
   const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
   useEffect(() => {
@@ -392,20 +417,15 @@ const AddSchedule = () => {
     const [positionCount, setPositionCount] = useState({});
 
     useEffect(() => {
-      if (employeeList) {
+      if (scheduleDetailsState.positions) {
         const updatedPositionCount = {};
-        employeeList.forEach((emp, idx) => {
-          if (emp) {
-            if (updatedPositionCount[emp.position]) {
-              updatedPositionCount[emp.position]++;
-            } else {
-              updatedPositionCount[emp.position] = 1;
-            }
+        scheduleDetailsState.positions.forEach((emp, idx) => {
+          updatedPositionCount[emp.position] = emp.count;
           }
-        });
+        );
         setPositionCount(updatedPositionCount);
       }
-    }, [employeeList]);
+    }, [scheduleDetailsState.positions]);
 
     const [selectedPosition, setSelectedPosition] = useState("");
 
@@ -414,7 +434,7 @@ const AddSchedule = () => {
     }, [positionCount]);
 
     const [positionSelectedCount, setPositionSelectedCount] = React.useState(
-      {}
+positionCount
     );
 
     const incrementSelectedCount = (position) => {
@@ -440,7 +460,8 @@ const AddSchedule = () => {
     return (
       <Modal
         show={showAutoAssignModal}
-        onClose={() => setAutoAssignShowModal(false)}
+        onClose={() => {setAutoAssignShowModal(false)
+          setPositionSelectedCount(positionCount);}}
       >
         <Modal.Header>Auto Assign</Modal.Header>
         <Modal.Body>
@@ -487,7 +508,7 @@ const AddSchedule = () => {
               size="sm"
               onClick={() => {
                 autoAssignPersonnel(positionSelectedCount);
-                setPositionSelectedCount([]);
+                setPositionSelectedCount(positionCount);
               }}
             >
               Yes
@@ -498,7 +519,7 @@ const AddSchedule = () => {
               size="sm"
               onClick={() => {
                 setAutoAssignShowModal(false);
-                setPositionSelectedCount([]);
+                setPositionSelectedCount(positionCount);
               }}
             >
               No
@@ -1145,6 +1166,7 @@ const AddSchedule = () => {
           </Modal.Body>
         </Modal>
       )}
+        {<CreateScheduleModal {...modalProps} />}
     </div>
   );
 };
