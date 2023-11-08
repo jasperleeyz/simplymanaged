@@ -50,7 +50,7 @@ const ViewSchedule = () => {
                 {startDate > currentDate && (
                   <div className="mt-4 flex" style={{ justifyContent: "flex-end" }}>
                   <EditButton size="sm" style={{ marginRight: "10px" }} onClick={() => {
-                    navigate(`/${PATHS.EDIT_SCHEDULE}`, {
+                    navigate(`/${PATHS.SCHEDULE}/${PATHS.EDIT_SCHEDULE}`, {
                       state: { rosteridx },
                       replace: true
                     });

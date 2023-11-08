@@ -237,7 +237,7 @@ const AddSchedule = () => {
       scheduleDetailsState.employees.length > 0
     ) {
       return (
-        <div className="mb-3">
+        <div>
           <Label
             htmlFor="schedule-employees-details"
             value="Employees' Schedule Details"
@@ -373,11 +373,11 @@ const AddSchedule = () => {
       className="w-full mr-3"
       size="sm"
       onClick={() => {
-        createRoster(scheduleDetailsState);
-        setShowSubmitModal(false)
-      toast.success('Roster created')
-      navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+        setSubmitLoading(true)
       }}
+      disabled={
+        submitLoading
+      }
     >
       Yes
     </Button>
@@ -386,6 +386,9 @@ const AddSchedule = () => {
       className="w-full"
       size="sm"
       onClick={() => setShowSubmitModal(false)}
+      disabled={
+        submitLoading
+      }
     >
       No
     </Button>
@@ -394,6 +397,22 @@ const AddSchedule = () => {
       </Modal>
     );
   };
+
+  const [submitLoading, setSubmitLoading] = React.useState(false);
+
+  useEffect(() => {
+    if(submitLoading)
+    {
+      createRoster(scheduleDetailsState).finally(() => {
+        setSubmitLoading(false)
+        setShowSubmitModal(false)
+        toast.success('Roster created')
+        navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+      })
+    }
+  }, [
+    submitLoading
+  ]);
 
   const autoAssignModal = () => {
     const [positionCount, setPositionCount] = useState({});
@@ -927,7 +946,8 @@ const AddSchedule = () => {
               />
             </div>
           </div>
-          <div id="people-section" className="mt-4 overflow-x-auto flex">
+          <div id="people-section" className="overflow-x-auto flex">
+            <div className = "my-10">
             <Table theme={customTableTheme}>
               <Table.Head>
                 <Table.HeadCell>Employee</Table.HeadCell>
@@ -946,7 +966,11 @@ const AddSchedule = () => {
                 )}
               </Table.Body>
             </Table>
+            </div>
+            <div className = "mx-20">
             {generateSelectedEmployeeList()}
+            </div>
+
           </div>
           <div className="mx-10">
             <Pagination
