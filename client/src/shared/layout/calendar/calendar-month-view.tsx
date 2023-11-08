@@ -1,6 +1,6 @@
 "use client";
 import { useContext, useState, useEffect } from "react";
-import { CustomFlowbiteTheme, Table } from "flowbite-react";
+import { CustomFlowbiteTheme, Table, Spinner } from "flowbite-react";
 import PersonalDateBox from "./personal-date-box";
 import moment from "moment";
 import ScheduleDateBox from "./schedule-date-box";
@@ -40,7 +40,8 @@ const CalendarMonthView = ({
   location,
 }: IProps) => {
   const { globalState } = useContext(GlobalStateContext);
-
+  const [loading, setLoading] =
+    React.useState(false);
   const cal = [] as CalObject[];
 
   const date = moment(new Date(year, month, 1));
@@ -63,6 +64,7 @@ const CalendarMonthView = ({
   useEffect(() => {
     const from = new Date(year, month);
     const to = new Date(year, month + 1);
+    setLoading((prev) => true);
     if (isPersonal) {
       getUserScheduleFromAndTo(
         globalState?.user?.company_id || 0,
@@ -71,19 +73,17 @@ const CalendarMonthView = ({
         to
       )
         .then((res) => {
-          //console.log(res.data)
           setScheduleList(res.data);
         })
         .finally(() => {});
     } else {
       getRosterFromAndTo(globalState?.user?.company_id || 0, from, to)
         .then((res) => {
-          //console.log(res.data);
           setRosterList(res.data);
         })
-        .finally(() => {});
+        .finally(() => {setLoading((prev) => false);});
     }
-  }, [isPersonal]);
+  }, [isPersonal, month, year, location]);
 
   /*const scheduleForMonth = scheduleList?.filter(
     (schedule) =>
@@ -106,6 +106,14 @@ const CalendarMonthView = ({
           <Table.HeadCell>Saturday</Table.HeadCell>
         </Table.Head>
         <Table.Body>
+        {loading ? (
+                <Table.Row>
+                  <Table.Cell colSpan={6} className="text-center">
+                    <Spinner size="xl" />
+                  </Table.Cell>
+                </Table.Row>
+            ) : (
+              <>
           {cal.map((week, idx) => {
             return (
               <Table.Row key={idx}>
@@ -148,6 +156,8 @@ const CalendarMonthView = ({
               </Table.Row>
             );
           })}
+          </>)
+}
         </Table.Body>
       </Table>
     </div>

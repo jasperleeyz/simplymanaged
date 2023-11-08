@@ -1,5 +1,6 @@
 import React from "react";
-import { IUserSchedule, IRoster } from "../../../shared/model/schedule.model";
+import { IRoster } from "../../../shared/model/schedule.model";
+import { PATHS } from "../../../configs/constants";
 import { useLocation } from "react-router-dom";
 import BackButton from "../../../shared/layout/buttons/back-button";
 import EditButton from "../../../shared/layout/buttons/edit-button";
@@ -7,11 +8,13 @@ import DeleteButton from "../../../shared/layout/buttons/delete-button";
 import LabeledField from "../../../shared/layout/fields/labeled-field";
 import { Avatar, Label } from "flowbite-react";
 import { capitalizeString } from "../../../configs/utils";
-import moment from "moment";
+import { useNavigate } from "react-router-dom";
 import { deleteRoster } from "../../../shared/api/roster.api";
+import { toast } from "react-toastify";
 
 const ViewSchedule = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const roster = location.state?.roster as IRoster[];
   const type = location.state?.type as string;
   const date = new Date();
@@ -46,9 +49,16 @@ const ViewSchedule = () => {
                 </div>
                 {startDate > currentDate && (
                   <div className="mt-4 flex" style={{ justifyContent: "flex-end" }}>
-                  <EditButton size="sm" style={{ marginRight: "10px" }} />
+                  <EditButton size="sm" style={{ marginRight: "10px" }} onClick={() => {
+                    navigate(`./${PATHS.VIEW_SCHEDULE}`, {
+                      state: { roster },
+                    });
+                  }}/>
                   <DeleteButton size="sm"
-                  onClick={() => deleteRoster(rosteridx)} />
+                  onClick={() => {deleteRoster(rosteridx)
+                    toast.success("Roster delete successfully");
+                    navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+                    }} />
                 </div>
                 )}
               </div>

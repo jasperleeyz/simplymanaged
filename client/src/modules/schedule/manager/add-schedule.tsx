@@ -375,7 +375,9 @@ const AddSchedule = () => {
       onClick={() => {
         createRoster(scheduleDetailsState);
         setShowSubmitModal(false)
-      toast.success('Schedule created')}}
+      toast.success('Roster created')
+      navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+      }}
     >
       Yes
     </Button>
@@ -461,15 +463,15 @@ const AddSchedule = () => {
               <div style={{ display: "flex", alignItems: "center" }}>
                 <Button
                   style={{ marginLeft: "300px" }}
-                  onClick={() => incrementSelectedCount(selectedPosition)}
-                >
-                  +
-                </Button>
-                <Button
-                  style={{ marginLeft: "10px" }}
                   onClick={() => decrementSelectedCount(selectedPosition)}
                 >
                   -
+                </Button>
+                <Button
+                  style={{ marginLeft: "10px" }}
+                  onClick={() => incrementSelectedCount(selectedPosition)}
+                >
+                  +
                 </Button>
               </div>
             ) : null}
