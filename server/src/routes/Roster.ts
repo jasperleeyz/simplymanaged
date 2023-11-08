@@ -248,3 +248,35 @@ RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
     res.status(400).send("Error retrieving roster.");
   }
 });
+
+RosterRouter.delete("/delete/roster", async (req, res) => {
+  try {
+    const { id, company_id } = req.body;
+
+    const rosterTemplate = await prisma.$transaction(async (tx) => {
+      await tx.userSchedule.deleteMany({
+        where: {
+          roster_id: id,
+        }
+      });
+
+      await tx.roster.delete({
+        where: {
+          id_company_id: {
+            id,
+            company_id,
+          },
+        },
+      });
+
+
+    });
+
+    res.status(200).json({
+      message: 'Roster deleted',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error deleting roster template.");
+  }
+});

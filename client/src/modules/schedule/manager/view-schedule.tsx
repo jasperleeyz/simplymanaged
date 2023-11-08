@@ -8,6 +8,7 @@ import LabeledField from "../../../shared/layout/fields/labeled-field";
 import { Avatar, Label } from "flowbite-react";
 import { capitalizeString } from "../../../configs/utils";
 import moment from "moment";
+import { deleteRoster } from "../../../shared/api/roster.api";
 
 const ViewSchedule = () => {
   const location = useLocation();
@@ -39,14 +40,16 @@ const ViewSchedule = () => {
                       <p>{capitalizeString(schedule.user?.position)}</p>
                       <p>{schedule.shift} Shift</p>
                       <p>{schedule.user?.contact_no}</p>
+                      <p>{rosteridx.id}</p>
                     </div>
                   ))}
                 </div>
                 {startDate > currentDate && (
-                  <div className="mt-4 flex">
-                    <EditButton size="sm" />
-                    <DeleteButton size="sm" />
-                  </div>
+                  <div className="mt-4 flex" style={{ justifyContent: "flex-end" }}>
+                  <EditButton size="sm" style={{ marginRight: "10px" }} />
+                  <DeleteButton size="sm"
+                  onClick={() => deleteRoster(rosteridx)} />
+                </div>
                 )}
               </div>
             ))}

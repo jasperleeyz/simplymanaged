@@ -59,6 +59,19 @@ export const getRosterById = async (companyId: number, rosterId: number): Promis
       .catch((err) => Promise.reject(err));
   };
 
+  export const deleteRoster = async (rosterTemplate: IRoster): Promise<any> => {
+    console.log(JSON.stringify(rosterTemplate))
+    return await fetch(`/roster/delete/roster`, {
+      method: "DELETE",
+      body: JSON.stringify(rosterTemplate),
+    })
+      .then((response) => {
+        if (response.ok) return Promise.resolve(response.json());
+        else return response.text().then((text) => Promise.reject(text));
+      })
+      .catch((err) => Promise.reject(err));
+  };
+
   export const createRoster = async (roster: IRoster) => {
     const url = `/roster/create/roster`;
     return await fetch(url, {
