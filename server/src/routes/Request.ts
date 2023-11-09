@@ -497,6 +497,19 @@ requestRouter.post("/update", async (req, res) => {
 
         // check if its approved
         if(status === "A") {
+          const otherRequests = await prisma.swapRequest.findMany({
+            where: {
+              request_id: {
+                not: swap_request_id,
+              },
+              requested_schedule_id: swap_request.requested_schedule_id,
+              requested_user_id: swap_request.requested_user_id,
+            },
+            select: {
+              request_id: true,
+            },
+          });
+
           // swap the requests
           // update requester schedule's user id to requested user id
           await tx.userSchedule.update({
@@ -520,6 +533,34 @@ requestRouter.post("/update", async (req, res) => {
             data: {
               user_id: Number(swap_request_without_id.requester_user_id),
             }
+          });
+        }
+
+        const otherRequests = await prisma.swapRequest.findMany({
+          where: {
+            request_id: {
+              not: swap_request_id,
+            },
+            requested_schedule_id: swap_request.requested_schedule_id,
+            requested_user_id: swap_request.requested_user_id,
+          },
+          select: {
+            request_id: true,
+          },
+        });
+        
+        const otherRequestIds = otherRequests.map((otherRequest) => otherRequest.request_id);
+        for (const otherRequestId of otherRequestIds) {
+          await prisma.request.update({
+            where: {
+              id: otherRequestId,
+            },
+            data: {
+              type: type,
+              status: 'R',
+              updated_by: user,
+            },
+            include: { swap_request: true },
           });
         }
 
