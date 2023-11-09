@@ -233,14 +233,15 @@ RosterRouter.delete("/delete/roster-template", async (req, res) => {
   }
 });
 
-RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
+RosterRouter.get("/get-roster-from-to/:company_id/:location_id", async (req, res) => {
   try {
-    const { company_id} = req.params;
+    const { company_id, location_id} = req.params;
     const { from, to } = req.query;
 
     const roster = await prisma.roster.findMany({
       where: {
         company_id: Number(company_id),
+        location_id: Number(location_id),
         start_date: {
           gte: from as string,
           lte: to as string,
@@ -249,7 +250,14 @@ RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
       include: {
         schedules: {
           include: {
-            user: true
+            user: {
+              select:{
+                id: true,
+                fullname:true,
+                position:true,
+                contact_no:true,
+              }
+            }
           }
         },
       positions: true,

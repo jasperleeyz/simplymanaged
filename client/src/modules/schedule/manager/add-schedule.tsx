@@ -86,7 +86,7 @@ const AddSchedule = () => {
     React.useState<IRoster>({
       company_id: globalState?.user?.company_id || 0,
       location_id: 0,
-      department_id: 0,
+      department_id: globalState?.user?.department_id || 0,
       start_date: date || moment(new Date()).add(1, "days").startOf("day").toDate(),
       end_date: date || moment(new Date()).add(1, "days").endOf("day").toDate(),
       type: "PROJECT",
@@ -151,6 +151,7 @@ const AddSchedule = () => {
     []
   );
   const [rosterType, setRosterType] = React.useState("PROJECT")
+  const [locationId, setLocationId] = React.useState(0)
 
   const modalProps = {
     createScheduleModal,
@@ -159,6 +160,8 @@ const AddSchedule = () => {
     setRosterPosition,
     rosterType,
     setRosterType,
+    locationId,
+    setLocationId
   };
 
   useEffect(() => {
@@ -174,6 +177,13 @@ const AddSchedule = () => {
       type: rosterType,
     }));
   }, [rosterType]);
+
+  useEffect(() => {
+    setScheduleDetailsState((prev) => ({
+      ...prev,
+      location_id: locationId,
+    }));
+  }, [locationId]);
 
   console.log(scheduleDetailsState)
 
@@ -192,7 +202,8 @@ const AddSchedule = () => {
   useEffect(() => {
     setLoading((prev) => true);
     getNonConflictScheduleUser(
-      0,
+      scheduleDetailsState.company_id|| 0,
+      scheduleDetailsState.department_id || 0,
       scheduleDetailsState.start_date.toString(),
       scheduleDetailsState.end_date.toString(),
       undefined,

@@ -183,7 +183,7 @@ const Calendar = () => {
                   onChange={(e) => setLocation(e.target.value)}
                 >
                   {locationList.map((l, idx) => (
-                    <option key={idx} value={l.name}>
+                    <option key={idx} value={l.id}>
                       {l.name}
                     </option>
                   ))}

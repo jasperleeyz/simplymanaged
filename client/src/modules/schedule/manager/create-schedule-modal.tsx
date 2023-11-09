@@ -13,7 +13,9 @@ import { PATHS } from "../../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import { IRoster, IRosterPosition } from "../../../shared/model/schedule.model";
-import { getAllEmployees } from "../../../shared/api/user.api";
+import { getAllEmployees, getDepartmentAllEmployees } from "../../../shared/api/user.api";
+import { getAllLocations } from "../../../shared/api/location.api";
+import { ICompanyLocation } from "../../../shared/model/company.model";
 
 type IProps = {
   createScheduleModal: boolean;
@@ -22,6 +24,8 @@ type IProps = {
   setRosterPosition: React.Dispatch<React.SetStateAction<IRosterPosition[]>>;
   rosterType:string;
   setRosterType:React.Dispatch<React.SetStateAction<string>>;
+  locationId:number;
+  setLocationId:React.Dispatch<React.SetStateAction<number>>;
 };
 
 const CreateScheduleModal = (props: IProps) => {
@@ -35,14 +39,25 @@ const CreateScheduleModal = (props: IProps) => {
     React.useState(false);
 
   useEffect(() => {
-    getAllEmployees(globalState?.user?.company_id || 0)
+    getDepartmentAllEmployees(globalState?.user?.department_id || 0)
       .then((res) => {
+        console.log(res.data)
         const positionsArray = res.data.map((item) => item.position).flat();
         const templatePosition = positionsArray.reduce((acc, position) => {
           acc[position] = (acc[position] || 0) + 1;
           return acc;
         }, {});
         setPositions(templatePosition);
+      })
+      .finally(() => {});
+  }, [props.createScheduleModal]);
+
+  const [locations, setLocations] = useState<ICompanyLocation[]>();
+
+  useEffect(() => {
+    getAllLocations(globalState?.user?.company_id || 0)
+      .then((res) => {
+        setLocations(res.data);
       })
       .finally(() => {});
   }, [props.createScheduleModal]);
@@ -116,6 +131,16 @@ const CreateScheduleModal = (props: IProps) => {
       >
         <Modal.Header>Create Roster</Modal.Header>
         <Modal.Body>
+        <Label className="my-2 text-l" value="Location"></Label>
+          <div className="flex my-2">
+            <Select onChange={(e) => props.setLocationId(Number(e.target.value))}>
+              {locations?.map((loc, idx) => (
+                <option key={idx} value={loc.id}>
+                  {loc.name}
+                </option>
+              ))}
+            </Select>
+          </div>
           <Label className="my-2 text-l" value="Position"></Label>
           <div className="flex my-2">
             <Select onChange={(e) => setSelectedPosition(e.target.value)}>

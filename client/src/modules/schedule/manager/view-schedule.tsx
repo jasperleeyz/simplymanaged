@@ -36,7 +36,7 @@ const ViewSchedule = () => {
 
   const [openModal, setOpenModal] = React.useState(false);
   const modalProps = { openModal, setOpenModal };
-
+  console.log(roster);
   return (
     <div id="schedule-details-main">
       <p className="header">Schedule Details</p>
@@ -61,8 +61,8 @@ const ViewSchedule = () => {
                 <div key={idx} className=" grid grid-cols-5 gap-4">
                   {rosteridx.schedules?.map((schedule, scheduleIdx) => (
                     <div key={scheduleIdx}>
-                      <p>{capitalizeString(schedule.user?.fullname)}</p>
-                      <p>{capitalizeString(schedule.user?.position)}</p>
+                      <p>{capitalizeString(schedule.user?.fullname || "")}</p>
+                      <p>{capitalizeString(schedule.user?.position || "")}</p>
                       <p>{schedule.shift} Shift</p>
                       <p>{schedule.user?.contact_no}</p>
                     </div>

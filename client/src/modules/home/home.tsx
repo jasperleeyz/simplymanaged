@@ -138,7 +138,6 @@ const Home = () => {
     //     });
     // }
   }, []);
-
   return (
     <div className="w-full md:flex">
       <div className="md:w-1/5 text-center">

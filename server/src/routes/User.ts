@@ -117,6 +117,42 @@ userRouter.get("/", async (req, res) => {
   }
 });
 
+userRouter.get("/:department_id", async (req, res) => {
+  const logged_in_user = req.headers?.["x-access-user"] as any;
+  const company_id = logged_in_user["company_id"];
+  const { department_id } = req.params;
+  const { page, size, sort, filter } = req.query;
+
+  try {
+    const findObject = generateFindObject(page, size, sort, filter);
+    findObject.where = { ...findObject.where, company_id: Number(company_id), department_id: Number(department_id) };
+    findObject.include = {
+      employment_details: true,
+      preferences: true,
+      department_in_charge: true,
+    };
+
+    const users = await prisma.$transaction([
+      prisma.user.count({ where: findObject.where }),
+      prisma.user.findMany(findObject),
+    ]);
+
+    const usersWithoutPassword = users[1].map((user) => {
+      const { password, ...userWithoutPassword } = user;
+      userWithoutPassword.profile_image =
+        (userWithoutPassword?.profile_image?.toString() as any) || null;
+      return userWithoutPassword;
+    });
+
+    res
+      .status(200)
+      .json(generateResultJson(usersWithoutPassword, users[0], page, size));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error getting users.");
+  }
+});
+
 userRouter.get("/:user_id", async (req, res) => {
   const { user_id } = req.params;
   const logged_in_user = req.headers?.["x-access-user"] as any;
