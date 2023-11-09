@@ -1,5 +1,7 @@
 import React from "react";
-import { IUserSchedule, IRoster } from "../../../shared/model/schedule.model";
+import { useEffect } from "react";
+import { IRoster } from "../../../shared/model/schedule.model";
+import { PATHS } from "../../../configs/constants";
 import { useLocation } from "react-router-dom";
 import BackButton from "../../../shared/layout/buttons/back-button";
 import EditButton from "../../../shared/layout/buttons/edit-button";
@@ -7,16 +9,35 @@ import DeleteButton from "../../../shared/layout/buttons/delete-button";
 import LabeledField from "../../../shared/layout/fields/labeled-field";
 import { Avatar, Label } from "flowbite-react";
 import { capitalizeString } from "../../../configs/utils";
-import moment from "moment";
+import { useNavigate } from "react-router-dom";
+import { deleteRoster } from "../../../shared/api/roster.api";
+import { toast } from "react-toastify";
+import DeleteSchedulePrompt from "../../../modules/schedule/manager/delete-schedule-prompt";
 
 const ViewSchedule = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const roster = location.state?.roster as IRoster[];
   const type = location.state?.type as string;
   const date = new Date();
   const startDate = new Date(roster[0].start_date);
   const currentDate = new Date();
-  console.log(roster);
+  const [rosterToDelete, setRosterToDelete] = React.useState<IRoster | null>(null);
+  const [submitLoading, setSubmitLoading] = React.useState(false);
+  useEffect(() => {
+    if(submitLoading && rosterToDelete){
+      deleteRoster(rosterToDelete).finally(() => {
+        toast.success("Roster delete successfully");
+        navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+        setRosterToDelete(null)
+        setSubmitLoading(false)
+      })
+    }
+  }, [submitLoading]);
+
+  const [openModal, setOpenModal] = React.useState(false);
+  const modalProps = { openModal, setOpenModal };
+
   return (
     <div id="schedule-details-main">
       <p className="header">Schedule Details</p>
@@ -30,6 +51,12 @@ const ViewSchedule = () => {
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />
           <div id="schedule-employees">
             {roster.map((rosteridx, idx) => (
+              <div className = "mt-2">
+                <div className="flex">
+                <p style={{ marginRight: '10px' }}>Created by: {rosteridx.created_by}</p>
+                <p style={{ marginRight: '10px' }}>Start Date: {new Date(rosteridx.start_date).toLocaleDateString()}</p>
+                <p>End Date: {new Date(rosteridx.end_date).toLocaleDateString()}</p>
+                </div>
               <div className="border border-solid border-black p-2 mt-2">
                 <p>{rosteridx.type}</p>
                 <div key={idx} className=" grid grid-cols-5 gap-4">
@@ -43,11 +70,21 @@ const ViewSchedule = () => {
                   ))}
                 </div>
                 {startDate > currentDate && (
-                  <div className="mt-4 flex">
-                    <EditButton size="sm" />
-                    <DeleteButton size="sm" />
-                  </div>
+                  <div className="mt-4 flex" style={{ justifyContent: "flex-end" }}>
+                  <EditButton size="sm" style={{ marginRight: "10px" }} onClick={() => {
+                    navigate(`/${PATHS.SCHEDULE}/${PATHS.EDIT_SCHEDULE}`, {
+                      state: { rosteridx },
+                      replace: true
+                    });
+                  }}/>
+                  <DeleteButton size="sm"
+                  onClick={() => {
+                    setRosterToDelete(rosteridx);
+                    setSubmitLoading(true);
+                    }} />
+                </div>
                 )}
+              </div>
               </div>
             ))}
             {/* {schedule.employeesSelected.map((employee, idx) => (

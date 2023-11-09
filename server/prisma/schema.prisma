@@ -330,18 +330,30 @@ model Roster {
   end_date      DateTime
   type          String
   created_by    String
-  created_date  DateTime        @default(now())
+  created_date  DateTime         @default(now())
   updated_by    String
-  updated_date  DateTime        @updatedAt
-  schedules     UserSchedule[]  @relation("roster_schedules")
-  company       Company         @relation("company_rosters", fields: [company_id], references: [id])
-  department    Department      @relation("department_rosters", fields: [department_id, company_id], references: [id, company_id])
-  location      CompanyLocation @relation("location_rosters", fields: [location_id, company_id], references: [id, company_id])
+  updated_date  DateTime         @updatedAt
+  schedules     UserSchedule[]   @relation("roster_schedules")
+  company       Company          @relation("company_rosters", fields: [company_id], references: [id])
+  department    Department       @relation("department_rosters", fields: [department_id, company_id], references: [id, company_id])
+  location      CompanyLocation  @relation("location_rosters", fields: [location_id, company_id], references: [id, company_id])
+  positions     RosterPosition[] @relation("roster_positions")
 
   @@id([id, company_id])
   @@index([company_id])
   @@index([department_id, company_id])
   @@index([location_id, company_id])
+}
+
+model RosterPosition {
+  roster_id  Int
+  company_id Int
+  position   String
+  count      Int
+  roster     Roster @relation("roster_positions", fields: [roster_id, company_id], references: [id, company_id])
+
+  @@id([roster_id, company_id, position])
+  @@index([roster_id, company_id])
 }
 
 model RosterTemplate {

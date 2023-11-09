@@ -43,17 +43,20 @@ const PersonalDateBox = ({
       <div className="flex items-center justify-between">
         <p>{date.date()}</p>
         <div className="rounded-full">
-          {rosterType === "SHIFT" && moment(schedule?.start_date).isAfter(new Date())  && (
-            <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
-              <Dropdown.Item
-                onClick={() => {
-                  navigate(`/${PATHS.REQUESTS}/${PATHS.ADD_SWAP_REQUEST}`, {state: {schedule}})
-                }}
-              >
-                Swap
-              </Dropdown.Item>
-            </Dropdown>
-          )}
+          {rosterType === "SHIFT" &&
+            moment(schedule?.start_date).isAfter(new Date()) && (
+              <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
+                <Dropdown.Item
+                  onClick={() => {
+                    navigate(`/${PATHS.REQUESTS}/${PATHS.ADD_SWAP_REQUEST}`, {
+                      state: { schedule },
+                    });
+                  }}
+                >
+                  Swap
+                </Dropdown.Item>
+              </Dropdown>
+            )}
         </div>
       </div>
       <br />
@@ -62,16 +65,24 @@ const PersonalDateBox = ({
           <p className="absolute whitespace-normal">No schedule for the day</p>
         </div>
       )}
-      {schedule && (
+      {date.isAfter(moment(new Date())) && schedule ? (
         <div>
-          {/* <p className="absolute whitespace-normal">No schedule for the day</p>
-        <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
           <div className="bg-green-300 rounded p-1">
             <Label>{schedule.roster?.location?.name}</Label>
             <Label>{schedule?.roster?.type}</Label>
             <Label>{schedule?.status}</Label>
           </div>
         </div>
+      ) : date.isBefore(moment(new Date())) && schedule ? (
+        <div>
+          <div className="bg-red-300 rounded p-1">
+            <Label>{schedule.roster?.location?.name}</Label>
+            <Label>{schedule?.roster?.type}</Label>
+            <Label>{schedule?.status}</Label>
+          </div>
+        </div>
+      ) : (
+        <div>{}</div>
       )}
     </div>
   );

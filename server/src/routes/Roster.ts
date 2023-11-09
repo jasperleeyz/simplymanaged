@@ -101,12 +101,13 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
       const createdTemplate = await tx.rosterTemplate.create({
         data: {
           id: id,
-          company_id,
-          roster_type,
-          name,
-          no_of_employees,
-          created_by,
-          updated_by
+          company_id: company_id,
+          roster_type: roster_type,
+          name: name,
+          no_of_employees: no_of_employees,
+          created_by: created_by,
+          updated_by: updated_by,
+          updated_date: new Date()
         },
       });
       for (const positionItem of positions) {
@@ -140,7 +141,8 @@ RosterRouter.post("/create/roster", async (req, res) => {
       type,
       created_by,
       updated_by,
-      schedules
+      schedules,
+      positions
     } = req.body;
 
     const id = await getNextSequenceValue(
@@ -148,42 +150,54 @@ RosterRouter.post("/create/roster", async (req, res) => {
       SEQUENCE_KEYS.USER_SEQUENCE
     )
     
-    const rosterTemplate = await prisma.$transaction(async (tx) => {
-      const createdTemplate = await tx.roster.create({
+    const roster = await prisma.$transaction(async (tx) => {
+      const created = await tx.roster.create({
         data: {
           id: id,
-          company_id,
-          location_id,
-          department_id,
-          start_date,
-          end_date,
-          type,
-          created_by,
-          updated_by
+          company_id: company_id,
+          location_id: location_id,
+          department_id: department_id,
+          start_date: start_date,
+          end_date: end_date,
+          type: type,
+          created_by: created_by,
+          updated_by: updated_by,
+          updated_date: new Date()
         },
       });
-      for (const scheduleItem of schedules) {
+      for (const schedule of schedules) {
         await tx.userSchedule.create({
           data: {
-            user_id: scheduleItem.user_id,
-            user_company_id: scheduleItem.user_company_id,
+            user_id: schedule.user_id,
+            user_company_id: schedule.user_company_id,
             roster_id: id,
-            start_date: scheduleItem.start_date,
-            end_date: scheduleItem.end_date,
-            shift: scheduleItem.shift,
-            status: scheduleItem.status,
-            created_by: scheduleItem.created_by,
-            updated_by: scheduleItem.updated_by
+            start_date: schedule.start_date,
+            end_date: schedule.end_date,
+            shift: schedule.shift,
+            status: schedule.status,
+            created_by: schedule.created_by,
+            updated_by: schedule.updated_by,
+            updated_date: new Date()
           },
         });
-      }
+      };
+      for (const position of positions) {
+        await tx.rosterPosition.create({
+          data: {
+            roster_id: id,
+            company_id: position.company_id,
+            position: position.position,
+            count: position.count,
+          },
+        });
+      };
     });
     res.status(200).json({
-      rosterTemplate: rosterTemplate,
+      roster: roster,
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating roster template.");
+    res.status(400).send("Error creating roster");
   }
 });
 
@@ -238,7 +252,8 @@ RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
             user: true
           }
         },
-        //location: true
+      positions: true,
+      //location: true
       },
     });
 
@@ -246,5 +261,98 @@ RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(400).send("Error retrieving roster.");
+  }
+});
+
+RosterRouter.delete("/delete/roster", async (req, res) => {
+  try {
+    const { id, company_id } = req.body;
+
+    const roster = await prisma.$transaction(async (tx) => {
+      await tx.userSchedule.deleteMany({
+        where: {
+          roster_id: id,
+        }
+      });
+      await tx.rosterPosition.deleteMany({
+        where: {
+          roster_id: id,
+        }
+      });
+
+      await tx.roster.delete({
+        where: {
+          id_company_id: {
+            id,
+            company_id,
+          },
+        },
+      });
+
+
+    });
+
+    res.status(200).json({
+      message: 'Roster deleted',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Error deleting roster template.");
+  }
+});
+
+RosterRouter.post("/update/roster", async (req, res) => {
+  const user = req.headers["x-access-user"] as any;
+  try {
+    const {
+      id,
+      company_id,
+      type,
+      schedules
+    } = req.body;
+
+
+    const roster = await prisma.$transaction(async (tx) => {
+      const updatedRoster = await tx.roster.update({
+        where: {
+          id_company_id: {
+            company_id,
+            id : id
+          },
+        },
+        data: {
+          type,
+          updated_by: user["name"]
+        },
+      });
+      await tx.userSchedule.deleteMany({
+        where: {
+          roster_id: id,
+        }
+      });
+      for (const scheduleItem of schedules) {
+        await tx.userSchedule.create({
+          data: {
+            user_id: scheduleItem.user_id,
+            user_company_id: scheduleItem.user_company_id,
+            roster_id: id,
+            start_date: scheduleItem.start_date,
+            end_date: scheduleItem.end_date,
+            shift: scheduleItem.shift,
+            status: scheduleItem.status,
+            created_by: scheduleItem.created_by,
+            created_date: scheduleItem.created_date,
+            updated_by: user["name"],
+            updated_date: new Date()
+          },
+        });
+      }
+    });
+    res.status(200).json({
+      roster: roster,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error updating Roster.");
   }
 });

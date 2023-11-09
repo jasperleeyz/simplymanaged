@@ -3,8 +3,9 @@ const jwt = require("jsonwebtoken");
 const config = process.env;
 
 const verifyToken = (req, res, next) => {
-    if (!["/login", "/registration"].includes(req.path.replace("/api", "")) &&
-        !req.path.replace("/api", "").startsWith("/code/registration")
+    if (!["/login", "/registration", "/forget-password"].includes(req.path.replace("/api", "")) &&
+        !req.path.replace("/api", "").startsWith("/reset-password")
+        && !req.path.replace("/api", "").startsWith("/code/registration")
         && !req.path.replace("/api", "").startsWith("/subscription/model")
         && !req.path.replace("/api", "").startsWith("/test") // TODO: to remove after testing
     ) {

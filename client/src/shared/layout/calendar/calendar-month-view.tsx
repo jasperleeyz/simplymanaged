@@ -1,10 +1,11 @@
 "use client";
 import { useContext, useState, useEffect } from "react";
-import { CustomFlowbiteTheme, Table } from "flowbite-react";
+import { CustomFlowbiteTheme, Table, Spinner } from "flowbite-react";
 import PersonalDateBox from "./personal-date-box";
 import moment from "moment";
 import ScheduleDateBox from "./schedule-date-box";
 import React from "react";
+import { ROLES } from "../../../configs/constants";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import {
   getAllUserSchedule,
@@ -40,7 +41,8 @@ const CalendarMonthView = ({
   location,
 }: IProps) => {
   const { globalState } = useContext(GlobalStateContext);
-
+  const [loading, setLoading] =
+    React.useState(false);
   const cal = [] as CalObject[];
 
   const date = moment(new Date(year, month, 1));
@@ -63,6 +65,7 @@ const CalendarMonthView = ({
   useEffect(() => {
     const from = new Date(year, month);
     const to = new Date(year, month + 1);
+    setLoading((prev) => true);
     if (isPersonal) {
       getUserScheduleFromAndTo(
         globalState?.user?.company_id || 0,
@@ -71,19 +74,41 @@ const CalendarMonthView = ({
         to
       )
         .then((res) => {
-          //console.log(res.data)
           setScheduleList(res.data);
         })
-        .finally(() => {});
+        .finally(() => {setLoading((prev) => false);});
     } else {
       getRosterFromAndTo(globalState?.user?.company_id || 0, from, to)
         .then((res) => {
-          //console.log(res.data);
-          setRosterList(res.data);
+          if(globalState?.user?.role == ROLES.MANAGER)
+          {
+            setRosterList(res.data);
+          }
+          else{
+            const resData: IRoster[] = res.data as IRoster[];
+            const schedulesToRemove: number[] = [];
+            resData.map((ros, ridx) =>{
+              if(ros.type == "SHIFT"){
+              const filteredPositions = ros.positions?.filter((pos) => {
+                return pos.position === globalState?.user?.position; // Example condition
+              });
+              const filteredSchedulePositions = ros.schedules?.filter((sch) =>{
+                return sch.user?.position === globalState?.user?.position;
+              })
+              if(filteredPositions && filteredSchedulePositions){
+                if(filteredSchedulePositions?.length < filteredPositions[0]?.count)
+                {
+                  schedulesToRemove.push(ridx)
+                }
+              }
+          }});
+            const filteredResData = resData.filter((_, ridx) => schedulesToRemove.includes(ridx));
+            setRosterList(filteredResData)
+          }
         })
-        .finally(() => {});
+        .finally(() => {setLoading((prev) => false);});
     }
-  }, [isPersonal]);
+  }, [isPersonal, month, year, location]);
 
   /*const scheduleForMonth = scheduleList?.filter(
     (schedule) =>
@@ -106,6 +131,14 @@ const CalendarMonthView = ({
           <Table.HeadCell>Saturday</Table.HeadCell>
         </Table.Head>
         <Table.Body>
+        {loading ? (
+                <Table.Row>
+                  <Table.Cell colSpan={6} className="text-center">
+                    <Spinner size="xl" />
+                  </Table.Cell>
+                </Table.Row>
+            ) : (
+              <>
           {cal.map((week, idx) => {
             return (
               <Table.Row key={idx}>
@@ -148,6 +181,8 @@ const CalendarMonthView = ({
               </Table.Row>
             );
           })}
+          </>)
+}
         </Table.Body>
       </Table>
     </div>

@@ -90,6 +90,7 @@ const Login = () => {
   return (
     <div className="md:w-1/2 mx-auto">
       <Card>
+        <p className="text-lg font-semibold mb-3 text-center">Login</p>
         <Formik
           initialValues={{ email: "", password: "" }}
           onSubmit={async (values, { setSubmitting }) => {
@@ -97,7 +98,6 @@ const Login = () => {
             try {
               await login(values);
             } catch (err) {
-              console.error(err);
               setLoginError(err as string);
             } finally {
               setSubmitting(false);

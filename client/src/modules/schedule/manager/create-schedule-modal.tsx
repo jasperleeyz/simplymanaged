@@ -5,25 +5,32 @@ import {
   Label,
   Select,
   Modal,
-  TextInput,
+  Spinner,
   Checkbox,
 } from "flowbite-react";
 import { toast } from "react-toastify";
+import { PATHS } from "../../../configs/constants";
+import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
-import { IRosterTemplate } from "../../../shared/model/schedule.model";
+import { IRoster, IRosterPosition } from "../../../shared/model/schedule.model";
 import { getAllEmployees } from "../../../shared/api/user.api";
-import { createRosterTemplate } from "../../../shared/api/roster.api";
 
 type IProps = {
-  createRosterTemplateModal: boolean;
-  setCreateRosterTemplateModal: React.Dispatch<React.SetStateAction<boolean>>;
+  createScheduleModal: boolean;
+  setCreateScheduleModal: React.Dispatch<React.SetStateAction<boolean>>;
+  rosterPosition:IRosterPosition[];
+  setRosterPosition: React.Dispatch<React.SetStateAction<IRosterPosition[]>>;
+  rosterType:string;
+  setRosterType:React.Dispatch<React.SetStateAction<string>>;
 };
 
-const CreateRosterTemplateModal = (props: IProps) => {
+const CreateScheduleModal = (props: IProps) => {
   const { globalState } = useContext(GlobalStateContext);
-  const [templatePositions, setTemplatePositions] = useState<{
+  const navigate = useNavigate();
+  const [positions, setPositions] = useState<{
     [key: string]: number;
   }>({});
+  //const [schedulePosition, setSchedulePosition] = React.useState<IRosterPosition[]>([])
   const [showConfirmationModal, setShowConfirmationModal] =
     React.useState(false);
 
@@ -35,68 +42,42 @@ const CreateRosterTemplateModal = (props: IProps) => {
           acc[position] = (acc[position] || 0) + 1;
           return acc;
         }, {});
-        setTemplatePositions(templatePosition);
+        setPositions(templatePosition);
       })
       .finally(() => {});
-  }, [props.createRosterTemplateModal]);
-
-  const [rosterTemplate, setRosterTemplate] = React.useState<IRosterTemplate>({
-    company_id: globalState?.user?.company_id || 0,
-    roster_type: "",
-    name: "",
-    no_of_employees: 0,
-    created_by: globalState?.user?.fullname || "",
-    updated_by: globalState?.user?.fullname || "",
-    positions: [],
-  });
-
-  useEffect(() => {
-    setRosterTemplate((prevTemplate) => ({
-      ...prevTemplate,
-      company_id: globalState?.user?.company_id || 0,
-      roster_type: "",
-      name: "",
-      no_of_employees: 0,
-      created_by: globalState?.user?.fullname || "",
-      updated_by: globalState?.user?.fullname || "",
-      positions: [],
-    }));
-    setPositionSelectedCount([]);
-  }, [props.createRosterTemplateModal]);
+  }, [props.createScheduleModal]);
 
   const [positionSelectedCount, setPositionSelectedCount] = React.useState({});
 
   useEffect(() => {
     const newPositions = Object.keys(positionSelectedCount).map((position) => ({
-      roster_template_id: 0,
       company_id: globalState?.user?.company_id || 0,
       position: position,
       count: positionSelectedCount[position],
     }));
-
-    setRosterTemplate((prevTemplate) => ({
-      ...prevTemplate,
-      positions: newPositions,
-    }));
+    props.setRosterPosition(newPositions);
   }, [positionSelectedCount]);
+
+  const [numOfEmployee, setNumOfEmployee] = useState(0)
+  useEffect(() => {
+    const totalCount = props.rosterPosition.reduce((total, pos) => total + pos.count, 0);
+    console.log('Total Count:', totalCount);
+    setNumOfEmployee(totalCount)
+  }, [numOfEmployee, props.rosterPosition]);
 
   const [selectedPosition, setSelectedPosition] = useState("");
 
   useEffect(() => {
-    setSelectedPosition(Object.keys(templatePositions)[0]);
-  }, [templatePositions]);
+    setSelectedPosition(Object.keys(positions)[0]);
+  }, [positions]);
 
   const incrementSelectedCount = (position) => {
     const currentCount = positionSelectedCount[position] || 0;
-    const limit = templatePositions[position] || 0; // Get the position count limit
+    const limit = positions[position] || 0; // Get the position count limit
     if (currentCount < limit) {
       setPositionSelectedCount((prevPositionSelectedCount) => ({
         ...prevPositionSelectedCount,
         [position]: currentCount + 1,
-      }));
-      setRosterTemplate((prevTemplate) => ({
-        ...prevTemplate,
-        no_of_employees: prevTemplate.no_of_employees + 1,
       }));
     }
   };
@@ -108,36 +89,37 @@ const CreateRosterTemplateModal = (props: IProps) => {
         ...prevPositionSelectedCount,
         [position]: currentCount - 1,
       }));
-      setRosterTemplate((prevTemplate) => ({
-        ...prevTemplate,
-        no_of_employees: prevTemplate.no_of_employees - 1,
-      }));
     }
   };
 
   const [submitLoading, setSubmitLoading] = React.useState(false);
   useEffect(() => {
     if(submitLoading){
-      createRosterTemplate(rosterTemplate).finally(()=>{
+      /*createRosterTemplate().finally(()=>{
         toast.success("Template create successfully");
         setShowConfirmationModal(false);
-        props.setCreateRosterTemplateModal((prev) => false);
-      })
+        
+      })*/
+      props.setCreateScheduleModal((prev) => false);
+      setSubmitLoading(false)
+      setShowConfirmationModal(false);
     }
   }, [submitLoading]);
-
+ 
   return (
     <div>
       <Modal
-        show={props.createRosterTemplateModal}
-        onClose={() => props.setCreateRosterTemplateModal((prev) => false)}
+        show={props.createScheduleModal}
+        onClose={() => {props.setCreateScheduleModal((prev) => false)
+          navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+      }}
       >
-        <Modal.Header>Create Roster Template</Modal.Header>
+        <Modal.Header>Create Roster</Modal.Header>
         <Modal.Body>
-          <Label className="my-2 text-l" value="Template Position"></Label>
+          <Label className="my-2 text-l" value="Position"></Label>
           <div className="flex my-2">
             <Select onChange={(e) => setSelectedPosition(e.target.value)}>
-              {Object.keys(templatePositions).map((position, index) => (
+              {Object.keys(positions).map((position, index) => (
                 <option key={index} value={position}>
                   {position}
                 </option>
@@ -160,12 +142,12 @@ const CreateRosterTemplateModal = (props: IProps) => {
               </div>
             ) : null}
           </div>
-          {rosterTemplate.no_of_employees > 0 ? (
+          {numOfEmployee > 0 ? (
             <div className="my-2">
               <Label
                 className="text-l"
                 htmlFor="template-details"
-                value="Template Details"
+                value="Required Employees"
               />
               {Object.keys(positionSelectedCount).map((position, index) => (
                 <div className="my-2" key={index}>
@@ -176,7 +158,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
                   )}
                 </div>
               ))}
-              No of Employees - {rosterTemplate.no_of_employees}
+              No of Employees - {numOfEmployee}
             </div>
           ) : null}
           <div className="my-2">
@@ -187,38 +169,14 @@ const CreateRosterTemplateModal = (props: IProps) => {
             />
             <Checkbox
               className="flex w-10 h-10"
-              value={rosterTemplate.roster_type}
-              checked={rosterTemplate.roster_type == "SHIFT"}
+              value={props.rosterType}
+              checked={props.rosterType == "SHIFT"}
               onChange={() => {
-                if (rosterTemplate.roster_type == "SHIFT") {
-                  setRosterTemplate((prevTemplate) => ({
-                    ...prevTemplate,
-                    roster_type: "PROJECT",
-                  }));
+                if (props.rosterType == "SHIFT") {
+                  props.setRosterType("PROJECT")
                 } else {
-                  setRosterTemplate((prevTemplate) => ({
-                    ...prevTemplate,
-                    roster_type: "SHIFT",
-                  }));
+                  props.setRosterType("SHIFT")
                 }
-              }}
-            />
-          </div>
-          <div>
-            <Label
-              className="text-l"
-              htmlFor="create-template"
-              value="Template Name"
-            />
-            <TextInput
-              style={{ width: "150px" }}
-              maxLength={10}
-              autoComplete="off"
-              onChange={(e) => {
-                setRosterTemplate((prevTemplate) => ({
-                  ...prevTemplate,
-                  name: e.target.value,
-                }));
               }}
             />
           </div>
@@ -243,7 +201,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
       >
         <Modal.Header>Confirmation</Modal.Header>
         <Modal.Body>
-          <div>Create {rosterTemplate?.name} ?</div>
+          <div>Create ?</div>
         </Modal.Body>
         <Modal.Footer>
           <div className="w-full md:w-1/2 ms-auto flex justify-center">
@@ -273,4 +231,4 @@ const CreateRosterTemplateModal = (props: IProps) => {
   );
 };
 
-export default CreateRosterTemplateModal;
+export default CreateScheduleModal;

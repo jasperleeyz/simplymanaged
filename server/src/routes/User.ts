@@ -1,9 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
-import { generateSalt, hashPassword } from "../utils/security";
+import { checkPassword, generateSalt, hashPassword } from "../utils/security";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { SEQUENCE_KEYS, SUBSCRIPTION_STATUS } from "../utils/constants";
 import { getNextSequenceValue } from "../utils/sequence";
+import { ValidationError } from "../errors/validation-error";
 
 export const userRouter = express.Router();
 
@@ -57,7 +58,11 @@ userRouter.get("/info", async (req, res) => {
           company_id: logged_in_user?.company_id,
           email: logged_in_user?.email,
         },
-        include: { employment_details: true, preferences: true, department_in_charge: true },
+        include: {
+          employment_details: true,
+          preferences: true,
+          department_in_charge: true,
+        },
       });
     }
 
@@ -85,10 +90,14 @@ userRouter.get("/", async (req, res) => {
   try {
     const findObject = generateFindObject(page, size, sort, filter);
     findObject.where = { ...findObject.where, company_id: Number(company_id) };
-    findObject.include = { employment_details: true, preferences: true, department_in_charge: true };
+    findObject.include = {
+      employment_details: true,
+      preferences: true,
+      department_in_charge: true,
+    };
 
     const users = await prisma.$transaction([
-      prisma.user.count({where: findObject.where}),
+      prisma.user.count({ where: findObject.where }),
       prisma.user.findMany(findObject),
     ]);
 
@@ -112,20 +121,20 @@ userRouter.get("/:user_id", async (req, res) => {
   const { user_id } = req.params;
   const logged_in_user = req.headers?.["x-access-user"] as any;
   const company_id = logged_in_user["company_id"];
-  
+
   try {
-    const user = await prisma.user.findFirst({
+    const user = (await prisma.user.findFirst({
       where: {
         id: Number(user_id),
         company_id: Number(company_id),
       },
       include: { employment_details: true, preferences: true },
-    }) as any;
+    })) as any;
 
     const { password, ...userWithoutPassword } = user;
     userWithoutPassword.profile_image =
       (userWithoutPassword?.profile_image?.toString() as any) || null;
-    
+
     res.status(200).json(generateResultJson(userWithoutPassword));
   } catch (error) {
     console.error(error);
@@ -209,7 +218,9 @@ userRouter.post("/create", async (req, res) => {
           department_id: Number(department_id),
           employment_details: {
             create: {
-              working_hours: Number(Number(employment_details.working_hours).toFixed(2)),
+              working_hours: Number(
+                Number(employment_details.working_hours).toFixed(2)
+              ),
               employment_type: employment_details.employment_type,
             },
           },
@@ -254,7 +265,7 @@ userRouter.post("/update", async (req, res) => {
   const { user_id, user_company_id, ...employment_details_without_ids } =
     employment_details;
 
-    console.log(Number(employment_details_without_ids.working_hours));
+  console.log(Number(employment_details_without_ids.working_hours));
 
   try {
     const user = await prisma.user.update({
@@ -320,5 +331,70 @@ userRouter.post("/update", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(400).send("Error updating employee. Please try again later.");
+  }
+});
+
+userRouter.post("/change-password", async (req, res) => {
+  try {
+    const {
+      current_password: currentPasswordB64,
+      password: newPasswordB64,
+      confirm_password: confirmPasswordB64,
+    } = req.body;
+    const logged_in_user = req.headers?.["x-access-user"] as any;
+    const company_id = logged_in_user["company_id"];
+    const user_id = logged_in_user["user_id"];
+
+    if (!currentPasswordB64 || !newPasswordB64 || !confirmPasswordB64) {
+      throw new ValidationError("Missing required fields.");
+    }
+    if (newPasswordB64 !== confirmPasswordB64) {
+      throw new ValidationError("Passwords do not match.");
+    }
+
+    // get user's password
+    const user = await prisma.user.findFirst({
+      where: {
+        id: user_id,
+        company_id: company_id,
+      },
+      select: {
+        id: true,
+        company_id: true,
+        fullname: true,
+        password: true,
+      },
+    });
+
+    if(!user) {
+      throw new ValidationError("User not found.");
+    }
+
+    // compare current password
+    if(!checkPassword(Buffer.from(currentPasswordB64, 'base64').toString(), user.password)) {
+      throw new ValidationError("Current password is incorrect.");
+    }
+
+    // update password
+    await prisma.user.update({
+      where: {
+        id_company_id: {
+          id: user_id,
+          company_id: company_id,
+        },
+      },
+      data: {
+        password: hashPassword(Buffer.from(newPasswordB64, 'base64').toString(), generateSalt()),
+      },
+    });
+
+    res.status(200).json(generateResultJson("success"));
+  } catch (error) {
+    console.error(error);
+    if (error instanceof ValidationError) {
+      res.status(400).send(error.message);
+    } else {
+      res.status(400).send("Error changing password. Please try again later.");
+    }
   }
 });

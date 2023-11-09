@@ -191,12 +191,11 @@ const Calendar = () => {
               </>
             ) : null}
           </div>
-          {globalState?.user?.role === ROLES.MANAGER && (
             <div className="ms-auto mt-3 flex">
               <Button size="sm" onClick={() => setIsPersonal((prev) => !prev)}>
                 {!isPersonal ? "View Personal Schedule" : "View All Schedules"}
               </Button>
-              {!isPersonal && (
+              {!isPersonal && globalState?.user?.role === ROLES.MANAGER && (
                 <div className="flex">
                   <Button
                     size="sm"
@@ -213,12 +212,11 @@ const Calendar = () => {
                     className="ml-3"
                   >
                     <HiCalendar className="my-auto mr-2" />
-                    Create Schedule
+                    Create Roster
                   </Button>
                 </div>
               )}
             </div>
-          )}
         </div>
         <CalendarMonthView
           month={month}

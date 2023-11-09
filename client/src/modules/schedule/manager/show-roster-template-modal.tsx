@@ -1,6 +1,6 @@
 import React from "react";
 import { useContext, useState, useEffect } from "react";
-import { Button, Label, Select, Modal } from "flowbite-react";
+import { Button, Label, Select, Modal, Spinner } from "flowbite-react";
 import { toast } from "react-toastify";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import { IRosterTemplate } from "../../../shared/model/schedule.model";
@@ -22,14 +22,20 @@ const ShowRosterTemplateModal = (props: IProps) => {
   const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
   const [showConfirmationModal, setShowConfirmationModal] =
     React.useState(false);
+  const [loading, setLoading] =
+    React.useState(false);
   useEffect(() => {
+    if(showConfirmationModal == false){
+    setLoading((prev) => true);
     getRosterTemplate(globalState?.user?.company_id || 0)
       .then((res) => {
         setTemplateList(res.data);
       })
       .finally(() => {
+        setLoading((prev) => false);
       });
-  }, [props.showRosterTemplateModal]);
+    }
+  }, [props.showRosterTemplateModal, showConfirmationModal]);
 
   const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();
   useEffect(() => {
@@ -69,45 +75,50 @@ const ShowRosterTemplateModal = (props: IProps) => {
         <Modal.Header>Roster Template</Modal.Header>
         <Modal.Body>
           <Label className="text-l" value="Template Name" />
-          <div className="flex my-2">
-            {templateList.length > 0 ? (
-              <Select
-                onChange={(e) => {
-                  const selectedTemplateName = e.target.value;
-                  const selectedTemplateObject = templateList.find(
-                    (template) => template.name === selectedTemplateName
-                  );
-                  setSelectedTemplate(selectedTemplateObject);
-                }}
-              >
-                {templateList.map((template, index) => (
-                  <option key={index} value={template.name}>
-                    {template.name}
-                  </option>
-                ))}
-              </Select>
+          <div className="my-2">
+            {loading ? (
+              <Spinner size="xl" />
             ) : (
-              <p>No roster template available</p>
+              <>
+                {templateList.length > 0 ? (
+                    <Select
+                      onChange={(e) => {
+                        const selectedTemplateName = e.target.value;
+                        const selectedTemplateObject = templateList.find(
+                          (template) => template.name === selectedTemplateName
+                        );
+                        setSelectedTemplate(selectedTemplateObject);
+                      }}
+                    >
+                      {templateList.map((template, index) => (
+                        <option key={index} value={template.name}>
+                          {template.name}
+                        </option>
+                      ))}
+                    </Select>
+                ) : (
+                  <p>No roster template available</p>
+                )}
+
+                {selectedTemplate && (
+                  <div>
+                    <Label className="my-2 text-l">Template Details</Label>
+                    <div>
+                      <span>
+                        Shift Type - {selectedTemplate.roster_type}
+                        {Object.keys(templatePositions).map((position, index) => (
+                          <div key={index}>
+                            {position} - {templatePositions[position]}
+                          </div>
+                        ))}
+                        No of Employees - {selectedTemplate.no_of_employees}
+                      </span>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-          </div>
-          <div>
-            {selectedTemplate && (
-              <div>
-                <Label className="my-2 text-l" value="Template Details"></Label>
-                <div>
-                  <span>
-                    Shift Type - {selectedTemplate.roster_type}
-                    {Object.keys(templatePositions).map((position, index) => (
-                      <div key={index}>
-                        {position} - {templatePositions[position]}
-                      </div>
-                    ))}
-                    No of Employees - {selectedTemplate.no_of_employees}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
+            </div>
         </Modal.Body>
         <Modal.Footer>
           <div className="w-full flex justify-between items-center">

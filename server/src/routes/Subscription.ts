@@ -29,3 +29,17 @@ subscriptionRouter.get("/model/:id", async (req, res) => {
     res.status(400).send("Error retrieving subscription details");
   }
 });
+
+subscriptionRouter.get("/model/:company_id", async (req, res) => {
+  try {
+    const subscription = await prisma.subscription.findMany({
+      where: {
+        company_id: Number(req.params.company_id),
+      },
+    });
+    res.status(200).json(generateResultJson(subscription));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error retrieving subscription details");
+  }
+});

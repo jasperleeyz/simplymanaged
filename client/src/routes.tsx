@@ -16,6 +16,9 @@ import DepartmentManagementRoutes from "./modules/department-management";
 import LocationManagementRoutes from "./modules/location-management";
 import CompanyCodeManagementRoutes from "./modules/company-code-management";
 import CompanyManagementRoutes from "./modules/company-management";
+import ForgetPassword from "./shared/auth/forget-password";
+import ResetPassword from "./shared/auth/reset-password";
+import ChangePassword from "./modules/profile/change-password";
 
 const AppRoutes = () => {
   return (
@@ -24,6 +27,8 @@ const AppRoutes = () => {
         <ErrorBoundaryRoutes>
           <Route path="/registration/*" element={<RegistrationRoutes />} />
           <Route path="/login" element={<Login />} />
+          <Route path="forget-password" element={<ForgetPassword />} />
+          <Route path="reset-password" element={<ResetPassword />} />
           <Route
             index
             element={
@@ -45,6 +50,14 @@ const AppRoutes = () => {
             element={
               <PrivateRoute>
                 <ProfileRoutes />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path={`/${PATHS.CHANGE_PASSWORD}`}
+            element={
+              <PrivateRoute>
+                <ChangePassword />
               </PrivateRoute>
             }
           />
