@@ -212,7 +212,7 @@ const Calendar = () => {
                     className="ml-3"
                   >
                     <HiCalendar className="my-auto mr-2" />
-                    Create Schedule
+                    Create Roster
                   </Button>
                 </div>
               )}

@@ -268,8 +268,13 @@ RosterRouter.delete("/delete/roster", async (req, res) => {
   try {
     const { id, company_id } = req.body;
 
-    const rosterTemplate = await prisma.$transaction(async (tx) => {
+    const roster = await prisma.$transaction(async (tx) => {
       await tx.userSchedule.deleteMany({
+        where: {
+          roster_id: id,
+        }
+      });
+      await tx.rosterPosition.deleteMany({
         where: {
           roster_id: id,
         }

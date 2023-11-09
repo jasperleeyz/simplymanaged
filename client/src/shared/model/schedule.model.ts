@@ -31,8 +31,8 @@ export interface IRosterPosition {
 export interface IRoster {
   id?: number;
   company_id: number;
-  location_id: number;
-  department_id: number;
+  location_id?: number;
+  department_id?: number;
   start_date: Date;
   end_date: Date;
   type: string;

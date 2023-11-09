@@ -9,6 +9,8 @@ import {
   Checkbox,
 } from "flowbite-react";
 import { toast } from "react-toastify";
+import { PATHS } from "../../../configs/constants";
+import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import { IRoster, IRosterPosition } from "../../../shared/model/schedule.model";
 import { getAllEmployees } from "../../../shared/api/user.api";
@@ -18,10 +20,13 @@ type IProps = {
   setCreateScheduleModal: React.Dispatch<React.SetStateAction<boolean>>;
   rosterPosition:IRosterPosition[];
   setRosterPosition: React.Dispatch<React.SetStateAction<IRosterPosition[]>>;
+  rosterType:string;
+  setRosterType:React.Dispatch<React.SetStateAction<string>>;
 };
 
 const CreateScheduleModal = (props: IProps) => {
   const { globalState } = useContext(GlobalStateContext);
+  const navigate = useNavigate();
   const [positions, setPositions] = useState<{
     [key: string]: number;
   }>({});
@@ -105,7 +110,9 @@ const CreateScheduleModal = (props: IProps) => {
     <div>
       <Modal
         show={props.createScheduleModal}
-        onClose={() => props.setCreateScheduleModal((prev) => false)}
+        onClose={() => {props.setCreateScheduleModal((prev) => false)
+          navigate(`/${PATHS.SCHEDULE}`, { replace: true });
+      }}
       >
         <Modal.Header>Create Roster</Modal.Header>
         <Modal.Body>
@@ -154,6 +161,25 @@ const CreateScheduleModal = (props: IProps) => {
               No of Employees - {numOfEmployee}
             </div>
           ) : null}
+          <div className="my-2">
+            <Label
+              className="mr-2 text-l"
+              htmlFor="shift-template"
+              value="Shift"
+            />
+            <Checkbox
+              className="flex w-10 h-10"
+              value={props.rosterType}
+              checked={props.rosterType == "SHIFT"}
+              onChange={() => {
+                if (props.rosterType == "SHIFT") {
+                  props.setRosterType("PROJECT")
+                } else {
+                  props.setRosterType("SHIFT")
+                }
+              }}
+            />
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <div className="ml-auto">

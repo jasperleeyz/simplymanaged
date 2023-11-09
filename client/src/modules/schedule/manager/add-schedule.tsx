@@ -86,9 +86,8 @@ const AddSchedule = () => {
     React.useState<IRoster>({
       company_id: globalState?.user?.company_id || 0,
       location_id: 0,
-      department_id: globalState?.user?.department_id || 0,
-      start_date:
-        date || moment(new Date()).add(1, "days").startOf("day").toDate(),
+      department_id: 0,
+      start_date: date || moment(new Date()).add(1, "days").startOf("day").toDate(),
       end_date: date || moment(new Date()).add(1, "days").endOf("day").toDate(),
       type: "PROJECT",
       created_by: globalState?.user?.fullname || "",
@@ -151,11 +150,15 @@ const AddSchedule = () => {
   const [rosterPosition, setRosterPosition] = React.useState<IRosterPosition[]>(
     []
   );
+  const [rosterType, setRosterType] = React.useState("PROJECT")
+
   const modalProps = {
     createScheduleModal,
     setCreateScheduleModal,
     rosterPosition,
     setRosterPosition,
+    rosterType,
+    setRosterType,
   };
 
   useEffect(() => {
@@ -163,8 +166,16 @@ const AddSchedule = () => {
       ...prev,
       positions: rosterPosition,
     }));
-    console.log(scheduleDetailsState);
   }, [rosterPosition]);
+
+  useEffect(() => {
+    setScheduleDetailsState((prev) => ({
+      ...prev,
+      type: rosterType,
+    }));
+  }, [rosterType]);
+
+  console.log(scheduleDetailsState)
 
   const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
   useEffect(() => {
@@ -870,7 +881,7 @@ const AddSchedule = () => {
             />
           </div>
           <div className="mr-5 text-center">
-            <Label htmlFor="Shift" value="Shift" />
+            {/*<Label htmlFor="Shift" value="Shift" />
             <Checkbox
               className="flex w-10 h-10"
               value={scheduleDetailsState.type}
@@ -889,6 +900,7 @@ const AddSchedule = () => {
                 }
               }}
             />
+            */}
           </div>
           {templateList.length > 0 && (
             <div style={{ marginLeft: "auto" }}>

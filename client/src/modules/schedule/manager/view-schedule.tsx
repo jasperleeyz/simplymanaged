@@ -12,6 +12,7 @@ import { capitalizeString } from "../../../configs/utils";
 import { useNavigate } from "react-router-dom";
 import { deleteRoster } from "../../../shared/api/roster.api";
 import { toast } from "react-toastify";
+import DeleteSchedulePrompt from "../../../modules/schedule/manager/delete-schedule-prompt";
 
 const ViewSchedule = () => {
   const location = useLocation();
@@ -34,6 +35,9 @@ const ViewSchedule = () => {
     }
   }, [submitLoading]);
 
+  const [openModal, setOpenModal] = React.useState(false);
+  const modalProps = { openModal, setOpenModal };
+
   return (
     <div id="schedule-details-main">
       <p className="header">Schedule Details</p>
@@ -48,7 +52,11 @@ const ViewSchedule = () => {
           <div id="schedule-employees">
             {roster.map((rosteridx, idx) => (
               <div className = "mt-2">
-                <p>Created by: {rosteridx.created_by}</p>
+                <div className="flex">
+                <p style={{ marginRight: '10px' }}>Created by: {rosteridx.created_by}</p>
+                <p style={{ marginRight: '10px' }}>Start Date: {new Date(rosteridx.start_date).toLocaleDateString()}</p>
+                <p>End Date: {new Date(rosteridx.end_date).toLocaleDateString()}</p>
+                </div>
               <div className="border border-solid border-black p-2 mt-2">
                 <p>{rosteridx.type}</p>
                 <div key={idx} className=" grid grid-cols-5 gap-4">

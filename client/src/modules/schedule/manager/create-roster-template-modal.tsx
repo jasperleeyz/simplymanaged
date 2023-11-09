@@ -183,7 +183,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
             <Label
               className="mr-2 text-l"
               htmlFor="shift-template"
-              value="Shfit"
+              value="Shift"
             />
             <Checkbox
               className="flex w-10 h-10"
