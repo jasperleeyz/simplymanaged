@@ -40,7 +40,7 @@ const Login = () => {
       body: JSON.stringify(loginDetails),
     })
       .then((res) => {
-        if (res.status === 200) {
+        if (res.ok) {
           return res.json().then((data) => {
             // save token to session storage
             sessionStorage.setItem("bearerToken", data.bearerToken);
@@ -98,7 +98,7 @@ const Login = () => {
             try {
               await login(values);
             } catch (err) {
-              setLoginError(err as string);
+                setLoginError(err as string);
             } finally {
               setSubmitting(false);
             }
