@@ -88,8 +88,8 @@ const CalendarMonthView = ({
             const resData: IRoster[] = res.data as IRoster[];
             const schedulesToRemove: number[] = [];
             resData.map((ros, ridx) =>{
+              if(ros.type == "SHIFT"){
               const filteredPositions = ros.positions?.filter((pos) => {
-                // Replace 'yourCondition' with your actual condition
                 return pos.position === globalState?.user?.position; // Example condition
               });
               const filteredSchedulePositions = ros.schedules?.filter((sch) =>{
@@ -101,7 +101,7 @@ const CalendarMonthView = ({
                   schedulesToRemove.push(ridx)
                 }
               }
-            });
+          }});
             const filteredResData = resData.filter((_, ridx) => schedulesToRemove.includes(ridx));
             setRosterList(filteredResData)
           }

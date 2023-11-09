@@ -253,7 +253,7 @@ RosterRouter.get("/get-roster-from-to/:company_id", async (req, res) => {
           }
         },
       positions: true,
-      location: true
+      //location: true
       },
     });
 

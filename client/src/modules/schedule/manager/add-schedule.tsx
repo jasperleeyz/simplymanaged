@@ -90,7 +90,7 @@ const AddSchedule = () => {
       start_date:
         date || moment(new Date()).add(1, "days").startOf("day").toDate(),
       end_date: date || moment(new Date()).add(1, "days").endOf("day").toDate(),
-      type: "",
+      type: "PROJECT",
       created_by: globalState?.user?.fullname || "",
       updated_by: globalState?.user?.fullname || "",
       employees: [],
