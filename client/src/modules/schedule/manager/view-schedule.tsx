@@ -13,15 +13,14 @@ import { useNavigate } from "react-router-dom";
 import { deleteRoster } from "../../../shared/api/roster.api";
 import { toast } from "react-toastify";
 import DeleteSchedulePrompt from "../../../modules/schedule/manager/delete-schedule-prompt";
+import moment from "moment";
 
 const ViewSchedule = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const roster = location.state?.roster as IRoster[];
   const type = location.state?.type as string;
-  const date = new Date();
-  const startDate = new Date(roster[0].start_date);
-  const currentDate = new Date();
+  const startDate = moment(new Date(roster[0].start_date));
   const [rosterToDelete, setRosterToDelete] = React.useState<IRoster | null>(null);
   const [submitLoading, setSubmitLoading] = React.useState(false);
   useEffect(() => {
@@ -45,7 +44,7 @@ const ViewSchedule = () => {
         <LabeledField
           id="schedule-date"
           labelValue="Date"
-          value={startDate.toLocaleDateString()}
+          value={startDate.toDate().toLocaleDateString()}
         />
         <div>
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />
@@ -69,7 +68,7 @@ const ViewSchedule = () => {
                     </div>
                   ))}
                 </div>
-                {startDate > currentDate && (
+                {startDate.isSameOrAfter(moment(), 'day') && (
                   <div className="mt-4 flex" style={{ justifyContent: "flex-end" }}>
                   <EditButton size="sm" style={{ marginRight: "10px" }} onClick={() => {
                     navigate(`/${PATHS.SCHEDULE}/${PATHS.EDIT_SCHEDULE}`, {
