@@ -198,9 +198,10 @@ export const sendApproveRejectRequestEmail = async (
       } else if (requestType.toLowerCase() === "bid") {
         return type === "text"
           ? `
-            Requested Shift: ${request.bid_request.end_date}
+            Requested Schedule Date: ${moment(request.bid_request.start_date).format("DD/MM/YYYY")}
+            Requested Shift: ${request.bid_request.shift}
         `
-          : `Requested Shift: <b>${request.bid_request.end_date}</b>`;
+          : `Requested Shift: <b>${moment(request.bid_request.start_date).format("DD/MM/YYYY")}</b><br/>Requested Shift: <b>${request.bid_request.shift}</b>`;
       }
     };
 

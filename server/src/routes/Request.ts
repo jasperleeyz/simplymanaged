@@ -490,14 +490,17 @@ requestRouter.post("/update", async (req, res) => {
     }
 
     if (swap_request) {
-      const { request_id: swap_request_id, requester_schedule, requested_schedule, ...swap_request_without_id } =
-        swap_request;
+      const {
+        request_id: swap_request_id,
+        requester_schedule,
+        requested_schedule,
+        ...swap_request_without_id
+      } = swap_request;
 
       result = await prisma.$transaction(async (tx) => {
-
         // check if its approved
-        if(status === "A") {
-          const otherRequests = await prisma.swapRequest.findMany({
+        if (status === "A") {
+          const otherRequests = await tx.swapRequest.findMany({
             where: {
               request_id: {
                 not: swap_request_id,
@@ -520,7 +523,8 @@ requestRouter.post("/update", async (req, res) => {
             },
             data: {
               user_id: Number(swap_request_without_id.requested_user_id),
-            }
+              updated_by: "SYSTEM",
+            },
           });
 
           // update requested schedule's user id to requester user id
@@ -532,36 +536,26 @@ requestRouter.post("/update", async (req, res) => {
             },
             data: {
               user_id: Number(swap_request_without_id.requester_user_id),
-            }
+              updated_by: "SYSTEM",
+            },
           });
-        }
 
-        const otherRequests = await prisma.swapRequest.findMany({
-          where: {
-            request_id: {
-              not: swap_request_id,
-            },
-            requested_schedule_id: swap_request.requested_schedule_id,
-            requested_user_id: swap_request.requested_user_id,
-          },
-          select: {
-            request_id: true,
-          },
-        });
-        
-        const otherRequestIds = otherRequests.map((otherRequest) => otherRequest.request_id);
-        for (const otherRequestId of otherRequestIds) {
-          await prisma.request.update({
-            where: {
-              id: otherRequestId,
-            },
-            data: {
-              type: type,
-              status: 'R',
-              updated_by: user,
-            },
-            include: { swap_request: true },
-          });
+          const otherRequestIds = otherRequests.map(
+            (otherRequest) => otherRequest.request_id
+          );
+          for (const otherRequestId of otherRequestIds) {
+            await tx.request.update({
+              where: {
+                id: otherRequestId,
+              },
+              data: {
+                type: type,
+                status: "R",
+                updated_by: "SYSTEM",
+              },
+              include: { swap_request: true },
+            });
+          }
         }
 
         // update request status
@@ -586,30 +580,83 @@ requestRouter.post("/update", async (req, res) => {
       });
 
       updatedRequest = result;
-      await generateScheduleInfoForSwapRequest((updatedRequest as any).swap_request);
+      await generateScheduleInfoForSwapRequest(
+        (updatedRequest as any).swap_request
+      );
     }
 
     if (bid_request) {
       const { request_id: bid_request_id, ...bid_request_without_id } =
         bid_request;
 
-      result = await prisma.request.update({
-        where: {
-          id: Number(id),
-          company_id: Number(company_id),
-          user_id: Number(user_id),
-        },
-        data: {
-          type: type,
-          status: status,
-          updated_by: user,
-          bid_request: {
-            update: {
-              data: bid_request_without_id,
+      result = await prisma.$transaction(async (tx) => {
+        if (status === "A") {
+          // grab other bid requests for the same roster
+          const otherRequests = await tx.bidRequest.findMany({
+            where: {
+              request_id: {
+                not: bid_request_id,
+              },
+              requested_roster_id: bid_request.requested_roster_id,
+            },
+            select: {
+              request_id: true,
+            },
+          });
+
+          // update all other bid requests of the roster to rejected
+          const otherRequestIds = otherRequests.map(
+            (otherRequest) => otherRequest.request_id
+          );
+          for (const otherRequestId of otherRequestIds) {
+            await tx.request.update({
+              where: {
+                id: otherRequestId,
+              },
+              data: {
+                type: type,
+                status: "R",
+                updated_by: "SYSTEM",
+              },
+              include: { bid_request: true },
+            });
+          }
+
+          // create new schedule for the user
+          const new_schedule = await tx.userSchedule.create({
+            data: {
+              user_id: Number(user_id),
+              user_company_id: Number(company_id),
+              roster_id: Number(bid_request.requested_roster_id),
+              shift: bid_request.shift,
+              start_date: bid_request.start_date,
+              end_date: bid_request.end_date,
+              status: "N",
+              created_by: "SYSTEM",
+              updated_by: "SYSTEM",
+            },
+          });
+        }
+
+        // update request status
+        return await tx.request.update({
+          where: {
+            id: Number(id),
+            company_id: Number(company_id),
+            user_id: Number(user_id),
+          },
+          data: {
+            type: type,
+            status: status,
+            updated_by: user,
+            bid_request: {
+              update: {
+                data: bid_request_without_id,
+              },
             },
           },
-        },
-        include: { bid_request: true },
+          include: { bid_request: true },
+        });
       });
 
       updatedRequest = result;
@@ -760,7 +807,11 @@ requestRouter.post("/create-swap", async (req, res) => {
   }
 });
 
-const checkIfRosterIsOpenForBidding = (roster: any, user_pos: string, selected_shift: string) => {
+const checkIfRosterIsOpenForBidding = (
+  roster: any,
+  user_pos: string,
+  selected_shift: string
+) => {
   const employeePositionsCount = {} as any;
   const user_schedule = roster.schedules;
   const positions = roster.positions;
@@ -800,13 +851,12 @@ const checkIfRosterIsOpenForBidding = (roster: any, user_pos: string, selected_s
     shifts = ["FULL", "AM", "PM"];
   }
 
-  if(shifts.includes(selected_shift.toUpperCase())) {
+  if (shifts.includes(selected_shift.toUpperCase())) {
     return true;
-  } 
-  
-  return false;
+  }
 
-}
+  return false;
+};
 
 requestRouter.post("/create-bid", async (req, res) => {
   try {
@@ -816,7 +866,7 @@ requestRouter.post("/create-bid", async (req, res) => {
     const user_id = logged_in_user["user_id"];
     const { request_shift, roster_id } = req.body;
 
-    if(!request_shift || !roster_id) {
+    if (!request_shift || !roster_id) {
       throw new ValidationError("Required fields are missing.");
     }
 
@@ -830,7 +880,7 @@ requestRouter.post("/create-bid", async (req, res) => {
         company_id: true,
         fullname: true,
         position: true,
-      }
+      },
     });
 
     // check if bid request already exists
@@ -847,8 +897,10 @@ requestRouter.post("/create-bid", async (req, res) => {
       },
     });
 
-    if(existing_bid_request) {
-      throw new ValidationError("You already have an existing bid request for the selected roster.");
+    if (existing_bid_request) {
+      throw new ValidationError(
+        "You already have an existing bid request for the selected roster."
+      );
     }
 
     // validate and ensure that the roster is still open for bidding
@@ -873,12 +925,18 @@ requestRouter.post("/create-bid", async (req, res) => {
               },
             },
           },
-        }
-      }
+        },
+      },
     });
 
-    if(roster) {
-      if(checkIfRosterIsOpenForBidding(roster, user?.position || "", request_shift)) {
+    if (roster) {
+      if (
+        checkIfRosterIsOpenForBidding(
+          roster,
+          user?.position || "",
+          request_shift
+        )
+      ) {
         const result = await prisma.request.create({
           data: {
             company_id: Number(company_id),
@@ -897,7 +955,7 @@ requestRouter.post("/create-bid", async (req, res) => {
             },
           },
         });
-    
+
         return res.status(200).json(generateResultJson(result));
       } else {
         throw new ValidationError("Sorry, the position has been filled.");
