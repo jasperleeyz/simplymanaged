@@ -96,16 +96,17 @@ UserScheduleRouter.get(
 );
 
 UserScheduleRouter.get(
-  "/get-non-conflict-user/:user_company_id/:start_date/:end_date",
+  "/get-non-conflict-user/:user_company_id/:deparment_id/:start_date/:end_date",
   async (req, res) => {
     const { page, size, sort, filter } = req.query;
-    const { user_company_id, start_date, end_date } = req.params;
+    const { user_company_id, deparment_id, start_date, end_date } = req.params;
 
     try {
       const findObject = generateFindObject(page, size, sort, filter);
       findObject.where = {
         ...findObject.where,
         company_id: Number(user_company_id),
+        department_id: Number(deparment_id)
       };
 
       // Fetch schedules that do not conflict with the specified date range

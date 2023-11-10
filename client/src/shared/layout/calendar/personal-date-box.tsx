@@ -3,11 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { IRoster, IUserSchedule } from "../../model/schedule.model";
 import React from "react";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
-import { getRosterById } from "../../api/roster.api";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { Dropdown } from "flowbite-react";
-import { toast } from "react-toastify";
-import { Label } from "flowbite-react";
 import { PATHS } from "../../../configs/constants";
 
 type IProps = {
@@ -68,17 +65,17 @@ const PersonalDateBox = ({
       {date.isAfter(moment(new Date())) && schedule ? (
         <div>
           <div className="bg-green-300 rounded p-1">
-            <Label>{schedule.roster?.location?.name}</Label>
-            <Label>{schedule?.roster?.type}</Label>
-            <Label>{schedule?.status}</Label>
+            <p className="font-bold text-sm text-black">{schedule.roster?.location?.name}</p>
+            <p className="font-bold text-sm text-black">{schedule?.roster?.type}</p>
+            {/* <p className="font-bold text-sm text-black">{schedule?.status}</p> */}
           </div>
         </div>
       ) : date.isBefore(moment(new Date())) && schedule ? (
         <div>
           <div className="bg-red-300 rounded p-1">
-            <Label>{schedule.roster?.location?.name}</Label>
-            <Label>{schedule?.roster?.type}</Label>
-            <Label>{schedule?.status}</Label>
+            <p className="font-bold text-sm text-black">{schedule.roster?.location?.name}</p>
+            <p className="font-bold text-sm text-black">{schedule?.roster?.type}</p>
+            {/* <p className="font-bold text-sm text-black">{schedule?.status}</p> */}
           </div>
         </div>
       ) : (

@@ -1,5 +1,4 @@
 import React from "react";
-import { GlobalStateContext } from "../../configs/global-state-provider";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { IUserSchedule } from "../../shared/model/schedule.model";
@@ -7,14 +6,13 @@ import {
   getAllUpcomingShiftSchedules,
   getAvailableShiftSchedulesForSwapping,
 } from "../../shared/api/user-schedule.api";
-import { Label, Textarea, Button, Card, TextInput } from "flowbite-react";
+import { Label, Textarea, Button } from "flowbite-react";
 import { Formik } from "formik";
 import BackButton from "../../shared/layout/buttons/back-button";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import * as Yup from "yup";
 import { DATE } from "../../configs/constants";
 import moment from "moment";
-import { create } from "domain";
 import { createSwapRequest } from "../../shared/api/request.api";
 
 const validationSchema = Yup.object().shape({
@@ -24,7 +22,6 @@ const validationSchema = Yup.object().shape({
 });
 
 const SwapForm = () => {
-  const user = React.useContext(GlobalStateContext)?.globalState?.user;
   const navigate = useNavigate();
   const location = useLocation();
   const [initialValues, setInitialValues] = React.useState<any>({

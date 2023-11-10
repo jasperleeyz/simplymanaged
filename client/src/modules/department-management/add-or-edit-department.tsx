@@ -49,7 +49,7 @@ const AddOrEditDepartment = () => {
             setManagerList(filtered);
           } else {
             const filtered = res.data.filter((emp) => emp.department_in_charge === null || emp.department_in_charge.id === parseInt(id));
-            setManagerList(res.data);
+            setManagerList(filtered);
           }
         })
         .catch((err) => {
@@ -127,7 +127,7 @@ const AddOrEditDepartment = () => {
                 id="department-head"
                 name="department_head_id"
                 labelValue="Department Head"
-                value={props.values.department_head_id}
+                value={props.values.department_head_id ? props.values.department_head_id : "0"}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
                 color={

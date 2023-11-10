@@ -9,29 +9,40 @@ window.fetch = async function (...args) {
   url = `${API_URL}${url}`; // intercept quest and add base url
 
   // intercept request and add headers
-  const token = sessionStorage.getItem("bearerToken") || localStorage.getItem("bearerToken") || "";
+  const token =
+    sessionStorage.getItem("bearerToken") ||
+    localStorage.getItem("bearerToken") ||
+    "";
   if (options) {
     options.headers = {
       ...options.headers,
-      'Content-Type': "application/json",
+      "Content-Type": "application/json",
     };
 
-    if(token && token !== "") {
+    if (token && token !== "") {
       options.headers = {
         ...options.headers,
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       };
     }
   }
 
-  // call original `fetch()` with intercepted request
-  const response = await originalFetch(url, options);
+  try {
+    // call original `fetch()` with intercepted request
+    const response = await originalFetch(url, options);
 
-  if(response.status === 401) {
-    sessionStorage.removeItem("bearerToken");
-    window.location.href = "/login?q=timeout";
+    if (response.status === 401) {
+      sessionStorage.removeItem("bearerToken");
+      window.location.href = "/login?q=timeout";
+    }
+
+    // response interceptor
+    return response;
+  } catch (error) {
+    return new Response(
+      "Internal Server Error. Please contact your system admin.", {
+      status: 500,
+      statusText: "Internal Server Error",
+    });
   }
-
-  // response interceptor
-  return response;
 };

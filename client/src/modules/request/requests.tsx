@@ -47,6 +47,7 @@ const Requests = () => {
 
   const [requestLoading, setRequestLoading] = React.useState<boolean>(false);
   const [actionLoading, setActionLoading] = React.useState<ILoading[]>([]);
+  const [refreshPage, setRefreshPage] = React.useState<boolean>(false);
 
   const updateStatus = (req: IRequest, status: string) => {
     setActionLoading((prev) => [...prev, { id: req.id, status }]);
@@ -68,6 +69,7 @@ const Requests = () => {
         setActionLoading((prev) =>
           prev.filter((loading) => loading.id !== req.id)
         );
+        setRefreshPage(true)
       });
   };
 
@@ -108,12 +110,13 @@ const Requests = () => {
           .catch((err) => {
             toast.error("Error retrieving requests. Please try again later.");
           })
-          .finally(() => setRequestLoading((prev) => false));
+          .finally(() => {setRequestLoading((prev) => false)
+          setRefreshPage(false)});
       }
     }
 
     history.replaceState({ isPersonal, currentPage, sizePerPage }, "");
-  }, [isPersonal, currentPage, sizePerPage]);
+  }, [isPersonal, currentPage, sizePerPage, refreshPage]);
 
   return (
     <div id="request-main">
@@ -255,11 +258,12 @@ const Requests = () => {
                                           val.status === REQUEST.STATUS.APPROVED
                                       ) !== undefined
                                     }
-                                    onClick={() =>
+                                    onClick={() =>{
                                       updateStatus(
                                         request,
                                         REQUEST.STATUS.APPROVED
                                       )
+                                    }
                                     }
                                   />
                                   <RejectButton
@@ -276,11 +280,12 @@ const Requests = () => {
                                           val.status === REQUEST.STATUS.REJECTED
                                       ) !== undefined
                                     }
-                                    onClick={() =>
+                                    onClick={() =>{
                                       updateStatus(
                                         request,
                                         REQUEST.STATUS.REJECTED
                                       )
+                                    }
                                     }
                                   />
                                 </>
