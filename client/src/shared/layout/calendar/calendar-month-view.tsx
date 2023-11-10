@@ -27,7 +27,7 @@ type IProps = {
   month: number;
   year?: number;
   isPersonal: boolean;
-  location: string;
+  location: number;
 };
 
 type CalObject = {
@@ -78,10 +78,11 @@ const CalendarMonthView = ({
         })
         .finally(() => {setLoading((prev) => false);});
     } else {
-      getRosterFromAndTo(globalState?.user?.company_id || 0, from, to)
+      getRosterFromAndTo(globalState?.user?.company_id || 0, location || 0, from, to)
         .then((res) => {
           if(globalState?.user?.role == ROLES.MANAGER)
           {
+            console.log(res.data)
             setRosterList(res.data);
           }
           else{

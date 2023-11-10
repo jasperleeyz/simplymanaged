@@ -11,7 +11,7 @@ import {
 import { toast } from "react-toastify";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import { IRosterTemplate } from "../../../shared/model/schedule.model";
-import { getAllEmployees } from "../../../shared/api/user.api";
+import { getAllEmployees, getDepartmentAllEmployees } from "../../../shared/api/user.api";
 import { createRosterTemplate } from "../../../shared/api/roster.api";
 
 type IProps = {
@@ -28,7 +28,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
     React.useState(false);
 
   useEffect(() => {
-    getAllEmployees(globalState?.user?.company_id || 0)
+    getDepartmentAllEmployees(globalState?.user?.department_id || 0)
       .then((res) => {
         const positionsArray = res.data.map((item) => item.position).flat();
         const templatePosition = positionsArray.reduce((acc, position) => {

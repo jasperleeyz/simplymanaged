@@ -24,7 +24,6 @@ const ScheduleDateBox = ({
 
   const [openModal, setOpenModal] = React.useState(false);
   const modalProps = { openModal, setOpenModal, roster };
-
   return (
     <div>
       {globalState?.user?.role === ROLES.MANAGER ? (
@@ -78,7 +77,7 @@ const ScheduleDateBox = ({
               <div className="relative">
                 {/* <p className="absolute whitespace-normal">No schedule for the day</p>
         <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
-                {date.isAfter(moment(new Date())) ?(
+                {date.isSameOrAfter(moment(), 'day') ?(
                 <div className="bg-green-300 rounded p-1">
                 <p>Schedule available</p>
                 </div>
@@ -129,7 +128,7 @@ const ScheduleDateBox = ({
             <div className="relative">
               {/* <p className="absolute whitespace-normal">No schedule for the day</p>
       <Button size="sm" className='absolute hidden group-hover:block' color="info">Add schedule</Button> */}
-              {date.isAfter(moment(new Date())) ?(
+              {date.isSameOrAfter(moment(), 'day') ?(
                 <div className="bg-green-300 rounded p-1">
                 <p>Schedule available</p>
                 </div>

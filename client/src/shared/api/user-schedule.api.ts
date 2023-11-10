@@ -85,6 +85,7 @@ export const getAllUserSchedule = async (
 
 export const getNonConflictScheduleUser = async (
   user_company_id: number,
+  deparment_id: number,
   start_date: string,
   end_date: string,
   page?: number,
@@ -92,7 +93,7 @@ export const getNonConflictScheduleUser = async (
   sort?: string,
   filter?: string
 ): Promise<any> => {
-  let url = `/user-schedule/get-non-conflict-user/${user_company_id}/${start_date}/${end_date}`;
+  let url = `/user-schedule/get-non-conflict-user/${user_company_id}/${deparment_id}/${start_date}/${end_date}`;
 
   if (page || size || sort || filter) {
     url += `?`;

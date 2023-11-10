@@ -87,10 +87,11 @@ export const getRosterById = async (companyId: number, rosterId: number): Promis
 
   export const getRosterFromAndTo = async (
     companyId: number,
+    locationId: number,
     from: Date = new Date(),
     to: Date,
   ) => {
-    let url = `/roster/get-roster-from-to/${companyId}?from=${from.toISOString()}`;
+    let url = `/roster/get-roster-from-to/${companyId}/${locationId}?from=${from.toISOString()}`;
     if (to) {
       url += `&to=${to.toISOString()}`;
     }
