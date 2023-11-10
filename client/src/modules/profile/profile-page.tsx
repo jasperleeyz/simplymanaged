@@ -1,5 +1,5 @@
 import React from "react";
-import { GlobalStateContext } from "../../configs/global-state-provider";
+import { GlobalStateContext, InitialGlobalState } from "../../configs/global-state-provider";
 import { Avatar, Button, Label, TextInput } from "flowbite-react";
 import { capitalizeString, validName, isNumber, validEmail } from "../../configs/utils"
 import { HiPencil, HiSave } from "react-icons/hi";
@@ -7,6 +7,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { PATHS } from "../../configs/constants";
 import IUser from "../../shared/model/user.model";
 import { toast } from 'react-toastify';
+import { updateEmployee } from "../../shared/api/user.api";
 
 const ProfilePage = () => {
   const { globalState, setGlobalState } = React.useContext(GlobalStateContext);
@@ -35,67 +36,71 @@ const ProfilePage = () => {
   // TODO: get user profile (details, preferences) here
   //   globalState?.user.id
 
-  const saveProfile = () => {
-
-    setErrorMessage(prev => ({
-      ...prev,
-      name: '',
-    }));
-    setErrorMessage(prev => ({
-      ...prev,
-      contact_no: '',
-    }));
-    setErrorMessage(prev => ({
-      ...prev,
-      email: '',
-    }));
-
-    if (!validName(editUser.fullname) || !isNumber(editUser.contact_no) || (editUser.contact_no.length != 8) || !validEmail(editUser.email)) {
+  const updateProfile = () => {
+  // Clear error messages
+  setErrorMessage({
+    name: '',
+    contact_no: '',
+    email: '',
+  });
+    // Validate user input
+    if (
+      !validName(editUser.fullname) ||
+      !isNumber(editUser.contact_no) ||
+      editUser.contact_no.length !== 8 ||
+      !validEmail(editUser.email)
+    ) {
       if (!validName(editUser.fullname)) {
-        setErrorMessage(prev => ({
+        setErrorMessage((prev) => ({
           ...prev,
           name: 'Name must consist of letters only.',
         }));
-        setInputColor(prev => ({
+        setInputColor((prev) => ({
           ...prev,
           name: 'failure',
         }));
       }
-      if (!isNumber(editUser.contact_no) || (editUser.contact_no.length != 8)) {
-        setErrorMessage(prev => ({
+      if (!isNumber(editUser.contact_no) || editUser.contact_no.length !== 8) {
+        setErrorMessage((prev) => ({
           ...prev,
           contact_no: 'Phone must contain only 8 numbers.',
         }));
-        setInputColor(prev => ({
+        setInputColor((prev) => ({
           ...prev,
           contact_no: 'failure',
         }));
       }
       if (!validEmail(editUser.email)) {
-        setErrorMessage(prev => ({
+        setErrorMessage((prev) => ({
           ...prev,
           email: 'Email must be in the format "emp@sim.com".',
         }));
-        setInputColor(prev => ({
+        setInputColor((prev) => ({
           ...prev,
           email: 'failure',
         }));
       }
       toast.error('Invalid details');
+      return; // Exit the function early if there are validation errors
     }
-    else{
-      // save profile
-      setGlobalState((prev) => ({
-        ...prev,
-        user: editUser,
-      }));
-
-      toast.success('Profile updated');
-
-      // then navigate to profile page
-      navigate(`/${PATHS.MY_PROFILE}`, { replace: true });
-    }
+    // Make an API request to update the profile
+    if (globalState && globalState.user && (editUser.fullname !== globalState.user.fullname || editUser.contact_no !== globalState.user.contact_no || editUser.email !== globalState.user.email)) {
+      // Update the global state with the edited profile data
+    try{
+       updateEmployee(editUser).then(() => {
+        toast.success('Profile updated');
+        setGlobalState((prev) => ({
+          ...prev,
+          user: editUser,
+        }))
+      });
+        // Navigate to the profile page
+        navigate(`/${PATHS.MY_PROFILE}`, { replace: true });
+    } catch (error) {
+      toast.error('Failed to update the profile. Please try again later.');
+    };
   };
+};
 
   return (
     <div id="profile-page">
@@ -112,7 +117,7 @@ const ProfilePage = () => {
             <p>Update Profile</p>
           </Button>
         ) : (
-          <Button size="sm" onClick={() => saveProfile()}>
+            <Button size="sm" onClick={() => updateProfile()}> 
             <HiSave className="my-auto mr-2" />
             <p>Save</p>
           </Button>
@@ -140,8 +145,8 @@ const ProfilePage = () => {
               required
               helperText={<span className="error-message">{errorMessage.name}</span>}
               onChange={(e) =>{
-                setEditUser((prev) => ({ ...prev, name: e.target.value }))
-                setInputColor(prev => ({ ...prev, name: 'gray'}))
+                setEditUser((prev) => ({ ...prev, fullname: e.target.value }))
+                setInputColor(prev => ({ ...prev, fullname: 'gray'}))
               }}
               autoComplete="off"
             />
@@ -181,10 +186,6 @@ const ProfilePage = () => {
               autoComplete="off"
             />
           )}
-          {/* <Label htmlFor="user-" value="Name" />
-          <p id="user-name">{globalState?.user?.name}</p>
-          <Label htmlFor="user-name" value="Name" />
-          <p id="user-name">{globalState?.user?.name}</p> */}
         </div>
       </div>
       <hr className="w-full my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
@@ -204,7 +205,10 @@ const ProfilePage = () => {
       <hr className="w-full my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
       <p className="header">Preferences</p>
       <div id="preferences-section" className="px-12">
-        <p>...</p>
+        <p> 
+          <label>
+          </label>
+        </p>
       </div>
     </div>
   );
