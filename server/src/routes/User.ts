@@ -63,6 +63,7 @@ userRouter.get("/info", async (req, res) => {
           employment_details: true,
           preferences: true,
           department_in_charge: true,
+          department: true,
         },
       });
     }
@@ -319,7 +320,7 @@ userRouter.post("/update", async (req, res) => {
         contact_no: Number(contact_no),
         position: position.toLocaleUpperCase().trim(),
         status: status,
-        profile_image: profile_image,
+        profile_image: profile_image ? Buffer.from(profile_image) : null,
         department_id: Number(department_id),
         employment_details: {
           upsert: {
@@ -361,6 +362,7 @@ userRouter.post("/update", async (req, res) => {
     });
 
     const { password: userPassword, ...userWithoutPassword } = user;
+    userWithoutPassword.profile_image = userWithoutPassword.profile_image ? userWithoutPassword.profile_image.toString() as any : "";
 
     res.status(200).json({
       user: userWithoutPassword,
