@@ -108,7 +108,7 @@ const companyData: Prisma.CompanyCreateInput[] = [
         status: "A",
         payment_cycle: "PERMANENT",
         start_date: new Date(),
-        end_date: new Date(8640000000000000),
+        end_date: new Date("9999-12-31"),
         created_by: "SYSTEM",
         updated_by: "SYSTEM",
         created_date: new Date(),

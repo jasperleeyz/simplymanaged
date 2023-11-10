@@ -39,6 +39,7 @@ export const PATHS = {
   ADD_REQUEST: "add",
   ADD_LEAVE_REQUEST: "add?type=leave",
   ADD_SWAP_REQUEST: "add?type=swap",
+  ADD_BID_REQUEST: "add?type=bid",
 
   EMPLOYEES: "employees",
   ADD_EMPLOYEE: "add",

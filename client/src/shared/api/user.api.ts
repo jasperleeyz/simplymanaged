@@ -141,3 +141,16 @@ export const changePassword = async ({
     })
     .catch((err) => Promise.reject(err));
 };
+
+export const checkWorkingHours = async (date: Date | undefined): Promise<any> => {
+  if(!date) return Promise.reject("Date is required");
+
+  return await fetch(`/user/check-working-hours?date=${date}`, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return Promise.resolve(response.json());
+    })
+    .catch((err) => Promise.reject(err));
+};

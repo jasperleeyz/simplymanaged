@@ -97,7 +97,7 @@ const ScheduleDateBox = ({
         <div className="w-[110px] h-[110px] max-w-sm max-h-sm group">
           <div className="flex items-center justify-between">
             <p>{date.date()}</p>
-            {roster && (
+            {roster && date.isAfter(moment(new Date).startOf("day")) && (
               <div className="rounded-full">
                 <Dropdown
                   label={<HiDotsHorizontal />}
@@ -106,7 +106,7 @@ const ScheduleDateBox = ({
                 >
                   <Dropdown.Item
                     onClick={() => {
-                      navigate(`./${PATHS.VIEW_SCHEDULE}`, {
+                      navigate(`/${PATHS.REQUESTS}/${PATHS.ADD_BID_REQUEST}`, {
                         state: { roster },
                       });
                     }}

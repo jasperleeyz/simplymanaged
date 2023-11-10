@@ -153,7 +153,6 @@ export const getRemainingLeaveBalance = async (
 export const createSwapRequest = async (request: any): Promise<any> => {
   const url = `/request/create-swap`;
 
-  console.log(request);
   return await fetch(url, {
     method: "POST",
     body: JSON.stringify(request),
@@ -240,3 +239,17 @@ export const getAllRequestPendingEmployeeApproval = async (
     })
     .catch((err) => Promise.reject(err));
 }
+
+export const createBidRequest = async (request: any): Promise<any> => {
+  const url = `/request/create-bid`;
+
+  return await fetch(url, {
+    method: "POST",
+    body: JSON.stringify(request),
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+};

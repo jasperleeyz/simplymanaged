@@ -5,6 +5,7 @@ import { generateFindObject, generateResultJson } from "../utils/utils";
 import { SEQUENCE_KEYS, SUBSCRIPTION_STATUS } from "../utils/constants";
 import { getNextSequenceValue } from "../utils/sequence";
 import { ValidationError } from "../errors/validation-error";
+import moment from "moment";
 
 export const userRouter = express.Router();
 
@@ -114,31 +115,6 @@ userRouter.get("/", async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(400).send("Error getting users.");
-  }
-});
-
-userRouter.get("/:user_id", async (req, res) => {
-  const { user_id } = req.params;
-  const logged_in_user = req.headers?.["x-access-user"] as any;
-  const company_id = logged_in_user["company_id"];
-
-  try {
-    const user = (await prisma.user.findFirst({
-      where: {
-        id: Number(user_id),
-        company_id: Number(company_id),
-      },
-      include: { employment_details: true, preferences: true },
-    })) as any;
-
-    const { password, ...userWithoutPassword } = user;
-    userWithoutPassword.profile_image =
-      (userWithoutPassword?.profile_image?.toString() as any) || null;
-
-    res.status(200).json(generateResultJson(userWithoutPassword));
-  } catch (error) {
-    console.error(error);
-    res.status(400).send("Error getting user.");
   }
 });
 
@@ -366,12 +342,17 @@ userRouter.post("/change-password", async (req, res) => {
       },
     });
 
-    if(!user) {
+    if (!user) {
       throw new ValidationError("User not found.");
     }
 
     // compare current password
-    if(!checkPassword(Buffer.from(currentPasswordB64, 'base64').toString(), user.password)) {
+    if (
+      !checkPassword(
+        Buffer.from(currentPasswordB64, "base64").toString(),
+        user.password
+      )
+    ) {
       throw new ValidationError("Current password is incorrect.");
     }
 
@@ -384,7 +365,10 @@ userRouter.post("/change-password", async (req, res) => {
         },
       },
       data: {
-        password: hashPassword(Buffer.from(newPasswordB64, 'base64').toString(), generateSalt()),
+        password: hashPassword(
+          Buffer.from(newPasswordB64, "base64").toString(),
+          generateSalt()
+        ),
       },
     });
 
@@ -396,5 +380,79 @@ userRouter.post("/change-password", async (req, res) => {
     } else {
       res.status(400).send("Error changing password. Please try again later.");
     }
+  }
+});
+
+userRouter.get("/check-working-hours", async (req, res) => {
+  try {
+    const { date } = req.query;
+    const logged_in_user = req.headers?.["x-access-user"] as any;
+    const company_id = logged_in_user["company_id"];
+    const user_id = logged_in_user["user_id"];
+
+    const user = await prisma.user.findFirst({
+      where: {
+        id: Number(user_id),
+        company_id: Number(company_id),
+      },
+      include: { employment_details: true },
+    });
+
+    const workingHoursPerWeek = user?.employment_details?.working_hours || 0;
+
+    // get first day of week
+    const firstDayOfWeek = moment(date as string).startOf("week").toDate();
+    // get last day of week
+    const lastDayOfWeek = moment(date as string).endOf("week").toDate();
+
+    // retrieve user's schedules for the week
+    const schedules = await prisma.userSchedule.findMany({
+      where: {
+        user_id: Number(user_id),
+        user_company_id: Number(company_id),
+        start_date:{
+          gte: firstDayOfWeek,
+          lte: lastDayOfWeek,
+        },
+      },
+      select: {
+        shift: true,
+      },
+    });
+
+    let currentWeekWorkingHours = 0;
+    schedules.forEach((schedule) => {
+      currentWeekWorkingHours += schedule.shift === "FULL" ? 8 : 4;
+    });
+
+    res.status(200).json(generateResultJson({ workingHoursPerWeek: Number(workingHoursPerWeek), currentWeekWorkingHours: Number(currentWeekWorkingHours) }));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error getting user.");
+  }
+});
+
+userRouter.get("/:user_id", async (req, res) => {
+  const { user_id } = req.params;
+  const logged_in_user = req.headers?.["x-access-user"] as any;
+  const company_id = logged_in_user["company_id"];
+
+  try {
+    const user = (await prisma.user.findFirst({
+      where: {
+        id: Number(user_id),
+        company_id: Number(company_id),
+      },
+      include: { employment_details: true, preferences: true },
+    })) as any;
+
+    const { password, ...userWithoutPassword } = user;
+    userWithoutPassword.profile_image =
+      (userWithoutPassword?.profile_image?.toString() as any) || null;
+
+    res.status(200).json(generateResultJson(userWithoutPassword));
+  } catch (error) {
+    console.error(error);
+    res.status(400).send("Error getting user.");
   }
 });

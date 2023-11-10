@@ -719,6 +719,161 @@ requestRouter.post("/create-swap", async (req, res) => {
   }
 });
 
+const checkIfRosterIsOpenForBidding = (roster: any, user_pos: string, selected_shift: string) => {
+  const employeePositionsCount = {} as any;
+  const user_schedule = roster.schedules;
+  const positions = roster.positions;
+
+  user_schedule.forEach((schedule: any) => {
+    if (employeePositionsCount[schedule.user.position]) {
+      employeePositionsCount[schedule.user.position]["count"] +=
+        schedule.shift.toUpperCase() === "FULL" ? 1 : 0.5;
+      if (employeePositionsCount[schedule.user.position][schedule.shift])
+        employeePositionsCount[schedule.user.position][schedule.shift] += 1;
+      else employeePositionsCount[schedule.user.position][schedule.shift] = 1;
+    } else {
+      employeePositionsCount[schedule.user.position] = {};
+      employeePositionsCount[schedule.user.position]["count"] =
+        schedule.shift.toUpperCase() === "FULL" ? 1 : 0.5;
+      employeePositionsCount[schedule.user.position][schedule.shift] = 1;
+    }
+  });
+
+  positions.forEach((position: any) => {
+    employeePositionsCount[position.position]["count"] =
+      position.count - employeePositionsCount[position.position]["count"];
+  });
+
+  let shifts = [] as string[];
+
+  if (employeePositionsCount[user_pos]["count"] === 0.5) {
+    if (
+      employeePositionsCount[user_pos]["AM"] <
+      employeePositionsCount[user_pos]["PM"]
+    ) {
+      shifts = ["AM"];
+    } else {
+      shifts = ["PM"];
+    }
+  } else if (employeePositionsCount[user_pos]["count"] >= 1) {
+    shifts = ["FULL", "AM", "PM"];
+  }
+
+  if(shifts.includes(selected_shift.toUpperCase())) {
+    return true;
+  } 
+  
+  return false;
+
+}
+
+requestRouter.post("/create-bid", async (req, res) => {
+  try {
+    const logged_in_user = req.headers["x-access-user"] as any;
+    const user_name = logged_in_user["name"];
+    const company_id = logged_in_user["company_id"];
+    const user_id = logged_in_user["user_id"];
+    const { request_shift, roster_id } = req.body;
+
+    if(!request_shift || !roster_id) {
+      throw new ValidationError("Required fields are missing.");
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        id: Number(user_id),
+        company_id: Number(company_id),
+      },
+      select: {
+        id: true,
+        company_id: true,
+        fullname: true,
+        position: true,
+      }
+    });
+
+    // check if bid request already exists
+    const existing_bid_request = await prisma.request.findFirst({
+      where: {
+        company_id: Number(company_id),
+        user_id: Number(user_id),
+        type: "BID",
+        status: "P",
+        bid_request: {
+          requested_roster_id: Number(roster_id),
+          // shift: request_shift,
+        },
+      },
+    });
+
+    if(existing_bid_request) {
+      throw new ValidationError("You already have an existing bid request for the selected roster.");
+    }
+
+    // validate and ensure that the roster is still open for bidding
+    const roster = await prisma.roster.findFirst({
+      where: {
+        id: Number(roster_id),
+        company_id: Number(company_id),
+      },
+      select: {
+        id: true,
+        start_date: true,
+        end_date: true,
+        positions: true,
+        schedules: {
+          select: {
+            id: true,
+            shift: true,
+            user: {
+              select: {
+                id: true,
+                position: true,
+              },
+            },
+          },
+        }
+      }
+    });
+
+    if(roster) {
+      if(checkIfRosterIsOpenForBidding(roster, user?.position || "", request_shift)) {
+        const result = await prisma.request.create({
+          data: {
+            company_id: Number(company_id),
+            user_id: Number(user_id),
+            type: "BID",
+            status: "P",
+            created_by: user_name,
+            updated_by: user_name,
+            bid_request: {
+              create: {
+                requested_roster_id: Number(roster_id),
+                start_date: roster.start_date,
+                end_date: roster.end_date,
+                shift: request_shift,
+              },
+            },
+          },
+        });
+    
+        return res.status(200).json(generateResultJson(result));
+      } else {
+        throw new ValidationError("Sorry, the position has been filled.");
+      }
+    } else {
+      throw new ValidationError("Roster not found.");
+    }
+  } catch (error) {
+    console.error(error);
+    let message = "Error creating bid request. Please try again later.";
+    if (error instanceof ValidationError) {
+      message = error.message;
+    }
+    res.status(400).send(message);
+  }
+});
+
 requestRouter.get("/:requestId", async (req, res) => {
   try {
     const request_id = req.params?.requestId;
