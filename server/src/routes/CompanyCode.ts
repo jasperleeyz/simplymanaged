@@ -19,12 +19,12 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
       company_id: Number(company_id),
     };
 
-    const companyCodes = await prisma.$transaction([
-      prisma.companyCode.count({where: findObject.where}),
+    const companyCodes = (await prisma.$transaction([
+      prisma.companyCode.count({ where: findObject.where }),
       prisma.companyCode.findMany(findObject),
-    ]) as [number, any[]];
+    ])) as [number, any[]];
 
-    for(let companyCode of companyCodes[1]) {
+    for (let companyCode of companyCodes[1]) {
       if (companyCode.code_type === "LEAVE_TYPE") {
         const balance = await prisma.companyLeaveBalance.findFirst({
           where: {
@@ -120,25 +120,27 @@ companyCodeRouter.post("/create-update", async (req, res) => {
         },
       });
 
-      await prisma.companyLeaveBalance.upsert({
-        where: {
-          company_id_leave_type: {
-            company_id: company_id,
-            leave_type: code,
+      if (code_type === "LEAVE_TYPE") {
+        await prisma.companyLeaveBalance.upsert({
+          where: {
+            company_id_leave_type: {
+              company_id: company_id,
+              leave_type: code,
+            },
           },
-        },
-        create: {
-          balance: Number(leave_balance),
-          company_id: company_id,
-          leave_type: code,
-          created_by: logged_in_user?.name,
-          updated_by: logged_in_user?.name,
-        },
-        update: {
-          balance: Number(leave_balance),
-          updated_by: logged_in_user?.name,
-        },
-      });
+          create: {
+            company_id: company_id,
+            balance: Number(leave_balance),
+            leave_type: code,
+            created_by: logged_in_user?.name,
+            updated_by: logged_in_user?.name,
+          },
+          update: {
+            balance: Number(leave_balance),
+            updated_by: logged_in_user?.name,
+          },
+        });
+      }
     } else {
       companyCode = prisma.$transaction(async (tx) => {
         return await tx.companyCode.create({
@@ -175,6 +177,8 @@ companyCodeRouter.post("/create-update", async (req, res) => {
     return res.status(200).json(generateResultJson(companyCode));
   } catch (error) {
     console.error(error);
-    return res.status(400).send(`Error ${id ? "updating" : "creating"} company code.`);
+    return res
+      .status(400)
+      .send(`Error ${id ? "updating" : "creating"} company code.`);
   }
 });
