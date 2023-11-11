@@ -36,75 +36,37 @@ const Calendar = () => {
 
   // TODO: to call retrieve schedule api here
   const [locationList, setLocationList] = useState<ICompanyLocation[]>([]);
-  const [loadingLocation, setLoadingLocation] = useState(true);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setLoadingLocation((prev) => true);
-    getAllLocations(globalState?.user?.company_id || 0)
-      .then((res) => {
-        setLocationList(res.data);
-      })
-      .finally(() => {
-        setLoadingLocation((prev) => false);
-      });
-  }, []);
 
   const scheduleList =
     React.useContext(GlobalStateContext).globalState?.schedule;
 
-  // TODO: update with default values
-  const [schedule, setSchedule] = React.useState([]);
-  const [dateRange, setDateRange] = React.useState({
-    start: new Date().getDate(),
-    end: new Date().getDate() + 7,
-  });
-  const [location, setLocation] = React.useState(() => {
-    const l = history.state["scheduleLocation"];
-    if (!l) return locationList[0];
-    return l;
-  });
+  const [location, setLocation] = React.useState(0);
   const [month, setMonth] = React.useState(() => {
-    const m = history.state["scheduleMonth"];
-    if (!m) return new Date().getMonth();
-    return m;
+    return new Date().getMonth();
   });
   const [year, setYear] = React.useState(() => {
-    const y = history.state["scheduleYear"];
-    if (!y) return new Date().getFullYear();
-    return y;
+    return new Date().getFullYear();
   });
   const [isPersonal, setIsPersonal] = React.useState(() => {
-    if (globalState?.user?.role === ROLES.EMPLOYEE) return true;
-    const ip = history.state["isPersonal"];
-    if (!ip) return false;
-    return ip;
+    if (globalState?.user?.role === ROLES.EMPLOYEE)
+      return true;
+    return false;
   });
 
-  const [loadingUserSchedule, setLoadingUserSchedule] = useState(true);
-
   useEffect(() => {
-    setLoadingUserSchedule((prev) => true);
-    getAllUserSchedule(0, month + 1, year)
+    setLoading((prev) => true);
+    getAllLocations(globalState?.user?.company_id || 0)
       .then((res) => {
-        //console.log(res.data);
+        console.log(res.data)
+        setLocationList(res.data);
+        setLocation(res.data[0].id)
       })
       .finally(() => {
-        setLoadingUserSchedule((prev) => false);
+        setLoading((prev) => false);
       });
-  }, [month, year]);
-
-  useEffect(() => {
-    setLoadingUserSchedule((prev) => true);
-    const from = new Date(year, month)
-    const to = new Date(year, month+1)
-    getUserScheduleFromAndTo(0, globalState?.user?.id || 0, from, to)
-      .then((res) => {
-        //console.log(res.data);
-      })
-      .finally(() => {
-        setLoadingUserSchedule((prev) => false);
-      });
-  }, [month, year]);
+  }, []);
 
   const range = (start, stop, step) =>
     Array.from(
@@ -112,26 +74,12 @@ const Calendar = () => {
       (_, i) => start + i * step
     );
 
-  // TODO: retrigger schedule retrieval when control values changed by user
-  React.useEffect(() => {
-    // api call to retrieve schedule
-
-    // store new values to history state
-    history.replaceState(
-      {
-        scheduleMonth: month,
-        scheduleYear: year,
-        scheduleLocation: location,
-        isPersonal: isPersonal,
-      },
-      ""
-    );
-  }, [dateRange, location, month, year, isPersonal]);
-
   const [showRosterTemplateModal, setShowRosterTemplateModal] = React.useState(false);
   const modalProps = { showRosterTemplateModal, setShowRosterTemplateModal };
 
   return (
+    <div>
+    {!loading ?(
     <Flowbite theme={{ theme: customCalendarStyle }}>
       <div id="schedule-main">
         <p className="header">{isPersonal ? "My Schedule" : "All Schedules"}</p>
@@ -180,7 +128,7 @@ const Calendar = () => {
                   id="location"
                   sizing="sm"
                   value={location}
-                  onChange={(e) => setLocation(e.target.value)}
+                  onChange={(e) => setLocation(Number(e.target.value))}
                 >
                   {locationList.map((l, idx) => (
                     <option key={idx} value={l.id}>
@@ -227,6 +175,8 @@ const Calendar = () => {
       </div>
       {<ShowRosterTemplateModal {...modalProps} />}
     </Flowbite>
+    ) : null}
+    </div>
   );
 };
 

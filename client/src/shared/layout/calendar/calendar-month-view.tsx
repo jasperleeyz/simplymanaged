@@ -107,9 +107,13 @@ const CalendarMonthView = ({
             setRosterList(filteredResData)
           }
         })
-        .finally(() => {setLoading((prev) => false);});
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
   }, [isPersonal, month, year, location]);
+
+  console.log(location);
 
   /*const scheduleForMonth = scheduleList?.filter(
     (schedule) =>
