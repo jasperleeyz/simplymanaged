@@ -131,15 +131,13 @@ const EditSchedule = () => {
     setLoading((prev) => true);
     getNonConflictScheduleUserRoster(
       scheduleDetailsState.company_id || 0,
+      scheduleDetailsState.department_id || 0,
       scheduleDetailsState.id || 0,
       scheduleDetailsState.start_date.toString(),
       scheduleDetailsState.end_date.toString(),
-      undefined,
-      undefined,
-      undefined,
-      searchTerm ? `contains(position,${searchTerm})` : undefined
     )
       .then((res) => {
+        console.log(res.data)
         setEmployeeList(res.data);
       })
       .finally(() => {

@@ -41,7 +41,6 @@ const CreateScheduleModal = (props: IProps) => {
   useEffect(() => {
     getDepartmentAllEmployees(globalState?.user?.department_id || 0)
       .then((res) => {
-        console.log(res.data)
         const positionsArray = res.data.map((item) => item.position).flat();
         const templatePosition = positionsArray.reduce((acc, position) => {
           acc[position] = (acc[position] || 0) + 1;
@@ -77,7 +76,6 @@ const CreateScheduleModal = (props: IProps) => {
   const [numOfEmployee, setNumOfEmployee] = useState(0)
   useEffect(() => {
     const totalCount = props.rosterPosition.reduce((total, pos) => total + pos.count, 0);
-    console.log('Total Count:', totalCount);
     setNumOfEmployee(totalCount)
   }, [numOfEmployee, props.rosterPosition]);
 

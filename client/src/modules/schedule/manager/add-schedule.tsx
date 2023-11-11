@@ -47,6 +47,7 @@ import {
 } from "../../../shared/api/roster.api";
 import CreateScheduleModal from "./create-schedule-modal";
 
+
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
     base: "min-w-300 text-left text-sm text-gray-500 dark:text-gray-400",
@@ -185,8 +186,6 @@ const AddSchedule = () => {
     }));
   }, [locationId]);
 
-  console.log(scheduleDetailsState)
-
   const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
   useEffect(() => {
     //setLoading((prev) => true);
@@ -206,10 +205,6 @@ const AddSchedule = () => {
       scheduleDetailsState.department_id || 0,
       scheduleDetailsState.start_date.toString(),
       scheduleDetailsState.end_date.toString(),
-      undefined,
-      undefined,
-      undefined,
-      searchTerm ? `contains(position,${searchTerm})` : undefined
     )
       .then((res) => {
         setEmployeeList(res.data);
@@ -218,11 +213,8 @@ const AddSchedule = () => {
         setLoading((prev) => false);
       });
   }, [
-    searchTerm,
-    scheduleDetailsState.start_date,
-    scheduleDetailsState.end_date,
   ]);
-
+  
   const setSchedulesToDefault = () => {
     setScheduleDetailsState((prev) => ({
       ...prev,
