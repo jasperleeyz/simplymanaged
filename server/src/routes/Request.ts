@@ -662,7 +662,7 @@ requestRouter.post("/update", async (req, res) => {
       updatedRequest = result;
     }
 
-    if (status !== "P") {
+    if (status !== "P" && status !== "C") {
       // send email to requester
       await sendApproveRejectRequestEmail(
         request_user?.email,

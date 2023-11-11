@@ -86,6 +86,21 @@ const subscriptionModelData: Prisma.SubscriptionModelCreateInput[] = [
   },
 ];
 
+const codeTypeData: Prisma.CodeTypeCreateInput[] = [
+  {
+    code_type: "INDUSTRY",
+    status: "A",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+  },
+  {
+    code_type: "NO_OF_EMPLOYEES",
+    status: "A",
+    created_by: "SYSTEM",
+    updated_by: "SYSTEM",
+  }
+];
+
 const companyData: Prisma.CompanyCreateInput[] = [
   {
     name: "SimplyManaged",
@@ -136,12 +151,25 @@ const companyData: Prisma.CompanyCreateInput[] = [
 
 async function main() {
   console.log(`Start seeding ...`);
+  console.log(`Seeding SubscriptionModel data...`)
   for (const sm of subscriptionModelData) {
     const subModel = await prisma.subscriptionModel.create({
       data: sm,
     });
     console.log(`Created subscriptionModel with name: ${subModel.name}`);
   }
+  console.log(`Completed seeding for SubscriptionModel data!`)
+
+  console.log(`Seeding CodeType data...`)
+  for (const ct of codeTypeData) {
+    const codeType = await prisma.codeType.create({
+      data: ct,
+    });
+    console.log(`Created codeType with name: ${codeType.code_type}`);
+  }
+  console.log(`Completed seeding for CodeType data!`)
+
+  console.log(`Seeding Company data...`)
   for (const c of companyData) {
     const simplyManaged = await prisma.company.create({
       data: c,
@@ -151,6 +179,8 @@ async function main() {
     });
     console.log(`Created SimplyManaged with new User ID: ${simplyManaged.employees[0].email}`);
   }
+  console.log(`Completed seeding for Company data!`)
+  
   console.log(`Seeding finished.`);
 }
 

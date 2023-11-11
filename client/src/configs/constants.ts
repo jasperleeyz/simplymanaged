@@ -114,9 +114,11 @@ export const REQUEST = {
     PENDING: "P",
     APPROVED: "A",
     REJECTED: "R",
+    CANCELLED: "C",
     R: "REJECTED",
     P: "PENDING",
     A: "APPROVED",
+    C: "CANCELLED",
   },
   TYPE: {
     LEAVE: "LEAVE",
