@@ -55,11 +55,10 @@ export interface IUserSchedule {
   end_date: Date;
   shift: string;
   status: string;
-  attendance?: string;
   created_by: string;
-  createdDate?: Date;
+  created_date?: Date;
   updated_by: string;
-  updatedDate?: Date;
+  updated_date?: Date;
   roster?: IRoster;
   user?: IUser;
 }

@@ -6,8 +6,8 @@ import AddSchedule from "./manager/add-schedule";
 import { PATHS, ROLES } from "../../configs/constants";
 import PrivateRoute from "../../shared/auth/private-route";
 import ViewSchedule from "./manager/view-schedule";
-import EditButton from "../../shared/layout/buttons/edit-button";
 import EditSchedule from "./manager/edit-schedule";
+import ViewPersonalSchedule from "./view-personal-schedule";
 
 const ScheduleRoutes = () => {
   const globalState = React.useContext(GlobalStateContext).globalState;
@@ -32,6 +32,7 @@ const ScheduleRoutes = () => {
         }
       />
       <Route path={`/${PATHS.VIEW_SCHEDULE}`} element={<ViewSchedule />} />
+      <Route path={`/${PATHS.VIEW_PERSONAL_SCHEDULE}`} element={<ViewPersonalSchedule />} />
     </Routes>
   );
 };

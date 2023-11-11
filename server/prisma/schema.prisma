@@ -217,8 +217,8 @@ model UserPreference {
   updated_date    DateTime @updatedAt
   user            User     @relation("user_preferences", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
-  @@index([user_id, user_company_id])
   @@unique([user_id, user_company_id, module])
+  @@index([user_id, user_company_id])
 }
 
 model EmploymentDetails {

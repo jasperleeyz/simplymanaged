@@ -39,6 +39,21 @@ export const getAllLocations = async (
     .catch((err) => Promise.reject(err));
 };
 
+export const getLocationById = async (
+  company_id: number,
+  location_id: number
+): Promise<any> => {
+  const url = `/location/${company_id}/${location_id}`;
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return Promise.resolve(response.json());
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+}
+
 export const createUpdateLocation = async (
   location: ICompanyLocation
 ): Promise<any> => {
