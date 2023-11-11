@@ -8,7 +8,6 @@ import { ValidationError } from "./errors/validation-error";
 
 const path = require("path");
 const cors = require("cors");
-const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const multer = require("multer");
 const upload = multer();
@@ -24,7 +23,6 @@ const app = express();
 
 const PORT = process.env.PORT || 3000;
 
-app.use(express.json());
 // serve files for react client
 app.use(express.static(path.join(__dirname, "../client/build")));
 
@@ -37,11 +35,11 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // to parse application/x-www-form-urlencoded
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 // to parse application/json
-app.use(bodyParser.json());
+app.use(express.json({ limit: "50mb" }));
 // to parse multipart/form-data
-app.use(upload.array());
+app.use(upload.array({ limit: "50mb" }));
 
 app.use(cookieParser());
 
