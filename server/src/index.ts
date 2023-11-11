@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, "../client/build")));
 
 // set cors options
 const corsOptions = {
-  origin: process.env.WEBPAGE_URL,
+  origin: "*",
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
   allowedHeaders: "Access-Control-Allow-Headers,Access-Control-Allow-Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization,Origin,Cache-Control,Content-Type,X-Token,X-Refresh-Token",   
   // credentials: true,   
