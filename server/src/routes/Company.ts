@@ -52,7 +52,7 @@ companyRouter.post("/update/:company_id", async (req, res) => {
       },
       data: {
         address,
-        contact_no,
+        contact_no: Number(contact_no),
         email,
         name,
         uen,

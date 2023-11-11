@@ -1,4 +1,4 @@
-import { Department, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { getNextSequenceValue } from "../utils/sequence";
@@ -51,9 +51,20 @@ departmentRouter.get("/:company_id", async (req, res) => {
       prisma.department.findMany(findObject),
     ]);
 
-    // departments[1].forEach((department: Department) => {
+    // loop through each department to convert profile image to string from Buffer
+    for (let i = 0; i < departments[1].length; i++) {
+      for (const emp of (departments[1][i] as any).employees) {
+        if (emp.profile_image) {
+          emp.profile_image = emp.profile_image.toString();
+        }
+      }
 
-    // }
+      if ((departments[1][i] as any).department_head) {
+        (departments[1][i] as any).department_head.profile_image = (
+          departments[1][i] as any
+        ).department_head?.profile_image?.toString();
+      }
+    }
 
     return res
       .status(200)
@@ -115,7 +126,9 @@ departmentRouter.post("/create-update", async (req, res) => {
             company_id: company_id,
             department_name: department_name.toLocaleUpperCase().trim(),
             department_head_id:
-              Number(department_head_id) === 0 ? null : Number(department_head_id),
+              Number(department_head_id) === 0
+                ? null
+                : Number(department_head_id),
             created_by: logged_in_user["name"],
             updated_by: logged_in_user["name"],
           },
@@ -123,23 +136,27 @@ departmentRouter.post("/create-update", async (req, res) => {
       });
 
       // change selected head of department to new department
-      await prisma.user.update({
-        where: {
-          id_company_id: {
-            company_id: Number(company_id),
-            id: Number(department_head_id),
+      if (Number(department_head_id) !== 0) {
+        await prisma.user.update({
+          where: {
+            id_company_id: {
+              company_id: Number(company_id),
+              id: Number(department_head_id),
+            },
           },
-        },
-        data: {
-          department_id: Number(department.id),
-        },
-      });
+          data: {
+            department_id: Number(department.id),
+          },
+        });
+      }
     }
 
     return res.status(200).json(generateResultJson(department));
   } catch (error) {
     console.error(error);
-    return res.status(400).send(`Error ${id ? "updating" : "adding"} department.`);
+    return res
+      .status(400)
+      .send(`Error ${id ? "updating" : "adding"} department.`);
   }
 });
 
