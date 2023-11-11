@@ -272,6 +272,7 @@ UserScheduleRouter.get(
         include: {
           roster: {
             select: {
+              location_id: true,
               type: true,
             },
           },

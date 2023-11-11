@@ -29,6 +29,7 @@ export const PATHS = {
   CREATE_SCHEDULE: "create-schedule",
   EDIT_SCHEDULE: "edit-schedule",
   VIEW_SCHEDULE: "view-schedule",
+  VIEW_PERSONAL_SCHEDULE: "view-personal-schedule",
 
   MY_PROFILE: "my-profile",
   EDIT_PROFILE: "edit",
