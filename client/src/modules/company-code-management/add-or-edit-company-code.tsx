@@ -22,14 +22,14 @@ const CodeSchema = Yup.object().shape({
   code_type_other: Yup.string().when("code_type", {
     is: (val) => val === "other",
     then: (schema) => schema.required("Field is required"),
+    otherwise: (schema) => schema.notRequired(),
   }),
   code: Yup.string().required("Field is required"),
   description: Yup.string().required("Field is required"),
   leave_balance: Yup.number()
-    .min(1, "Leave balance must be greater than 0")
     .when("code_type", {
       is: (val) => val === CODE_TYPE.LEAVE_TYPE,
-      then: (schema) => schema.required("Field is required"),
+      then: (schema) => schema.min(1, "Leave balance must be greater than 0").required("Field is required"),
       otherwise: (schema) => schema.notRequired(),
     }),
 });
@@ -88,6 +88,7 @@ const AddOrEditCompanyCode = () => {
         initialValues={initialValues}
         enableReinitialize
         onSubmit={async (values, { setSubmitting }) => {
+          console.log(values);
           setSubmitting(true);
           try {
             await createUpdateCompanyCode(values).then(() => {
