@@ -3,7 +3,10 @@ import React from "react";
 import { IRequest } from "../../shared/model/request.model";
 import { DATE, PATHS, REQUEST } from "../../configs/constants";
 import { useNavigate } from "react-router-dom";
-import { getPersonalRequests } from "../../shared/api/request.api";
+import {
+  getPersonalRequests,
+  updateRequest,
+} from "../../shared/api/request.api";
 import { toast } from "react-toastify";
 import moment from "moment";
 
@@ -12,14 +15,42 @@ interface IProps {
   sizePerPage: number;
 }
 
+interface ILoading {
+  id: number;
+  status: string;
+}
+
 const PersonalRequests = ({ page, sizePerPage }: IProps) => {
   const navigate = useNavigate();
-  // const user = React.useContext(GlobalStateContext)?.globalState?.user;
   const [personalRequests, setPersonalRequests] = React.useState<IRequest[]>(
     []
   );
   const [requestLoading, setRequestLoading] = React.useState<boolean>(false);
-  // const [leaveTypeList, setLeaveTypeList] = React.useState<ICompanyCode[]>([]);
+  const [actionLoading, setActionLoading] = React.useState<ILoading[]>([]);
+
+  const updateStatus = (req: IRequest, status: string) => {
+    setActionLoading((prev) => [...prev, { id: req.id, status }]);
+    updateRequest({ ...req, status })
+      .then((res) => {
+        setPersonalRequests((prev) =>
+          prev.map((r) => (r.id === req.id ? res.data : r))
+        );
+        toast.success(
+          `Successfully ${REQUEST.STATUS[status]?.toLowerCase()} request`
+        );
+      })
+      .catch((err) => {
+        toast.error("Failed to update request. Please try again later.", {
+          toastId: "request-status-update",
+        });
+      })
+      .finally(() => {
+        setActionLoading((prev) =>
+          prev.filter((loading) => loading.id !== req.id)
+        );
+        // setRefreshPage(true)
+      });
+  };
 
   React.useEffect(() => {
     setRequestLoading(true);
@@ -114,6 +145,10 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
                 <div className="flex gap-2 items-center justify-center">
                   <Button
                     size="sm"
+                    disabled={
+                      actionLoading.find((val) => val.id === request.id) !==
+                      undefined
+                    }
                     onClick={() => {
                       navigate(
                         `./${PATHS.VIEW_REQUEST}/personal/${request.id}`
@@ -122,6 +157,23 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
                   >
                     View
                   </Button>
+                  {request.status === REQUEST.STATUS.PENDING && (
+                    <Button
+                      size="sm"
+                      color="failure"
+                      disabled={
+                        actionLoading.find((val) => val.id === request.id) !==
+                        undefined
+                      }
+                      isProcessing={
+                        actionLoading.find((val) => val.id === request.id) !==
+                        undefined
+                      }
+                      onClick={() => updateStatus(request, REQUEST.STATUS.CANCELLED)}
+                    >
+                      Cancel
+                    </Button>
+                  )}
                 </div>
               </Table.Cell>
             </Table.Row>
