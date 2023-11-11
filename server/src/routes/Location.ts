@@ -21,12 +21,12 @@ locationRouter.get("/:company_id", async (req, res) => {
       prisma.companyLocation.findMany(findObject),
     ]);
 
-    res
+    return res
       .status(200)
       .json(generateResultJson(locations[1], locations[0], page, size));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting locations.");
+    return res.status(400).send("Error getting locations.");
   }
 });
 
@@ -43,12 +43,12 @@ locationRouter.get("/:company_id/:location_id", async (req, res) => {
       },
     });
     
-    res
+    return res
       .status(200)
       .json(generateResultJson(location));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting location.");
+    return res.status(400).send("Error getting location.");
   }
 });
 
@@ -90,9 +90,9 @@ locationRouter.post("/create-update", async (req, res) => {
         });
       }
   
-      res.status(200).json(generateResultJson(loc));
+      return res.status(200).json(generateResultJson(loc));
     } catch (error) {
       console.error(error);
-      res.status(400).send(`Error ${id ? "updating": "adding"} location.`);
+      return res.status(400).send(`Error ${id ? "updating": "adding"} location.`);
     }
   });

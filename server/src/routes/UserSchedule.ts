@@ -34,10 +34,10 @@ UserScheduleRouter.get(
         size
       );
 
-      res.status(200).json(result);
+      return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error retrieving user schedules.");
+      return res.status(400).send("Error retrieving user schedules.");
     }
   }
 );
@@ -87,10 +87,10 @@ UserScheduleRouter.get(
       }
 
       const resultz = generateResultJson(result);
-      res.status(200).json(resultz);
+      return res.status(200).json(resultz);
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error retrieving user schedules.");
+      return res.status(400).send("Error retrieving user schedules.");
     }
   }
 );
@@ -136,10 +136,10 @@ UserScheduleRouter.get(
         size
       );
 
-      res.status(200).json(result);
+      return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error checking user schedules for conflicts.");
+      return res.status(400).send("Error checking user schedules for conflicts.");
     }
   }
 );
@@ -207,10 +207,10 @@ const combinedUsers = [...usersWithoutConflicts, ...usersFromRoster];
         size
       );
 
-      res.status(200).json(result);
+      return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error checking user schedules for conflicts.");
+      return res.status(400).send("Error checking user schedules for conflicts.");
     }
   }
 );
@@ -243,13 +243,13 @@ UserScheduleRouter.post("/create", async (req, res) => {
           updated_by,
         },
       });
-      res.status(200).json({
+      return res.status(200).json({
         schedule: createdSchedule,
       });
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating schedule.");
+    return res.status(400).send("Error creating schedule.");
   }
 });
 
@@ -279,10 +279,10 @@ UserScheduleRouter.get(
         },
       });
 
-      res.status(200).json(generateResultJson(userSchedules));
+      return res.status(200).json(generateResultJson(userSchedules));
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error retrieving user schedules.");
+      return res.status(400).send("Error retrieving user schedules.");
     }
   }
 );
@@ -309,7 +309,7 @@ UserScheduleRouter.get("/all-upcoming-shift-schedules", async (req, res) => {
     return res.status(200).json(generateResultJson(schedules));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving upcoming shift schedules.");
+    return res.status(400).send("Error retrieving upcoming shift schedules.");
   }
 });
 
@@ -427,7 +427,7 @@ UserScheduleRouter.get(
       if (error instanceof ValidationError) {
         message = error.message;
       }
-      res.status(400).send(message);
+      return res.status(400).send(message);
     }
   }
 );

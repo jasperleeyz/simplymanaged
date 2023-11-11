@@ -97,12 +97,12 @@ app.post(`/api/login`, async (req, res) => {
       user.profile_image = user?.profile_image?.toString() as any;
       const { password, ...userWithoutPassword } = user;
 
-      res.status(200).json({
+      return res.status(200).json({
         user: userWithoutPassword,
         bearerToken: token,
       });
     } else {
-      res.status(400).send("Invalid email or password");
+      return res.status(400).send("Invalid email or password");
     }
   } catch (error) {
     console.error(error);
@@ -110,7 +110,7 @@ app.post(`/api/login`, async (req, res) => {
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 
@@ -134,14 +134,14 @@ app.post("/api/forget-password", async (req, res) => {
       await sendPasswordResetEmail(email, user.fullname, token);
     }
 
-    res.status(200).json({ data: "success" });
+    return res.status(200).json({ data: "success" });
   } catch (error) {
     console.error(error);
     let message = "Error encountered. Please try again later.";
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 
@@ -177,14 +177,14 @@ app.post("/api/reset-password", async (req, res) => {
       },
     });
 
-    res.status(200).json({ data: "success" });
+    return res.status(200).json({ data: "success" });
   } catch (error) {
     console.error(error);
     let message = "Error encountered. Please try again later.";
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 
@@ -208,7 +208,7 @@ app.post("/api/reset-password/:token", async (req, res) => {
       },
     });
 
-    res.status(200).json({ data: user });
+    return res.status(200).json({ data: user });
   } catch (error) {
     console.error(error);
     let message = "Error encountered. Please try again later.";
@@ -217,7 +217,7 @@ app.post("/api/reset-password/:token", async (req, res) => {
     } else if (error instanceof jwt.JsonWebTokenError) {
       message = "invalid";
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 

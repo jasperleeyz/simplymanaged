@@ -803,7 +803,7 @@ requestRouter.post("/create-swap", async (req, res) => {
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 
@@ -969,7 +969,7 @@ requestRouter.post("/create-bid", async (req, res) => {
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 

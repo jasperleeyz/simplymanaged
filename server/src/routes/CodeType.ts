@@ -20,9 +20,9 @@ codeTypeRouter.get("/", async (req, res) => {
     // create result object
     const result = generateResultJson(codeTypes[1], codeTypes[0], page, size);
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving code types.");
+    return res.status(400).send("Error retrieving code types.");
   }
 });

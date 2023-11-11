@@ -55,12 +55,12 @@ departmentRouter.get("/:company_id", async (req, res) => {
 
     // }
 
-    res
+    return res
       .status(200)
       .json(generateResultJson(departments[1], departments[0], page, size));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting departments.");
+    return res.status(400).send("Error getting departments.");
   }
 });
 
@@ -136,10 +136,10 @@ departmentRouter.post("/create-update", async (req, res) => {
       });
     }
 
-    res.status(200).json(generateResultJson(department));
+    return res.status(200).json(generateResultJson(department));
   } catch (error) {
     console.error(error);
-    res.status(400).send(`Error ${id ? "updating" : "adding"} department.`);
+    return res.status(400).send(`Error ${id ? "updating" : "adding"} department.`);
   }
 });
 

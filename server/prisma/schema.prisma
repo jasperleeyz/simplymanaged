@@ -389,10 +389,12 @@ model RosterTemplatePosition {
 model Sequences {
   id             Int      @id @default(autoincrement())
   company_id     Int
-  sequence_key   String   @unique
+  sequence_key   String   
   sequence_value Int      @default(1)
   created_by     String   @default("SYSTEM")
   created_date   DateTime @default(now())
   updated_by     String   @default("SYSTEM")
   updated_date   DateTime @updatedAt
+
+  @@unique([company_id, sequence_key])
 }

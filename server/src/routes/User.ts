@@ -33,15 +33,15 @@ userRouter.get("/info", async (req, res) => {
       user.profile_image = user.profile_image?.toString() as any;
       const { password, ...userWithoutPassword } = user;
 
-      res.status(200).json({
+      return res.status(200).json({
         user: userWithoutPassword,
       });
     } else {
-      res.status(400).send("Error getting user info");
+      return res.status(400).send("Error getting user info");
     }
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user info");
+    return res.status(400).send("Error getting user info");
   }
 });
 
@@ -71,12 +71,12 @@ userRouter.get("/", async (req, res) => {
       return userWithoutPassword;
     });
 
-    res
+    return res
       .status(200)
       .json(generateResultJson(usersWithoutPassword, users[0], page, size));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting users.");
+    return res.status(400).send("Error getting users.");
   }
 });
 
@@ -107,12 +107,12 @@ userRouter.get("/department/:department_id", async (req, res) => {
       return userWithoutPassword;
     });
 
-    res
+    return res
       .status(200)
       .json(generateResultJson(usersWithoutPassword, users[0], page, size));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting users.");
+    return res.status(400).send("Error getting users.");
   }
 });
 
@@ -134,10 +134,10 @@ userRouter.get("/:user_id", async (req, res) => {
     userWithoutPassword.profile_image =
       (userWithoutPassword?.profile_image?.toString() as any) || null;
 
-    res.status(200).json(generateResultJson(userWithoutPassword));
+    return res.status(200).json(generateResultJson(userWithoutPassword));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user.");
+    return res.status(400).send("Error getting user.");
   }
 });
 
@@ -181,12 +181,11 @@ userRouter.post("/create", async (req, res) => {
     }
 
     if (subscription?.employee_quantity <= userCount) {
-      res
+      return res
         .status(400)
         .send(
           "Error creating employee. Employee limit has been reached for your subscription."
         );
-      return;
     }
 
     const user = await prisma.$transaction(async (tx) => {
@@ -248,12 +247,12 @@ userRouter.post("/create", async (req, res) => {
 
     const { password: userPassword, ...userWithoutPassword } = user;
 
-    res.status(200).json({
+    return res.status(200).json({
       user: userWithoutPassword,
     });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(400)
       .send("Error creating new employee. Please try again later.");
   }
@@ -351,12 +350,12 @@ userRouter.post("/update", async (req, res) => {
     userWithoutPassword.profile_image = userWithoutPassword.profile_image ? userWithoutPassword.profile_image.toString() as any : "";
     userWithoutPassword.preferences = prefs;
 
-    res.status(200).json({
+    return res.status(200).json({
       user: userWithoutPassword,
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error updating employee. Please try again later.");
+    return res.status(400).send("Error updating employee. Please try again later.");
   }
 });
 
@@ -422,13 +421,13 @@ userRouter.post("/change-password", async (req, res) => {
       },
     });
 
-    res.status(200).json(generateResultJson("success"));
+    return res.status(200).json(generateResultJson("success"));
   } catch (error) {
     console.error(error);
     if (error instanceof ValidationError) {
-      res.status(400).send(error.message);
+      return res.status(400).send(error.message);
     } else {
-      res.status(400).send("Error changing password. Please try again later.");
+      return res.status(400).send("Error changing password. Please try again later.");
     }
   }
 });
@@ -475,10 +474,10 @@ userRouter.get("/check-working-hours", async (req, res) => {
       currentWeekWorkingHours += schedule.shift === "FULL" ? 8 : 4;
     });
 
-    res.status(200).json(generateResultJson({ workingHoursPerWeek: Number(workingHoursPerWeek), currentWeekWorkingHours: Number(currentWeekWorkingHours) }));
+    return res.status(200).json(generateResultJson({ workingHoursPerWeek: Number(workingHoursPerWeek), currentWeekWorkingHours: Number(currentWeekWorkingHours) }));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user.");
+    return res.status(400).send("Error getting user.");
   }
 });
 
@@ -500,9 +499,9 @@ userRouter.get("/:user_id", async (req, res) => {
     userWithoutPassword.profile_image =
       (userWithoutPassword?.profile_image?.toString() as any) || null;
 
-    res.status(200).json(generateResultJson(userWithoutPassword));
+    return res.status(200).json(generateResultJson(userWithoutPassword));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user.");
+    return res.status(400).send("Error getting user.");
   }
 });

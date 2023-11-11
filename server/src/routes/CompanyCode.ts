@@ -45,10 +45,10 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
       size
     );
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving company codes.");
+    return res.status(400).send("Error retrieving company codes.");
   }
 });
 
@@ -77,8 +77,7 @@ companyCodeRouter.post("/create-update", async (req, res) => {
 
       // return error if code type already exists
       if (existing_code_type !== null) {
-        res.status(400).send("Code type already exists");
-        return;
+        return res.status(400).send("Code type already exists");
       } else {
         // create new code type
         await prisma.$transaction(async (tx) => {
@@ -173,9 +172,9 @@ companyCodeRouter.post("/create-update", async (req, res) => {
       }
     }
 
-    res.status(200).json(generateResultJson(companyCode));
+    return res.status(200).json(generateResultJson(companyCode));
   } catch (error) {
     console.error(error);
-    res.status(400).send(`Error ${id ? "updating" : "creating"} company code.`);
+    return res.status(400).send(`Error ${id ? "updating" : "creating"} company code.`);
   }
 });

@@ -9,10 +9,10 @@ const prisma = new PrismaClient();
 subscriptionRouter.get("/model/all", async (req, res) => {
   try {
     const result = await prisma.subscriptionModel.findMany({});
-    res.status(200).json(generateResultJson(result));
+    return res.status(200).json(generateResultJson(result));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving subscriptions");
+    return res.status(400).send("Error retrieving subscriptions");
   }
 });
 
@@ -23,10 +23,10 @@ subscriptionRouter.get("/model/:id", async (req, res) => {
         id: Number(req.params.id),
       },
     });
-    res.status(200).json(generateResultJson(subscription_model));
+    return res.status(200).json(generateResultJson(subscription_model));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving subscription details");
+    return res.status(400).send("Error retrieving subscription details");
   }
 });
 
@@ -37,9 +37,9 @@ subscriptionRouter.get("/model/:company_id", async (req, res) => {
         company_id: Number(req.params.company_id),
       },
     });
-    res.status(200).json(generateResultJson(subscription));
+    return res.status(200).json(generateResultJson(subscription));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving subscription details");
+    return res.status(400).send("Error retrieving subscription details");
   }
 });
