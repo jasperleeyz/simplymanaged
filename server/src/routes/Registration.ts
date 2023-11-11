@@ -294,6 +294,14 @@ const approveRegistration = async (registration_details: Registration) => {
       created_by: "SYSTEM",
       updated_by: "SYSTEM",
       department_id: null,
+      employment_details: {
+        create: {
+          working_hours: null,
+          employment_type: null,
+          created_by: "SYSTEM",
+          updated_by: "SYSTEM",
+        },
+      }
     };
 
     const system_admin = await prisma.user.create({
