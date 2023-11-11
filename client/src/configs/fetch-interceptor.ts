@@ -6,7 +6,9 @@ window.fetch = async function (...args) {
   let [url, options] = args;
 
   // request interceptor
-  url = `${API_URL}${url}`; // intercept quest and add base url
+  if(!url.toString().includes(API_URL)) {
+    url = `${API_URL}${url}`; // intercept request and add base url
+  }
 
   // intercept request and add headers
   const token =

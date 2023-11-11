@@ -35,10 +35,15 @@ app.use(express.static(path.join(__dirname, "../client/build")));
 // set cors options
 const corsOptions = {
   origin: process.env.WEBPAGE_URL,
-  optionsSuccessStatus: 200,
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Access-Control-Allow-Headers,Access-Control-Allow-Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization,Origin,Cache-Control,Content-Type,X-Token,X-Refresh-Token",   
+  // credentials: true,   
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
 // use cors
 app.use(cors(corsOptions));
+// app.options("*", cors());
 
 // to parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));

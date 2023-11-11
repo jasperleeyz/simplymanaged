@@ -9,7 +9,7 @@ import {
 } from "../../configs/utils";
 import { HiPencil, HiSave } from "react-icons/hi";
 import { useLocation, useNavigate } from "react-router-dom";
-import { PATHS } from "../../configs/constants";
+import { PATHS, PREFERENCE } from "../../configs/constants";
 import IUser from "../../shared/model/user.model";
 import { toast } from "react-toastify";
 import { ICompanyCode } from "../../shared/model/company.model";
@@ -141,7 +141,7 @@ const ProfilePage = () => {
                   <p>Update Profile</p>
                 </Button>
               ) : (
-                <Button size="sm" type="submit">
+                <Button size="sm" disabled={props.isSubmitting} isProcessing={props.isSubmitting} type="submit">
                   <HiSave className="my-auto mr-2" />
                   <p>Save</p>
                 </Button>
@@ -170,6 +170,7 @@ const ProfilePage = () => {
                     id="fullname"
                     name="fullname"
                     labelValue="Full Name"
+                    disabled={props.isSubmitting}
                     value={props.values.fullname?.toUpperCase() || ""}
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
@@ -197,7 +198,7 @@ const ProfilePage = () => {
                     id="email"
                     name="email"
                     labelValue="Email"
-                    className="uppercase"
+                    disabled={props.isSubmitting}
                     value={props.values.email?.toUpperCase() || ""}
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
@@ -217,7 +218,7 @@ const ProfilePage = () => {
                   <LabeledField
                     id="contact-no"
                     name="contact_no"
-                    labelVale="Contact No."
+                    labelValue="Contact No."
                     value={globalState?.user?.contact_no}
                   />
                 ) : (
@@ -225,6 +226,7 @@ const ProfilePage = () => {
                     id="contact-no"
                     name="contact_no"
                     labelValue="Contact No."
+                    disabled={props.isSubmitting}
                     value={props.values.contact_no || ""}
                     onChange={props.handleChange}
                     onBlur={props.handleBlur}
@@ -289,7 +291,7 @@ const ProfilePage = () => {
                         <Label htmlFor={pref.module.toLowerCase()}>
                           {capitalizeString(pref.module.replaceAll("_", " "))}
                         </Label>
-                        {getPreferenceCheckboxes(isEdit, idx, {...pref, preference: pref.preference.split(",")}, props)}
+                        {getPreferenceCheckboxes(isEdit, idx, {...pref, preference: pref.preference?.split(",")}, props)}
                       </div>
                     );
                   })
@@ -314,13 +316,14 @@ const ProfilePage = () => {
 export default ProfilePage;
 
 const getPreferenceCheckboxes = (isEdit, index, pref, formikProps) => {
+  console.log(pref)
   const getPreferredWorkDaysCheckboxes = () => {
     return (
       <>
       {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map((day, idx) => {
         return (
           <div key={idx}>
-            <Checkbox id={day} disabled={!isEdit} value={day} checked={pref.preference?.includes(day)} 
+            <Checkbox id={day} disabled={!isEdit || formikProps.isSubmitting} value={day} checked={pref.preference?.includes(day)} 
             onChange={(e) => {
               if(e.target.checked) {
                 formikProps.setFieldValue(`preferences[${index}].preference`, [...pref.preference, day]);
@@ -343,7 +346,7 @@ const getPreferenceCheckboxes = (isEdit, index, pref, formikProps) => {
       {["FULL", "AM", "PM"].map((shift, idx) => {
         return (
           <div key={idx}>
-            <Checkbox id={shift} disabled={!isEdit} value={shift} checked={pref.preference?.includes(shift)}
+            <Checkbox id={shift} disabled={!isEdit || formikProps.isSubmitting} value={shift} checked={pref.preference?.includes(shift)}
             onChange={(e) => {
               if(e.target.checked) {
                 formikProps.setFieldValue(`preferences[${index}].preference`, [...pref.preference, shift]);
@@ -362,7 +365,7 @@ const getPreferenceCheckboxes = (isEdit, index, pref, formikProps) => {
 
   return (
     <div id={pref.module.toLowerCase()} className="flex flex-wrap gap-3">
-      {pref.module === "PREFERRED_WORK_DAYS" ? getPreferredWorkDaysCheckboxes() : getPreferredWorkShiftsCheckboxes()}
+      {pref.module === PREFERENCE.PREFERRED_WORKING_DAYS ? getPreferredWorkDaysCheckboxes() : getPreferredWorkShiftsCheckboxes()}
     </div>
   );
 };
