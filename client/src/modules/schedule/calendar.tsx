@@ -121,7 +121,7 @@ const Calendar = () => {
                 </div>
               </div>
               <div className="mt-3 md:mt-0 md:ms-24">
-                {locationList.length > 0 ? (
+                {!isPersonal && locationList.length > 0 ? (
                   <>
                     <Label htmlFor="location" value="Location" />
                     <Select

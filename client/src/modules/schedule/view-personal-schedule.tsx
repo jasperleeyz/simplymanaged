@@ -17,15 +17,12 @@ const ViewPersonalSchedule = () => {
   const [loading, setLoading] = React.useState(false);
 
   useEffect(() => {
-    console.log( schedule.user_company_id)
-    console.log( schedule.roster?.location_id)
     setLoading((prev) => true);
     getLocationById(
       schedule.user_company_id || 0,
       schedule.roster?.location_id || 0
     )
       .then((res) => {
-        console.log(res.data)
         setScheduleLocation(res.data);
       })
       .finally(() => {
