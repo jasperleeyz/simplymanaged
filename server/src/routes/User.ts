@@ -306,10 +306,10 @@ userRouter.post("/update", async (req, res) => {
               employment_type: employment_details_without_ids.employment_type,
             },
             update: {
-              working_hours: Number(
+              working_hours: employment_details_without_ids.working_hours ? Number(
                 employment_details_without_ids.working_hours
-              ).toFixed(2),
-              employment_type: employment_details_without_ids.employment_type,
+              ).toFixed(2) : null,
+              employment_type: employment_details_without_ids.employment_type ? employment_details_without_ids.employment_type : null,
             },
           },
         },

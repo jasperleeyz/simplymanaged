@@ -224,8 +224,8 @@ model UserPreference {
 model EmploymentDetails {
   user_id         Int
   user_company_id Int
-  working_hours   Decimal @db.Decimal(5, 2)
-  employment_type String
+  working_hours   Decimal? @db.Decimal(5, 2)
+  employment_type String?
   user            User    @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@id([user_id, user_company_id])
