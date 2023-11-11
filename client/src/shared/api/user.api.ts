@@ -90,7 +90,6 @@ export const addEmployee = async (user: IUser): Promise<any> => {
 };
 
 export const updateEmployee = async (user: IUser): Promise<any> => {
-  console.log(user);
   return await fetch(`/user/update`, {
     method: "POST",
     body: JSON.stringify(user),

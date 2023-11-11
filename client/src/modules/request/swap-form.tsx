@@ -42,7 +42,6 @@ const SwapForm = () => {
       const selectedSchedule = upcomingShiftSchedules.find(
         (schedule) => schedule.id === Number(id)
       );
-      console.log(selectedSchedule);
       getAvailableShiftSchedulesForSwapping(
         selectedSchedule?.shift,
         selectedSchedule?.start_date

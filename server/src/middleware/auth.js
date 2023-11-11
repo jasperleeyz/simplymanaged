@@ -18,7 +18,6 @@ const verifyToken = (req, res, next) => {
             const decoded = jwt.verify(token, config.JWT_SECRET);
             req.headers["x-access-user"] = decoded;
         } catch (err) {
-            console.log("FAILED", err);
             return res.status(401).send("Invalid authentication");
         }
     }
