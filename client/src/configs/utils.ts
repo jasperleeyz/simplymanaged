@@ -1,6 +1,7 @@
 import { PATHS, ROLES } from "./constants";
 
 export const capitalizeString = (str) => {
+  if(str == null || str == undefined) return str
   return str
     .split(" ")
     .map((element) => {

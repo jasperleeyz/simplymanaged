@@ -10,7 +10,7 @@ const LabeledInputText = ({labelValue, ...props}: IProps) => {
     return (
         <div className="mb-2">
             <Label htmlFor={props.id} value={labelValue} />
-            <TextInput type="text" {...props}  />
+            <TextInput type="text" {...props} />
         </div>
     );
 }

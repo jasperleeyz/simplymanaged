@@ -111,8 +111,8 @@ const EmployeesPage = () => {
         );
         setEmployeeList((prev) =>
           prev.map((c) =>
-            c.id === res.data.id && c.company_id === res.data.company_id
-              ? res.data
+            c.id === res.user.id && c.company_id === res.user.company_id
+              ? res.user
               : c
           )
         );
@@ -152,7 +152,7 @@ const EmployeesPage = () => {
           <label>{emp.email}</label>
         </Table.Cell>
         <Table.Cell>
-          <label>{emp.contact_no}</label>
+          <label className="text-wrap">{emp.contact_no}</label>
         </Table.Cell>
         <Table.Cell>
           <label>{emp.position}</label>

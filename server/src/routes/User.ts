@@ -63,6 +63,7 @@ userRouter.get("/info", async (req, res) => {
           employment_details: true,
           preferences: true,
           department_in_charge: true,
+          department: true,
         },
       });
     }
@@ -261,6 +262,22 @@ userRouter.post("/create", async (req, res) => {
               employment_type: employment_details.employment_type,
             },
           },
+          preferences: {
+            create: [
+              {
+                module: "PREFERRED_WORKING_DAYS",
+                preference: "",
+                created_by: "SYSTEM",
+                updated_by: "SYSTEM",
+              },
+              {
+                module: "PREFERRED_WORKING_SHIFT",
+                preference: "",
+                created_by: "SYSTEM",
+                updated_by: "SYSTEM",
+              },
+            ],
+          },
           profile_image: profile_image ? Buffer.from(profile_image) : null,
           created_by: logged_in_user["name"],
           updated_by: logged_in_user["name"],
@@ -302,8 +319,6 @@ userRouter.post("/update", async (req, res) => {
   const { user_id, user_company_id, ...employment_details_without_ids } =
     employment_details;
 
-  console.log(Number(employment_details_without_ids.working_hours));
-
   try {
     const user = await prisma.user.update({
       where: {
@@ -319,7 +334,7 @@ userRouter.post("/update", async (req, res) => {
         contact_no: Number(contact_no),
         position: position.toLocaleUpperCase().trim(),
         status: status,
-        profile_image: profile_image,
+        profile_image: profile_image ? Buffer.from(profile_image) : null,
         department_id: Number(department_id),
         employment_details: {
           upsert: {
@@ -339,11 +354,17 @@ userRouter.post("/update", async (req, res) => {
         },
         updated_by: logged_in_user["name"],
       },
+      include: {
+        employment_details: true,
+        preferences: true,
+        department_in_charge: true,
+      }
     });
 
     // update preferences for user
-    preferences.forEach(async (preference: any) => {
-      await prisma.userPreference.upsert({
+    let prefs = [] as any[];
+    for (const preference of preferences) {
+      const pref = await prisma.userPreference.upsert({
         where: {
           id: preference.id,
           user_id: preference.user_id,
@@ -353,14 +374,21 @@ userRouter.post("/update", async (req, res) => {
           ...preference,
           user_id: user.id,
           user_company_id: user.company_id,
+          created_by: logged_in_user["name"],
+          updated_by: logged_in_user["name"],
         },
         update: {
           ...preference,
+          updated_by: logged_in_user["name"],
         },
       });
-    });
+
+      prefs.push(pref);
+    };
 
     const { password: userPassword, ...userWithoutPassword } = user;
+    userWithoutPassword.profile_image = userWithoutPassword.profile_image ? userWithoutPassword.profile_image.toString() as any : "";
+    userWithoutPassword.preferences = prefs;
 
     res.status(200).json({
       user: userWithoutPassword,

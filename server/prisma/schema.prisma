@@ -210,7 +210,7 @@ model UserPreference {
   user_id         Int
   user_company_id Int
   module          String
-  preference      String
+  preference      String?
   created_by      String
   created_date    DateTime @default(now())
   updated_by      String
@@ -218,6 +218,7 @@ model UserPreference {
   user            User     @relation("user_preferences", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@index([user_id, user_company_id])
+  @@unique([user_id, user_company_id, module])
 }
 
 model EmploymentDetails {
