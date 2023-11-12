@@ -13,6 +13,8 @@ import { GlobalStateContext } from "../../../configs/global-state-provider";
 import { IRosterTemplate } from "../../../shared/model/schedule.model";
 import { getAllEmployees, getDepartmentAllEmployees } from "../../../shared/api/user.api";
 import { createRosterTemplate } from "../../../shared/api/roster.api";
+import { ICompanyCode } from "../../../shared/model/company.model";
+import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
 
 type IProps = {
   createRosterTemplateModal: boolean;
@@ -126,6 +128,20 @@ const CreateRosterTemplateModal = (props: IProps) => {
     }
   }, [submitLoading]);
 
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
+
+  useEffect(() => {
+    getAllCompanyCodes(
+      globalState?.user?.company_id || 0,
+      undefined,
+      undefined,
+      undefined,
+      `equals(code_type,POSITION)`
+    ).then((res) => {
+      setCodeList(res.data);
+    });
+  }, []);
+
   return (
     <div>
       <Modal
@@ -139,7 +155,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
             <Select onChange={(e) => setSelectedPosition(e.target.value)}>
               {Object.keys(templatePositions).map((position, index) => (
                 <option key={index} value={position}>
-                  {position}
+                  {codeList.find((c) => c.code === position)?.description || position}
                 </option>
               ))}
             </Select>
@@ -171,7 +187,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
                 <div className="my-2" key={index}>
                   {positionSelectedCount[position] > 0 && (
                     <div>
-                      {position} - {positionSelectedCount[position]}
+                      {codeList.find((c) => c.code === position)?.description || position} - {positionSelectedCount[position]}
                     </div>
                   )}
                 </div>

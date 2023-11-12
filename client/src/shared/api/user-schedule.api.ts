@@ -89,7 +89,7 @@ export const getNonConflictScheduleUser = async (
   start_date: string,
   end_date: string,
 ): Promise<any> => {
-  let url = `/user-schedule/get-non-conflict-user/${user_company_id}/${deparment_id}/${start_date}/${end_date}`;
+  const url = `/user-schedule/get-non-conflict-user/${user_company_id}/${deparment_id}/${start_date}/${end_date}`;
 
   return await fetch(url, {
     method: "GET",
@@ -151,7 +151,7 @@ export const getNonConflictScheduleUserRoster = async (
   start_date: string,
   end_date: string,
 ): Promise<any> => {
-  let url = `/user-schedule/get-non-conflict-user-roster/${user_company_id}/${department_id}/${roster_id}/${start_date}/${end_date}`;
+  const url = `/user-schedule/get-non-conflict-user-roster/${user_company_id}/${department_id}/${roster_id}/${start_date}/${end_date}`;
 
   return await fetch(url, {
     method: "GET",

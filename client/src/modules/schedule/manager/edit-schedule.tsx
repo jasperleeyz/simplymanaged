@@ -144,7 +144,6 @@ const EditSchedule = () => {
         setLoading((prev) => false);
       });
   }, [
-    searchTerm,
     scheduleDetailsState.start_date,
     scheduleDetailsState.end_date,
   ]);

@@ -1,3 +1,4 @@
+import moment from "moment";
 import { IBidRequest, ILeaveRequest, IRequest, ISwapRequest } from "../model/request.model";
 
 export const createLeaveRequest = async (
@@ -253,3 +254,19 @@ export const createBidRequest = async (request: any): Promise<any> => {
     })
     .catch((err) => Promise.reject(err));
 };
+
+export const getApprovedLeaveFromAndTo = async (
+  from: Date,
+  to: Date,
+): Promise<any> => {
+  const url = `/request/approved-leave?from=${moment(from).format("YYYY-MM-DD")}&to=${moment(to).format("YYYY-MM-DD")}`;
+
+  return await fetch(url, {
+    method: "GET",
+  })
+    .then((response) => {
+      if (response.ok) return response.json();
+      else return response.text().then((text) => Promise.reject(text));
+    })
+    .catch((err) => Promise.reject(err));
+}
