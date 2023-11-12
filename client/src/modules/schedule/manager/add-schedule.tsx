@@ -35,7 +35,12 @@ import {
   createRoster,
 } from "../../../shared/api/roster.api";
 import CreateScheduleModal from "./create-schedule-modal";
-import { getSubscriptionModelByCompanyId, getSubscriptionModelById } from "../../../shared/api/subscription.api"
+import {
+  getSubscriptionModelByCompanyId,
+  getSubscriptionModelById,
+} from "../../../shared/api/subscription.api";
+import { ICompanyCode } from "../../../shared/model/company.model";
+import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -56,7 +61,7 @@ const AddSchedule = () => {
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEmployeeList, setFilteredEmployeeList] = useState<IUser[]>([]);
-  
+
   const [currentPage, setCurrentPage] = useState(location?.state?.page || 1);
   const [sizePerPage, setSizePerPage] = useState(
     location?.state?.sizePerPage || 5
@@ -146,6 +151,7 @@ const AddSchedule = () => {
   const [rosterType, setRosterType] = React.useState("SHIFT");
   const [locationId, setLocationId] = React.useState(0);
   const [rosterSetting, setRosterSettings] = React.useState(true);
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
 
   useEffect(() => {
     setScheduleDetailsState((prev) => ({
@@ -218,14 +224,22 @@ const AddSchedule = () => {
   }, [scheduleDetailsState.start_date, scheduleDetailsState.end_date]);
 
   useEffect(() => {
-    getSubscriptionModelByCompanyId(
-      scheduleDetailsState.company_id || 0,
-    )
-      .then((res) => {
-        SetSubscription(res.data.type.toLowerCase().includes("premium"))
-      })
-      .finally(() => {
-      });
+    Promise.all([
+      getSubscriptionModelByCompanyId(
+        scheduleDetailsState.company_id || 0
+      ).then((res) => {
+        SetSubscription(res.data.type.toLowerCase().includes("premium"));
+      }),
+      getAllCompanyCodes(
+        globalState?.user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        `equals(code_type,POSITION)`
+      ).then((res) => {
+        setCodeList(res.data);
+      }),
+    ]).finally(() => {});
   }, []);
 
   useEffect(() => {
@@ -270,7 +284,7 @@ const AddSchedule = () => {
           {emp.fullname}
         </Table.Cell>
         <Table.Cell>
-          <label>{emp.position}</label>
+          <label>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</label>
         </Table.Cell>
         <Table.Cell>
           <div className="inline-block">
@@ -336,7 +350,7 @@ const AddSchedule = () => {
                       {emp.fullname}
                     </Table.Cell>
                     <Table.Cell>
-                      <label>{emp.position}</label>
+                      <label>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</label>
                     </Table.Cell>
                     {scheduleDetailsState.type === "SHIFT" && (
                       <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
@@ -417,7 +431,7 @@ const AddSchedule = () => {
                 style={{ display: "inline-block", margin: "0" }}
               />
               {emp.fullname}
-              <div>{emp.position}</div>
+              <div>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</div>
               <div></div>
               {scheduleDetailsState.employees &&
               scheduleDetailsState.employees.some(
@@ -643,7 +657,7 @@ const AddSchedule = () => {
       employees: [],
       schedules: [],
     };
-    scheduleDetailsState.positions?.forEach((pos) =>{
+    scheduleDetailsState.positions?.forEach((pos) => {
       const selectedCount = pos.count;
       const availableEmployees: IUser[] = employeeList.filter(
         (emp) => emp.position === pos.position
@@ -666,7 +680,7 @@ const AddSchedule = () => {
           )[0];
           selectedEmployees.push(selectedEmployee);
           // if subscription push shift pref
-          selectedEmployee.preferences
+          selectedEmployee.preferences;
           //else push full
           updatedSchedules.push({
             user_id: selectedEmployee.id,
@@ -964,7 +978,7 @@ const AddSchedule = () => {
             <p className="text-md">AM SHIFT</p>
           </div>
           <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-          {scheduleDetailsState.employees?.map(
+            {scheduleDetailsState.employees?.map(
               (emp, idx) =>
                 selectEmployeeShift(emp, "AM") && (
                   <div className="flex items-center justify-center" key={idx}>
@@ -1036,7 +1050,7 @@ const AddSchedule = () => {
             <p className="text-md">FULL SHIFT</p>
           </div>
           <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-          {scheduleDetailsState.employees?.map(
+            {scheduleDetailsState.employees?.map(
               (emp, idx) =>
                 selectEmployeeShift(emp, "FULL") && (
                   <div className="flex items-center justify-center" key={idx}>

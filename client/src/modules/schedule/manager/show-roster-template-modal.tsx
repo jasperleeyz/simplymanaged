@@ -10,6 +10,8 @@ import {
   deleteRosterTemplate,
 } from "../../../shared/api/roster.api";
 import CreateRosterTemplateModal from "../../../modules/schedule/manager/create-roster-template-modal";
+import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
+import { ICompanyCode } from "../../../shared/model/company.model";
 
 
 type IProps = {
@@ -66,6 +68,20 @@ const ShowRosterTemplateModal = (props: IProps) => {
   const [createRosterTemplateModal, setCreateRosterTemplateModal] = React.useState(false);
   const modalProps = { createRosterTemplateModal, setCreateRosterTemplateModal };
 
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
+
+  useEffect(() => {
+    getAllCompanyCodes(
+      globalState?.user?.company_id || 0,
+      undefined,
+      undefined,
+      undefined,
+      `equals(code_type,POSITION)`
+    ).then((res) => {
+      setCodeList(res.data);
+    });
+  }, []);
+
   return (
     <div>
       <Modal
@@ -108,7 +124,7 @@ const ShowRosterTemplateModal = (props: IProps) => {
                         Shift Type - {selectedTemplate.roster_type}
                         {Object.keys(templatePositions).map((position, index) => (
                           <div key={index}>
-                            {position} - {templatePositions[position]}
+                            {codeList.find((c) => c.code === position)?.description || position} - {templatePositions[position]}
                           </div>
                         ))}
                         No of Employees - {selectedTemplate.no_of_employees}
