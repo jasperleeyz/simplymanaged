@@ -99,7 +99,10 @@ const AddSchedule = () => {
       employees: [],
       schedules: [],
     });
-   
+
+
+
+
   const handleAddOrRemoveEmployee = (user: IUser) => {
     setScheduleDetailsState((prevState) => {
       const updatedEmployees = [...(prevState.employees || [])];
@@ -142,6 +145,7 @@ const AddSchedule = () => {
         }
       }
 
+
       return {
         ...prevState,
         employees: updatedEmployees,
@@ -173,7 +177,7 @@ const AddSchedule = () => {
     }));
   }, [rosterType]);
 
-    const [searchFilterEmployeeList, setSearchFilterEmployeeList] = useState<IUser[]>([]);
+  const [searchFilterEmployeeList, setSearchFilterEmployeeList] = useState<IUser[]>([]);
 
   useEffect(() => {
     // When the searchTerm changes, update the filteredEmployees state.
@@ -255,10 +259,10 @@ const AddSchedule = () => {
       ).then((res) => {
         setCodeList(res.data);
       }),
-    ]).finally(() => {});
+    ]).finally(() => { });
   }, []);
 
-  
+
 
 
   useEffect(() => {
@@ -272,18 +276,8 @@ const AddSchedule = () => {
     setFilteredEmployeeList(newFilteredEmployeeList);
   }, [rosterPosition, employeeList]);
 
-  /*const [employeePreferences, setEmployeePreferences] = useState<EmployeePreferences[]>([]);
+  const [employeePreferences, setEmployeePreferences] = useState<EmployeePreferences[]>([]);
 
-useEffect(() => {
-  const processedData = filteredEmployeeList.map(employee => ({
-    id: employee.id,
-    day: employee.preferences[0]?.preference.split(',').map(day => day.trim()) || [],
-    shift: employee.preferences[1]?.preference.split(',').map(shift => shift.trim()) || [],
-  }));
-
-  setEmployeePreferences(processedData);
-}, [filteredEmployeeList]);
-*/
   const setSchedulesToDefault = () => {
     setScheduleDetailsState((prev) => ({
       ...prev,
@@ -322,9 +316,9 @@ useEffect(() => {
             {" "}
             {/* Create a container for the button */}
             {scheduleDetailsState.employees &&
-            scheduleDetailsState.employees.some(
-              (employees) => employees.id === emp.id
-            ) ? (
+              scheduleDetailsState.employees.some(
+                (employees) => employees.id === emp.id
+              ) ? (
               <Button
                 color="failure"
                 className="w-full"
@@ -465,9 +459,9 @@ useEffect(() => {
               <div>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</div>
               <div></div>
               {scheduleDetailsState.employees &&
-              scheduleDetailsState.employees.some(
-                (employees) => employees.id === emp.id
-              ) ? (
+                scheduleDetailsState.employees.some(
+                  (employees) => employees.id === emp.id
+                ) ? (
                 <Button
                   color="failure"
                   size="sm"
@@ -496,7 +490,7 @@ useEffect(() => {
     const uniquePositions = [
       ...new Set(
         scheduleDetailsState.employees &&
-          scheduleDetailsState.employees.map((employee) => employee.position)
+        scheduleDetailsState.employees.map((employee) => employee.position)
       ),
     ];
     // Count employees for each unique position
@@ -682,21 +676,15 @@ useEffect(() => {
   };
   */
 
-  const [trimmedDay, setTrimmedDay] = React.useState<string[]>([]);
-  const [trimmedShift, setTrimmedShift] = React.useState<string[]>([]);
-
   const autoAssignPersonnel = () => {
     const newState: IRoster = {
       ...scheduleDetailsState,
       employees: [],
       schedules: [],
     };
-
-    const day: string[] = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-
-    const shift: string[] = ["AM", "PM", "FULL"];
+  
     let start_day: string;
-
+  
     if (scheduleDetailsState.start_date.getDay() == 0) start_day = "SUN";
     if (scheduleDetailsState.start_date.getDay() == 1) start_day = "MON";
     if (scheduleDetailsState.start_date.getDay() == 2) start_day = "TUE";
@@ -704,58 +692,83 @@ useEffect(() => {
     if (scheduleDetailsState.start_date.getDay() == 4) start_day = "THUR";
     if (scheduleDetailsState.start_date.getDay() == 5) start_day = "FRI";
     if (scheduleDetailsState.start_date.getDay() == 6) start_day = "SAT";
-
+  
     scheduleDetailsState.positions?.forEach((pos) => {
       const selectedCount = pos.count;
       const availableEmployees: IUser[] = filteredEmployeeList.filter(
         (emp) => emp.position === pos.position
       );
       const updatedSchedules: IUserSchedule[] = [];
-
+  
       if (availableEmployees.length > 0 && selectedCount > 0) {
         const selectedEmployees: IUser[] = [];
-        const shuffledCandidates: IUser[] = [...availableEmployees];
-        for (let i = 0; i < selectedCount; i++) {
-          if (shuffledCandidates.length === 0) {
-            break; // If no more candidates are available, break the loop
-          }
-          if (!subscription) {
-
-          } else {
-            const randomIndex = Math.floor(
-              Math.random() * shuffledCandidates.length
-            );
-            const selectedEmployee: IUser = shuffledCandidates.splice(
-              randomIndex,
-              1
-            )[0];
-            selectedEmployees.push(selectedEmployee);
+        const candidatesWithStartDayPref: IUser[] = availableEmployees.filter(
+          (emp) => emp.preferences?.[0]?.preference?.split(',').includes(start_day)
+        );
+  
+        // Select employees with start_day preference
+        candidatesWithStartDayPref.forEach((candidate) => {
+          if (selectedEmployees.length < selectedCount) {
+            const shiftPref = candidate.preferences?.[1]?.preference?.split(',');
+            const shift =
+              shiftPref && shiftPref.length > 0
+                ? shiftPref[Math.floor(Math.random() * shiftPref.length)]
+                : "FULL";
+  
+            selectedEmployees.push(candidate);
             updatedSchedules.push({
-              user_id: selectedEmployee.id,
-              user_company_id: selectedEmployee.company_id,
+              user_id: candidate.id,
+              user_company_id: candidate.company_id,
               start_date: newState.start_date,
               end_date: newState.end_date,
-              shift: "FULL",
+              shift: shift || "FULL",
               status: "",
               created_by: globalState?.user?.fullname || "",
               updated_by: globalState?.user?.fullname || "",
             });
           }
+        });
+  
+        // Fill remaining slots with random candidates
+        for (let i = selectedEmployees.length; i < selectedCount; i++) {
+          if (availableEmployees.length === 0) {
+            break; // If no more candidates are available, break the loop
+          }
+          const filteredAvailableEmployees = availableEmployees.filter(
+            (emp) => !selectedEmployees.includes(emp)
+          );
+          const randomIndex = Math.floor(Math.random() * filteredAvailableEmployees.length);
+          const randomCandidate: IUser = filteredAvailableEmployees.splice(randomIndex, 1)[0];
+          const shiftPref = randomCandidate.preferences?.[1]?.preference?.split(',');
+          const shift =
+            shiftPref && shiftPref.length > 0
+              ? shiftPref[Math.floor(Math.random() * shiftPref.length)]
+              : "FULL";
+  
+          selectedEmployees.push(randomCandidate);
+          updatedSchedules.push({
+            user_id: randomCandidate.id,
+            user_company_id: randomCandidate.company_id,
+            start_date: newState.start_date,
+            end_date: newState.end_date,
+            shift: shift || "FULL",
+            status: "",
+            created_by: globalState?.user?.fullname || "",
+            updated_by: globalState?.user?.fullname || "",
+          });
         }
-        newState.employees = [
-          ...(newState.employees ?? []),
-          ...selectedEmployees,
-        ];
-        newState.schedules = [
-          ...(newState.schedules ?? []),
-          ...updatedSchedules,
-        ];
+  
+        newState.employees = [...(newState.employees ?? []), ...selectedEmployees];
+        newState.schedules = [...(newState.schedules ?? []), ...updatedSchedules];
       }
     });
+  
     // Update the state with the auto-assigned employees
     setScheduleDetailsState(newState);
   };
 
+  console.log(scheduleDetailsState)
+  
   /*const autoAssignPersonnelOld = (positionSelectedCount) => {
     setAutoAssignShowModal(false);
     const newState: IRoster = {
