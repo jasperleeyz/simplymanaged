@@ -54,7 +54,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
     setRosterTemplate((prevTemplate) => ({
       ...prevTemplate,
       company_id: globalState?.user?.company_id || 0,
-      roster_type: "",
+      roster_type: "PROJECT",
       name: "",
       no_of_employees: 0,
       created_by: globalState?.user?.fullname || "",
@@ -179,7 +179,9 @@ const CreateRosterTemplateModal = (props: IProps) => {
               No of Employees - {rosterTemplate.no_of_employees}
             </div>
           ) : null}
-          <div className="my-2">
+          <div>
+            <div className="my-2 flex">
+              <div>
             <Label
               className="mr-2 text-l"
               htmlFor="shift-template"
@@ -203,6 +205,33 @@ const CreateRosterTemplateModal = (props: IProps) => {
                 }
               }}
             />
+            </div>
+            <div className="mx-5">
+            <Label
+              className="mr-2 text-l"
+              htmlFor="shift-template"
+              value="Project"
+            />
+            <Checkbox
+              className="flex w-10 h-10"
+              value={rosterTemplate.roster_type}
+              checked={rosterTemplate.roster_type == "PROJECT"}
+              onChange={() => {
+                if (rosterTemplate.roster_type == "SHIFT") {
+                  setRosterTemplate((prevTemplate) => ({
+                    ...prevTemplate,
+                    roster_type: "PROJECT",
+                  }));
+                } else {
+                  setRosterTemplate((prevTemplate) => ({
+                    ...prevTemplate,
+                    roster_type: "SHIFT",
+                  }));
+                }
+              }}
+            />
+            </div>
+            </div>
           </div>
           <div>
             <Label

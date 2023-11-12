@@ -215,8 +215,21 @@ UserScheduleRouter.get(
             company_id: Number(user_company_id),
             department_id: Number(department_id),
           },
-          include: {
-            employment_details: true,
+          select: {
+            id: true,
+            fullname: true,
+            position: true,
+            profile_image: true,
+            employment_details: {
+              select: {
+                working_hours: true,
+              },
+            },
+            preferences: {
+              select: {
+                preference: true,
+              },
+            },
           },
         }),
       ]);
@@ -350,7 +363,12 @@ UserScheduleRouter.get(
       // Combine the results from usersWithoutConflicts and usersFromRoster
       const combinedUsers = [...employeesWithWorkingHours, ...usersFromRoster];
 
-      return res.status(200).json(generateResultJson(combinedUsers));
+      const combinedUsersFix = combinedUsers.map(item => ({
+        ...item,
+        profile_image :item.profile_image?.toString() ?? ""
+      }));
+
+      return res.status(200).json(generateResultJson(combinedUsersFix));
     } catch (error) {
       console.error(error);
       return res.status(400).send("Error checking user schedules for conflicts.");

@@ -12,6 +12,7 @@ import {
   TextInput,
   CustomFlowbiteTheme,
   Pagination,
+  Avatar,
 } from "flowbite-react";
 import { HiUserGroup, HiTicket, HiX } from "react-icons/hi";
 import React from "react";
@@ -67,7 +68,7 @@ const EditSchedule = () => {
   const startIndex = (currentPage - 1) * sizePerPage;
   const endIndex = startIndex + sizePerPage;
   const employeesToDisplay = filteredEmployeeList.slice(startIndex, endIndex);
-
+  const [empShift, setEmpShift] = React.useState("FULL"); 
   const [showSubmitModal, setShowSubmitModal] = React.useState(false);
 
   const roster = location.state?.rosteridx as IRoster;
@@ -88,6 +89,27 @@ const EditSchedule = () => {
       });
     }
   }, [roster]);
+
+  useEffect(() => {
+    const newFilteredEmployeeList = employeeList.filter((employee) => {
+      const matchingPosition = scheduleDetailsState.positions?.find(
+        (position) => position.position === employee.position
+      );
+      return matchingPosition && matchingPosition.count > 0;
+    });
+
+    setFilteredEmployeeList(newFilteredEmployeeList);
+  }, [scheduleDetailsState, employeeList]);
+  
+  const [searchFilterEmployeeList, setSearchFilterEmployeeList] = useState<IUser[]>([]);
+
+  useEffect(() => {
+    // When the searchTerm changes, update the filteredEmployees state.
+    const filtered = filteredEmployeeList.filter((emp) =>
+      emp.position.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setSearchFilterEmployeeList(filtered);
+  }, [searchTerm, filteredEmployeeList]);
 
   const handleAddOrRemoveEmployee = (user: IUser) => {
     setScheduleDetailsState((prevState) => {
@@ -126,7 +148,7 @@ const EditSchedule = () => {
       };
     });
   };
-
+  console.log(scheduleDetailsState)
   useEffect(() => {
     setLoading((prev) => true);
     getNonConflictScheduleUserRoster(
@@ -137,7 +159,6 @@ const EditSchedule = () => {
       scheduleDetailsState.end_date.toString(),
     )
       .then((res) => {
-        console.log(res.data)
         setEmployeeList(res.data);
       })
       .finally(() => {
@@ -155,149 +176,6 @@ const EditSchedule = () => {
       employees: [],
       schedules: [],
     }));
-  };
-
-  const generateEmployeeList = () => {
-    if (employeeList.length === 0) {
-      return (
-        <Table.Row>
-          <Table.Cell colSpan={2} className="text-center">
-            No employees available
-          </Table.Cell>
-        </Table.Row>
-      );
-    }
-
-    return employeeList.map((emp, idx) => (
-      <Table.Row
-        key={idx}
-        className="bg-white dark:border-gray-700 dark:bg-gray-800"
-      >
-        <Table.Cell
-          style={{ height: "73px" }}
-          className="whitespace-nowrap font-medium text-gray-900 dark:text-white"
-        >
-          {emp.fullname}
-        </Table.Cell>
-        <Table.Cell>
-          <label>{emp.position}</label>
-        </Table.Cell>
-        <Table.Cell>
-          <div className="inline-block">
-            {" "}
-            {/* Create a container for the button */}
-            {scheduleDetailsState.employees &&
-            scheduleDetailsState.employees.some(
-              (employees) => employees.id === emp.id
-            ) ? (
-              <Button
-                color="failure"
-                className="w-full"
-                size="sm"
-                onClick={() => handleAddOrRemoveEmployee(emp)}
-              >
-                Remove
-              </Button>
-            ) : (
-              <Button
-                color="success"
-                className="w-full"
-                size="sm"
-                onClick={() => handleAddOrRemoveEmployee(emp)}
-              >
-                Add
-              </Button>
-            )}
-          </div>
-        </Table.Cell>
-      </Table.Row>
-    ));
-  };
-
-  const generateSelectedEmployeeList = () => {
-    if (
-      scheduleDetailsState.employees &&
-      scheduleDetailsState.employees.length > 0
-    ) {
-      return (
-        <div>
-          <Label
-            htmlFor="schedule-employees-details"
-            value="Employees' Schedule Details"
-          />
-          <div id="schedule-employees-details" className="mt-4 overflow-x-auto">
-            <Table theme={customTableTheme}>
-              <Table.Head>
-                <Table.HeadCell>Employee</Table.HeadCell>
-                <Table.HeadCell>Position</Table.HeadCell>
-                {scheduleDetailsState.type === "SHIFT" && (
-                  <Table.HeadCell className="text-center">Shift</Table.HeadCell>
-                )}
-                <Table.HeadCell></Table.HeadCell>
-              </Table.Head>
-              <Table.Body className="divide-y">
-                {scheduleDetailsState.employees.map((emp, idx) => (
-                  <Table.Row
-                    key={idx}
-                    style={{ height: "73px" }}
-                    className="bg-white dark:border-gray-700 dark.bg-gray-800"
-                  >
-                    <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
-                      {emp.fullname}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <label>{emp.position}</label>
-                    </Table.Cell>
-                    {scheduleDetailsState.type === "SHIFT" && (
-                      <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
-                        <table>
-                          <tbody>
-                            <tr>
-                              <td style={{ padding: "0 10px" }}>AM</td>
-                              <td style={{ padding: "0 10px" }}>PM</td>
-                              <td style={{ padding: "0 10px" }}>FULL</td>
-                            </tr>
-                            <tr>
-                              <td style={{ padding: "0 12px" }}>
-                                <Checkbox
-                                  value={emp.id}
-                                  checked={selectEmployeeShift(emp, "AM")}
-                                  onChange={() =>
-                                    handleEmployeeShiftChange(emp, "AM")
-                                  }
-                                />
-                              </td>
-                              <td style={{ padding: "0 12px" }}>
-                                <Checkbox
-                                  value={emp.id}
-                                  checked={selectEmployeeShift(emp, "PM")}
-                                  onChange={() =>
-                                    handleEmployeeShiftChange(emp, "PM")
-                                  }
-                                />
-                              </td>
-                              <td style={{ padding: "0 15px" }}>
-                                <Checkbox
-                                  value={emp.id}
-                                  checked={selectEmployeeShift(emp, "FULL")}
-                                  onChange={() =>
-                                    handleEmployeeShiftChange(emp, "FULL")
-                                  }
-                                />
-                              </td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </Table.Cell>
-                    )}
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          </div>
-        </div>
-      );
-    }
   };
 
   const submitModal = () => {
@@ -386,25 +264,61 @@ const EditSchedule = () => {
     return !!userSchedule && userSchedule.shift === shift;
   };
 
-  const handleEmployeeShiftChange = (employee: IUser, shift: string) => {
-    setScheduleDetailsState((prevState) => {
-      // Find the corresponding IUserSchedule for the user
-      const updatedSchedules = (prevState.schedules ?? []).map((schedule) => {
-        if (schedule.user_id === employee.id) {
-          // Update the shift for the user
-          return {
-            ...schedule,
-            shift: shift,
-          };
-        }
-        return schedule;
-      });
-
-      return {
-        ...prevState,
-        schedules: updatedSchedules,
-      };
-    });
+  const [showEmployeeListModal, setShowEmployeeListModal] =
+    React.useState(false);
+  const employeeListModal = () => {
+    return (
+      <Modal
+        show={showEmployeeListModal}
+        onClose={() => setShowEmployeeListModal(false)}
+      >
+        <Modal.Header>Employee List</Modal.Header>
+        <Modal.Body>
+          <Label htmlFor="schedule-employees" value="Employees Available" />
+          <div className="flex">
+            <TextInput
+              placeholder="Search Position..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
+            />
+          </div>
+          {searchFilterEmployeeList.map((emp, idx) => (
+            <div className="mt-3 grid grid-cols-5 flex" key={idx}>
+              <Avatar
+                size="md"
+                img={emp.profile_image || ""}
+                rounded
+                style={{ display: "inline-block", margin: "0" }}
+              />
+              {emp.fullname}
+              <div>{emp.position}</div>
+              <div></div>
+              {scheduleDetailsState.employees &&
+              scheduleDetailsState.employees.some(
+                (employees) => employees.id === emp.id
+              ) ? (
+                <Button
+                  color="failure"
+                  size="sm"
+                  onClick={() => handleAddOrRemoveEmployee(emp)}
+                >
+                  Remove
+                </Button>
+              ) : (
+                <Button
+                  color="success"
+                  size="sm"
+                  onClick={() => handleAddOrRemoveEmployee(emp)}
+                >
+                  Add
+                </Button>
+              )}
+            </div>
+          ))}
+        </Modal.Body>
+      </Modal>
+    );
   };
 
   return (
@@ -450,85 +364,114 @@ const EditSchedule = () => {
               }}
             />
           </div>
-          <div className="mr-5 text-center">
-            <Label htmlFor="Shift" value="Shift" />
-            <Checkbox
-              className="flex w-10 h-10"
-              value={scheduleDetailsState.type}
-              checked={scheduleDetailsState.type === "SHIFT"}
-              onChange={() => {
-                if (scheduleDetailsState.type === "SHIFT") {
-                  setScheduleDetailsState((prev) => ({
-                    ...prev,
-                    type: "PROJECT",
-                  }));
-                } else {
-                  setScheduleDetailsState((prev) => ({
-                    ...prev,
-                    type: "SHIFT",
-                  }));
-                }
-              }}
-            />
-          </div>
         </div>
-        <div className="mb-3">
-          <div className="mr-5">
-            <Label htmlFor="schedule-employees" value="Employees Available" />
-            <div className="flex">
-              <TextInput
-                placeholder="Search Position..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                autoComplete="off"
-              />
+        <div className="mt-3 grid grid-cols-5 flex">
+          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
+            <p className="text-md">AM SHIFT</p>
+          </div>
+          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
+            {scheduleDetailsState.employees?.map(
+              (emp, idx) =>
+                selectEmployeeShift(emp, "AM") && (
+                  <div className="flex items-center justify-center" key={idx}>
+                    <>
+                      <Avatar size="md" img={emp.profile_image || ""} rounded />
+                      <p>{emp.fullname}</p>
+                      <Button
+                        color="failure"
+                        style={{ width: "15px", height: "15px" }}
+                        onClick={() => handleAddOrRemoveEmployee(emp)}
+                        size="sm"
+                      >
+                        <HiX />
+                      </Button>
+                    </>
+                  </div>
+                )
+            )}
+            <div className="flex items-center justify-center">
+              <Button
+                style={{ width: "50px" }}
+                onClick={() => {
+                  setShowEmployeeListModal(true);
+                  setEmpShift("AM");
+                }}
+                size="sm"
+              >
+                Add
+              </Button>
             </div>
           </div>
-          <div id="people-section" className="overflow-x-auto flex">
-            <div className="my-10 ">
-              <Table theme={customTableTheme}>
-                <Table.Head>
-                  <Table.HeadCell>Employee</Table.HeadCell>
-                  <Table.HeadCell>Position</Table.HeadCell>
-                  <Table.HeadCell></Table.HeadCell>
-                </Table.Head>
-                <Table.Body className="divide-y">
-                  {loading ? (
-                    <Table.Row>
-                      <Table.Cell colSpan={6} className="text-center">
-                        <Spinner size="xl" />
-                      </Table.Cell>
-                    </Table.Row>
-                  ) : (
-                    generateEmployeeList()
-                  )}
-                </Table.Body>
-              </Table>
-            </div>
-            <div className="mx-20">{generateSelectedEmployeeList()}</div>
+          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
+            <p className="text-md">PM SHIFT</p>
           </div>
-          <div className="flex">
-            <div className="mx-20">
-              <Pagination
-                currentPage={currentPage}
-                // layout="pagination"
-                onPageChange={(page) => {
-                  setCurrentPage(page);
+          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
+            {scheduleDetailsState.employees?.map(
+              (emp, idx) =>
+                selectEmployeeShift(emp, "PM") && (
+                  <div className="flex items-center justify-center" key={idx}>
+                    <>
+                      <Avatar size="md" img={emp.profile_image || ""} rounded />
+                      <p>{emp.fullname}</p>
+                      <Button
+                        color="failure"
+                        style={{ width: "15px", height: "15px" }}
+                        onClick={() => handleAddOrRemoveEmployee(emp)}
+                        size="sm"
+                      >
+                        <HiX />
+                      </Button>
+                    </>
+                  </div>
+                )
+            )}
+            <div className="flex items-center justify-center">
+              <Button
+                style={{ width: "50px" }}
+                onClick={() => {
+                  setShowEmployeeListModal(true);
+                  setEmpShift("PM");
                 }}
-                showIcons
-                totalPages={totalPages}
-              />
+                size="sm"
+              >
+                Add
+              </Button>
             </div>
-            <div className="mx-80">
-              <Pagination
-                currentPage={currentPage}
-                // layout="pagination"
-                onPageChange={(page) => {
-                  setCurrentPage(page);
+          </div>
+          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
+            <p className="text-md">FULL SHIFT</p>
+          </div>
+          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
+            {scheduleDetailsState.employees?.map(
+              (emp, idx) =>
+                selectEmployeeShift(emp, "FULL") && (
+                  <div className="flex items-center justify-center" key={idx}>
+                    <>
+                      <Avatar size="md" img={emp.profile_image || ""} rounded />
+                      <p>{emp.fullname}</p>
+                      <Button
+                        color="failure"
+                        style={{ width: "15px", height: "15px" }}
+                        onClick={() => handleAddOrRemoveEmployee(emp)}
+                        size="sm"
+                      >
+                        <HiX />
+                      </Button>
+                    </>
+                  </div>
+                )
+            )}
+            <div className="flex items-center justify-center">
+              <Button
+                style={{ width: "50px" }}
+                onClick={() => {
+                  setShowEmployeeListModal(true);
+                  setEmpShift("FULL");
                 }}
-                showIcons
-                totalPages={totalPages}
-              />
+                size="sm"
+              >
+                Add
+              </Button>
             </div>
           </div>
         </div>
@@ -545,7 +488,8 @@ const EditSchedule = () => {
           </Button>
         </div>
       </form>
-      <div>{submitModal()}</div>
+      <div>{submitModal()}
+      {employeeListModal()}</div>
     </div>
   );
 };

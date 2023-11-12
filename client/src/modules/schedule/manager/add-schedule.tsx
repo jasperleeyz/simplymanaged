@@ -35,7 +35,7 @@ import {
   createRoster,
 } from "../../../shared/api/roster.api";
 import CreateScheduleModal from "./create-schedule-modal";
-import { getSubscriptionModelByCompanyId, getSubscriptionModelById } from "../../../shared/api/subscription.api"
+import { getSubscriptionModelByCompanyId } from "../../../shared/api/subscription.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -45,6 +45,12 @@ const customTableTheme: CustomFlowbiteTheme["table"] = {
     wrapper: "relative",
   },
 };
+
+interface EmployeePreferences {
+  id: number;
+  day: string[];
+  shift: string[];
+}
 
 const AddSchedule = () => {
   const { globalState } = useContext(GlobalStateContext);
@@ -56,7 +62,7 @@ const AddSchedule = () => {
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEmployeeList, setFilteredEmployeeList] = useState<IUser[]>([]);
-  
+
   const [currentPage, setCurrentPage] = useState(location?.state?.page || 1);
   const [sizePerPage, setSizePerPage] = useState(
     location?.state?.sizePerPage || 5
@@ -88,7 +94,7 @@ const AddSchedule = () => {
       employees: [],
       schedules: [],
     });
-
+   
   const handleAddOrRemoveEmployee = (user: IUser) => {
     setScheduleDetailsState((prevState) => {
       const updatedEmployees = [...(prevState.employees || [])];
@@ -161,6 +167,16 @@ const AddSchedule = () => {
     }));
   }, [rosterType]);
 
+    const [searchFilterEmployeeList, setSearchFilterEmployeeList] = useState<IUser[]>([]);
+
+  useEffect(() => {
+    // When the searchTerm changes, update the filteredEmployees state.
+    const filtered = filteredEmployeeList.filter((emp) =>
+      emp.position.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setSearchFilterEmployeeList(filtered);
+  }, [searchTerm, filteredEmployeeList]);
+
   useEffect(() => {
     setScheduleDetailsState((prev) => ({
       ...prev,
@@ -218,15 +234,15 @@ const AddSchedule = () => {
   }, []);
 
   useEffect(() => {
-    getSubscriptionModelByCompanyId(
-      scheduleDetailsState.company_id || 0,
-    )
+    getSubscriptionModelByCompanyId(scheduleDetailsState.company_id || 0)
       .then((res) => {
-        SetSubscription(res.data.type.toLowerCase().includes("premium"))
+        SetSubscription(res.data.type.toLowerCase().includes("premium"));
       })
-      .finally(() => {
-      });
+      .finally(() => {});
   }, []);
+
+  
+
 
   useEffect(() => {
     const newFilteredEmployeeList = employeeList.filter((employee) => {
@@ -239,6 +255,18 @@ const AddSchedule = () => {
     setFilteredEmployeeList(newFilteredEmployeeList);
   }, [rosterPosition, employeeList]);
 
+  /*const [employeePreferences, setEmployeePreferences] = useState<EmployeePreferences[]>([]);
+
+useEffect(() => {
+  const processedData = filteredEmployeeList.map(employee => ({
+    id: employee.id,
+    day: employee.preferences[0]?.preference.split(',').map(day => day.trim()) || [],
+    shift: employee.preferences[1]?.preference.split(',').map(shift => shift.trim()) || [],
+  }));
+
+  setEmployeePreferences(processedData);
+}, [filteredEmployeeList]);
+*/
   const setSchedulesToDefault = () => {
     setScheduleDetailsState((prev) => ({
       ...prev,
@@ -408,7 +436,7 @@ const AddSchedule = () => {
               autoComplete="off"
             />
           </div>
-          {filteredEmployeeList.map((emp, idx) => (
+          {searchFilterEmployeeList.map((emp, idx) => (
             <div className="mt-3 grid grid-cols-5 flex" key={idx}>
               <Avatar
                 size="md"
@@ -637,15 +665,32 @@ const AddSchedule = () => {
   };
   */
 
+  const [trimmedDay, setTrimmedDay] = React.useState<string[]>([]);
+  const [trimmedShift, setTrimmedShift] = React.useState<string[]>([]);
+
   const autoAssignPersonnel = () => {
     const newState: IRoster = {
       ...scheduleDetailsState,
       employees: [],
       schedules: [],
     };
-    scheduleDetailsState.positions?.forEach((pos) =>{
+
+    const day: string[] = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+    const shift: string[] = ["AM", "PM", "FULL"];
+    let start_day: string;
+
+    if (scheduleDetailsState.start_date.getDay() == 0) start_day = "SUN";
+    if (scheduleDetailsState.start_date.getDay() == 1) start_day = "MON";
+    if (scheduleDetailsState.start_date.getDay() == 2) start_day = "TUE";
+    if (scheduleDetailsState.start_date.getDay() == 3) start_day = "WED";
+    if (scheduleDetailsState.start_date.getDay() == 4) start_day = "THUR";
+    if (scheduleDetailsState.start_date.getDay() == 5) start_day = "FRI";
+    if (scheduleDetailsState.start_date.getDay() == 6) start_day = "SAT";
+
+    scheduleDetailsState.positions?.forEach((pos) => {
       const selectedCount = pos.count;
-      const availableEmployees: IUser[] = employeeList.filter(
+      const availableEmployees: IUser[] = filteredEmployeeList.filter(
         (emp) => emp.position === pos.position
       );
       const updatedSchedules: IUserSchedule[] = [];
@@ -657,28 +702,28 @@ const AddSchedule = () => {
           if (shuffledCandidates.length === 0) {
             break; // If no more candidates are available, break the loop
           }
-          const randomIndex = Math.floor(
-            Math.random() * shuffledCandidates.length
-          );
-          const selectedEmployee: IUser = shuffledCandidates.splice(
-            randomIndex,
-            1
-          )[0];
-          selectedEmployees.push(selectedEmployee);
-          // if subscription push shift pref
-          selectedEmployee.preferences
-          //else push full
-          updatedSchedules.push({
-            user_id: selectedEmployee.id,
-            user_company_id: selectedEmployee.company_id,
-            roster_id: 0,
-            start_date: newState.start_date,
-            end_date: newState.end_date,
-            shift: "FULL",
-            status: "",
-            created_by: globalState?.user?.fullname || "",
-            updated_by: globalState?.user?.fullname || "",
-          });
+          if (!subscription) {
+
+          } else {
+            const randomIndex = Math.floor(
+              Math.random() * shuffledCandidates.length
+            );
+            const selectedEmployee: IUser = shuffledCandidates.splice(
+              randomIndex,
+              1
+            )[0];
+            selectedEmployees.push(selectedEmployee);
+            updatedSchedules.push({
+              user_id: selectedEmployee.id,
+              user_company_id: selectedEmployee.company_id,
+              start_date: newState.start_date,
+              end_date: newState.end_date,
+              shift: "FULL",
+              status: "",
+              created_by: globalState?.user?.fullname || "",
+              updated_by: globalState?.user?.fullname || "",
+            });
+          }
         }
         newState.employees = [
           ...(newState.employees ?? []),
@@ -964,7 +1009,7 @@ const AddSchedule = () => {
             <p className="text-md">AM SHIFT</p>
           </div>
           <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-          {scheduleDetailsState.employees?.map(
+            {scheduleDetailsState.employees?.map(
               (emp, idx) =>
                 selectEmployeeShift(emp, "AM") && (
                   <div className="flex items-center justify-center" key={idx}>
@@ -974,7 +1019,7 @@ const AddSchedule = () => {
                       <Button
                         color="failure"
                         style={{ width: "15px", height: "15px" }}
-                        onClick={() => setShowEmployeeListModal(true)}
+                        onClick={() => handleAddOrRemoveEmployee(emp)}
                         size="sm"
                       >
                         <HiX />
@@ -1010,7 +1055,7 @@ const AddSchedule = () => {
                       <Button
                         color="failure"
                         style={{ width: "15px", height: "15px" }}
-                        onClick={() => setShowEmployeeListModal(true)}
+                        onClick={() => handleAddOrRemoveEmployee(emp)}
                         size="sm"
                       >
                         <HiX />
@@ -1036,7 +1081,7 @@ const AddSchedule = () => {
             <p className="text-md">FULL SHIFT</p>
           </div>
           <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-          {scheduleDetailsState.employees?.map(
+            {scheduleDetailsState.employees?.map(
               (emp, idx) =>
                 selectEmployeeShift(emp, "FULL") && (
                   <div className="flex items-center justify-center" key={idx}>
@@ -1046,7 +1091,7 @@ const AddSchedule = () => {
                       <Button
                         color="failure"
                         style={{ width: "15px", height: "15px" }}
-                        onClick={() => setShowEmployeeListModal(true)}
+                        onClick={() => handleAddOrRemoveEmployee(emp)}
                         size="sm"
                       >
                         <HiX />
