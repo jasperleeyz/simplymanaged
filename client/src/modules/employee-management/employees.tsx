@@ -17,6 +17,8 @@ import { getAllEmployees, updateEmployee } from "../../shared/api/user.api";
 import DeactivateButton from "../../shared/layout/buttons/deactivate-button";
 import EditButton from "../../shared/layout/buttons/edit-button";
 import ActivateButton from "../../shared/layout/buttons/activate-button";
+import { getAllCompanyCodes } from "../../shared/api/company-code.api";
+import { ICompanyCode } from "../../shared/model/company.model";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -46,7 +48,7 @@ const EmployeesPage = () => {
   const [loading, setLoading] = useState(true);
 
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
-  // const [codeList, setCodeList] = useState<IApplicationCode[]>([]);
+  const [codeList, setCodeList] = useState<ICompanyCode[]>([]);
 
   const [searchTerm, setSearchTerm] = useState(() => {
     const st = history.state["searchTerm"];
@@ -62,6 +64,15 @@ const EmployeesPage = () => {
         setEmployeeList(res.data);
         setTotalPages(res.totalPages);
       }),
+      getAllCompanyCodes(
+        globalState?.user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        `equals(code_type,POSITION)`
+      ).then((res) => {
+        setCodeList(res.data);
+      })
     ]).finally(() => {
       setLoading((prev) => false);
     });
@@ -155,7 +166,7 @@ const EmployeesPage = () => {
           <label className="text-wrap">{emp.contact_no}</label>
         </Table.Cell>
         <Table.Cell>
-          <label>{emp.position}</label>
+          <label>{codeList.find((c) => c.code === emp.position)?.description || "N/A"}</label>
         </Table.Cell>
         <Table.Cell>
           <label>{USER_STATUS[emp?.status || ""] || emp?.status}</label>
@@ -267,3 +278,4 @@ const EmployeesPage = () => {
 };
 
 export default EmployeesPage;
+
