@@ -3,35 +3,22 @@ import { useLocation, useNavigate } from "react-router-dom";
 import BackButton from "../../../shared/layout/buttons/back-button";
 import {
   Button,
-  Checkbox,
   Label,
-  Table,
   Modal,
-  Select,
-  Spinner,
   TextInput,
   CustomFlowbiteTheme,
-  Pagination,
   Avatar,
 } from "flowbite-react";
-import { HiUserGroup, HiTicket, HiX } from "react-icons/hi";
+import { HiX } from "react-icons/hi";
 import React from "react";
 import moment from "moment";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
 import IUser from "../../../shared/model/user.model";
-import { IUserSchedule, IRoster } from "../../../shared/model/schedule.model";
+import {  IRoster } from "../../../shared/model/schedule.model";
 import { PATHS } from "../../../configs/constants";
 import { toast } from "react-toastify";
-import { capitalizeString } from "../../../configs/utils";
-import LabeledField from "../../../shared/layout/fields/labeled-field";
-import { getAllEmployees } from "../../../shared/api/user.api";
-import EditButton from "../../../shared/layout/buttons/edit-button";
-import ActivateButton from "../../../shared/layout/buttons/activate-button";
-import DeactivateButton from "../../../shared/layout/buttons/deactivate-button";
-import { USER_STATUS } from "../../../configs/constants";
 import {
   getNonConflictScheduleUserRoster,
-  createUserSchedule,
 } from "../../../shared/api/user-schedule.api";
 import {
   updateRoster,
@@ -102,6 +89,28 @@ const EditSchedule = () => {
   }, [scheduleDetailsState, employeeList]);
   
   const [searchFilterEmployeeList, setSearchFilterEmployeeList] = useState<IUser[]>([]);
+
+  const [maxEmployee, setMaxEmployee] = React.useState(false);
+
+  useEffect(() => {
+    if (scheduleDetailsState.positions) {
+      scheduleDetailsState.positions.forEach((pos) => {
+        const maxCount = pos.count;
+
+        if (scheduleDetailsState.employees) {
+          const currentCount = scheduleDetailsState.employees.filter(
+            (emp) => emp.position === pos.position
+          ).length;
+
+          if (currentCount >= maxCount) {
+            setMaxEmployee(true);
+          } else {
+            setMaxEmployee(false);
+          }
+        }
+      });
+    }
+  }, [scheduleDetailsState.employees, scheduleDetailsState.positions]);
 
   useEffect(() => {
     // When the searchTerm changes, update the filteredEmployees state.
@@ -389,16 +398,19 @@ const EditSchedule = () => {
                 )
             )}
             <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("AM");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
+            {!maxEmployee ? (
+                <Button
+                  style={{ width: "50px" }}
+                  onClick={() => {
+                    setShowEmployeeListModal(true);
+                    setEmpShift("AM");
+                  }}
+                  size="sm"
+                >
+                  Add
+                </Button>
+              ) : 
+              null}
             </div>
           </div>
           <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
@@ -425,16 +437,19 @@ const EditSchedule = () => {
                 )
             )}
             <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("PM");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
+            {!maxEmployee ? (
+                <Button
+                  style={{ width: "50px" }}
+                  onClick={() => {
+                    setShowEmployeeListModal(true);
+                    setEmpShift("PM");
+                  }}
+                  size="sm"
+                >
+                  Add
+                </Button>
+              ) : 
+              null}
             </div>
           </div>
           <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
@@ -461,16 +476,19 @@ const EditSchedule = () => {
                 )
             )}
             <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("FULL");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
+            {!maxEmployee ? (
+                <Button
+                  style={{ width: "50px" }}
+                  onClick={() => {
+                    setShowEmployeeListModal(true);
+                    setEmpShift("FULL");
+                  }}
+                  size="sm"
+                >
+                  Add
+                </Button>
+              ) : 
+              null}
             </div>
           </div>
         </div>

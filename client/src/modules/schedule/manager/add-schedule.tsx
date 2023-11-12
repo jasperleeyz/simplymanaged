@@ -100,9 +100,6 @@ const AddSchedule = () => {
       schedules: [],
     });
 
-
-
-
   const handleAddOrRemoveEmployee = (user: IUser) => {
     setScheduleDetailsState((prevState) => {
       const updatedEmployees = [...(prevState.employees || [])];
@@ -145,7 +142,6 @@ const AddSchedule = () => {
         }
       }
 
-
       return {
         ...prevState,
         employees: updatedEmployees,
@@ -153,6 +149,28 @@ const AddSchedule = () => {
       };
     });
   };
+  const [maxEmployee, setMaxEmployee] = React.useState(false);
+
+  useEffect(() => {
+    if (scheduleDetailsState.positions) {
+      scheduleDetailsState.positions.forEach((pos) => {
+        const maxCount = pos.count;
+
+        if (scheduleDetailsState.employees) {
+          const currentCount = scheduleDetailsState.employees.filter(
+            (emp) => emp.position === pos.position
+          ).length;
+
+          if (currentCount >= maxCount) {
+            setMaxEmployee(true);
+          } else {
+            setMaxEmployee(false);
+          }
+        }
+      });
+    }
+  }, [scheduleDetailsState.employees, scheduleDetailsState.positions]);
+
   const [empShift, setEmpShift] = React.useState("FULL");
   const [createScheduleModal, setCreateScheduleModal] = React.useState(true);
   const [rosterPosition, setRosterPosition] = React.useState<IRosterPosition[]>(
@@ -177,7 +195,9 @@ const AddSchedule = () => {
     }));
   }, [rosterType]);
 
-  const [searchFilterEmployeeList, setSearchFilterEmployeeList] = useState<IUser[]>([]);
+  const [searchFilterEmployeeList, setSearchFilterEmployeeList] = useState<
+    IUser[]
+  >([]);
 
   useEffect(() => {
     // When the searchTerm changes, update the filteredEmployees state.
@@ -259,11 +279,8 @@ const AddSchedule = () => {
       ).then((res) => {
         setCodeList(res.data);
       }),
-    ]).finally(() => { });
+    ]).finally(() => {});
   }, []);
-
-
-
 
   useEffect(() => {
     const newFilteredEmployeeList = employeeList.filter((employee) => {
@@ -276,7 +293,9 @@ const AddSchedule = () => {
     setFilteredEmployeeList(newFilteredEmployeeList);
   }, [rosterPosition, employeeList]);
 
-  const [employeePreferences, setEmployeePreferences] = useState<EmployeePreferences[]>([]);
+  const [employeePreferences, setEmployeePreferences] = useState<
+    EmployeePreferences[]
+  >([]);
 
   const setSchedulesToDefault = () => {
     setScheduleDetailsState((prev) => ({
@@ -309,16 +328,19 @@ const AddSchedule = () => {
           {emp.fullname}
         </Table.Cell>
         <Table.Cell>
-          <label>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</label>
+          <label>
+            {codeList.find((c) => c.code === emp.position)?.description ||
+              emp.position}
+          </label>
         </Table.Cell>
         <Table.Cell>
           <div className="inline-block">
             {" "}
             {/* Create a container for the button */}
             {scheduleDetailsState.employees &&
-              scheduleDetailsState.employees.some(
-                (employees) => employees.id === emp.id
-              ) ? (
+            scheduleDetailsState.employees.some(
+              (employees) => employees.id === emp.id
+            ) ? (
               <Button
                 color="failure"
                 className="w-full"
@@ -375,7 +397,10 @@ const AddSchedule = () => {
                       {emp.fullname}
                     </Table.Cell>
                     <Table.Cell>
-                      <label>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</label>
+                      <label>
+                        {codeList.find((c) => c.code === emp.position)
+                          ?.description || emp.position}
+                      </label>
                     </Table.Cell>
                     {scheduleDetailsState.type === "SHIFT" && (
                       <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
@@ -456,12 +481,15 @@ const AddSchedule = () => {
                 style={{ display: "inline-block", margin: "0" }}
               />
               {emp.fullname}
-              <div>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</div>
+              <div>
+                {codeList.find((c) => c.code === emp.position)?.description ||
+                  emp.position}
+              </div>
               <div></div>
               {scheduleDetailsState.employees &&
-                scheduleDetailsState.employees.some(
-                  (employees) => employees.id === emp.id
-                ) ? (
+              scheduleDetailsState.employees.some(
+                (employees) => employees.id === emp.id
+              ) ? (
                 <Button
                   color="failure"
                   size="sm"
@@ -490,7 +518,7 @@ const AddSchedule = () => {
     const uniquePositions = [
       ...new Set(
         scheduleDetailsState.employees &&
-        scheduleDetailsState.employees.map((employee) => employee.position)
+          scheduleDetailsState.employees.map((employee) => employee.position)
       ),
     ];
     // Count employees for each unique position
@@ -558,133 +586,15 @@ const AddSchedule = () => {
     }
   }, [submitLoading]);
 
-  /*const autoAssignModal = () => {
-    const [positionCount, setPositionCount] = useState({});
-
-    useEffect(() => {
-      if (scheduleDetailsState.positions) {
-        const updatedPositionCount = {};
-        scheduleDetailsState.positions.forEach((emp, idx) => {
-          updatedPositionCount[emp.position] = emp.count;
-        });
-        setPositionCount(updatedPositionCount);
-      }
-    }, [scheduleDetailsState.positions]);
-
-    const [selectedPosition, setSelectedPosition] = useState("");
-
-    useEffect(() => {
-      setSelectedPosition(Object.keys(positionCount)[0]);
-    }, [positionCount]);
-
-    const [positionSelectedCount, setPositionSelectedCount] =
-      React.useState(positionCount);
-
-    const incrementSelectedCount = (position) => {
-      const currentCount = positionSelectedCount[position] || 0;
-      const limit = positionCount[position] || 0; // Get the position count limit
-      if (currentCount < limit) {
-        setPositionSelectedCount((prevPositionSelectedCount) => ({
-          ...prevPositionSelectedCount,
-          [position]: currentCount + 1,
-        }));
-      }
-    };
-
-    const decrementSelectedCount = (position) => {
-      const currentCount = positionSelectedCount[position] || 0;
-      if (currentCount > 0) {
-        setPositionSelectedCount((prevPositionSelectedCount) => ({
-          ...prevPositionSelectedCount,
-          [position]: currentCount - 1,
-        }));
-      }
-    };
-    return (
-      <Modal
-        show={showAutoAssignModal}
-        onClose={() => {
-          setAutoAssignShowModal(false);
-          setPositionSelectedCount(positionCount);
-        }}
-      >
-        <Modal.Header>Auto Assign</Modal.Header>
-        <Modal.Body>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <Select onChange={(e) => setSelectedPosition(e.target.value)}>
-              {Object.keys(positionCount).map((position, index) => (
-                <option key={index} value={position}>
-                  {position}
-                </option>
-              ))}
-            </Select>
-            {selectedPosition !== "" ? (
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <Button
-                  style={{ marginLeft: "300px" }}
-                  onClick={() => decrementSelectedCount(selectedPosition)}
-                >
-                  -
-                </Button>
-                <Button
-                  style={{ marginLeft: "10px" }}
-                  onClick={() => incrementSelectedCount(selectedPosition)}
-                >
-                  +
-                </Button>
-              </div>
-            ) : null}
-          </div>
-          {selectedPosition !== "" ? (
-            <div className="my-2">
-              {Object.keys(positionSelectedCount).map((position, index) => (
-                <div key={index}>
-                  {position} - {positionSelectedCount[position]}
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </Modal.Body>
-        <Modal.Footer>
-          <div className="w-full md:w-1/2 ms-auto flex justify-center">
-            <Button
-              color="success"
-              className="w-full mr-3"
-              size="sm"
-              onClick={() => {
-                autoAssignPersonnel(positionSelectedCount);
-                setPositionSelectedCount(positionCount);
-              }}
-            >
-              Yes
-            </Button>
-            <Button
-              color="failure"
-              className="w-full"
-              size="sm"
-              onClick={() => {
-                setAutoAssignShowModal(false);
-                setPositionSelectedCount(positionCount);
-              }}
-            >
-              No
-            </Button>
-          </div>
-        </Modal.Footer>
-      </Modal>
-    );
-  };
-  */
-
   const autoAssignPersonnel = () => {
     const newState: IRoster = {
       ...scheduleDetailsState,
       employees: [],
       schedules: [],
     };
-  
+
     let start_day: string;
-  
+
     if (scheduleDetailsState.start_date.getDay() == 0) start_day = "SUN";
     if (scheduleDetailsState.start_date.getDay() == 1) start_day = "MON";
     if (scheduleDetailsState.start_date.getDay() == 2) start_day = "TUE";
@@ -692,44 +602,46 @@ const AddSchedule = () => {
     if (scheduleDetailsState.start_date.getDay() == 4) start_day = "THUR";
     if (scheduleDetailsState.start_date.getDay() == 5) start_day = "FRI";
     if (scheduleDetailsState.start_date.getDay() == 6) start_day = "SAT";
-  
+
     scheduleDetailsState.positions?.forEach((pos) => {
       const selectedCount = pos.count;
       const availableEmployees: IUser[] = filteredEmployeeList.filter(
         (emp) => emp.position === pos.position
       );
       const updatedSchedules: IUserSchedule[] = [];
-  
+
       if (availableEmployees.length > 0 && selectedCount > 0) {
         const selectedEmployees: IUser[] = [];
         const candidatesWithStartDayPref: IUser[] = availableEmployees.filter(
-          (emp) => emp.preferences?.[0]?.preference?.split(',').includes(start_day)
+          (emp) =>
+            emp.preferences?.[0]?.preference?.split(",").includes(start_day)
         );
-        if(subscription){
-        // Select employees with start_day preference
-        candidatesWithStartDayPref.forEach((candidate) => {
-          if (selectedEmployees.length < selectedCount) {
-            const shiftPref = candidate.preferences?.[1]?.preference?.split(',');
-            const shift =
-              shiftPref && shiftPref.length > 0
-                ? shiftPref[Math.floor(Math.random() * shiftPref.length)]
-                : "FULL";
-  
-            selectedEmployees.push(candidate);
-            updatedSchedules.push({
-              user_id: candidate.id,
-              user_company_id: candidate.company_id,
-              start_date: newState.start_date,
-              end_date: newState.end_date,
-              shift: shift || "FULL",
-              status: "",
-              created_by: globalState?.user?.fullname || "",
-              updated_by: globalState?.user?.fullname || "",
-            });
-          }
-        });
-      }
-  
+        if (subscription) {
+          // Select employees with start_day preference
+          candidatesWithStartDayPref.forEach((candidate) => {
+            if (selectedEmployees.length < selectedCount) {
+              const shiftPref =
+                candidate.preferences?.[1]?.preference?.split(",");
+              const shift =
+                shiftPref && shiftPref.length > 0
+                  ? shiftPref[Math.floor(Math.random() * shiftPref.length)]
+                  : "FULL";
+
+              selectedEmployees.push(candidate);
+              updatedSchedules.push({
+                user_id: candidate.id,
+                user_company_id: candidate.company_id,
+                start_date: newState.start_date,
+                end_date: newState.end_date,
+                shift: shift || "FULL",
+                status: "",
+                created_by: globalState?.user?.fullname || "",
+                updated_by: globalState?.user?.fullname || "",
+              });
+            }
+          });
+        }
+
         // Fill remaining slots with random candidates
         for (let i = selectedEmployees.length; i < selectedCount; i++) {
           if (availableEmployees.length === 0) {
@@ -738,14 +650,20 @@ const AddSchedule = () => {
           const filteredAvailableEmployees = availableEmployees.filter(
             (emp) => !selectedEmployees.includes(emp)
           );
-          const randomIndex = Math.floor(Math.random() * filteredAvailableEmployees.length);
-          const randomCandidate: IUser = filteredAvailableEmployees.splice(randomIndex, 1)[0];
-          const shiftPref = randomCandidate.preferences?.[1]?.preference?.split(',');
+          const randomIndex = Math.floor(
+            Math.random() * filteredAvailableEmployees.length
+          );
+          const randomCandidate: IUser = filteredAvailableEmployees.splice(
+            randomIndex,
+            1
+          )[0];
+          const shiftPref =
+            randomCandidate.preferences?.[1]?.preference?.split(",");
           const shift =
             subscription && shiftPref && shiftPref.length > 0
               ? shiftPref[Math.floor(Math.random() * shiftPref.length)]
               : "FULL";
-  
+
           selectedEmployees.push(randomCandidate);
           updatedSchedules.push({
             user_id: randomCandidate.id,
@@ -758,63 +676,7 @@ const AddSchedule = () => {
             updated_by: globalState?.user?.fullname || "",
           });
         }
-  
-        newState.employees = [...(newState.employees ?? []), ...selectedEmployees];
-        newState.schedules = [...(newState.schedules ?? []), ...updatedSchedules];
-      }
-    });
-  
-    // Update the state with the auto-assigned employees
-    setScheduleDetailsState(newState);
-  };
 
-  console.log(scheduleDetailsState)
-  
-  /*const autoAssignPersonnelOld = (positionSelectedCount) => {
-    setAutoAssignShowModal(false);
-    const newState: IRoster = {
-      ...scheduleDetailsState,
-      employees: [],
-      schedules: [],
-    };
-
-    // Loop through the selected positions and auto-assign employees
-    Object.keys(positionSelectedCount).forEach((position) => {
-      const selectedCount = positionSelectedCount[position];
-      const availableEmployees: IUser[] = employeeList.filter(
-        (emp) => emp.position === position
-      );
-      const updatedSchedules: IUserSchedule[] = [];
-
-      if (availableEmployees.length > 0 && selectedCount > 0) {
-        const selectedEmployees: IUser[] = [];
-        const shuffledCandidates: IUser[] = [...availableEmployees];
-        for (let i = 0; i < selectedCount; i++) {
-          if (shuffledCandidates.length === 0) {
-            break; // If no more candidates are available, break the loop
-          }
-          const randomIndex = Math.floor(
-            Math.random() * shuffledCandidates.length
-          );
-          const selectedEmployee: IUser = shuffledCandidates.splice(
-            randomIndex,
-            1
-          )[0];
-          selectedEmployees.push(selectedEmployee);
-          // if subscription push shift pref
-          //else push full
-          updatedSchedules.push({
-            user_id: selectedEmployee.id,
-            user_company_id: selectedEmployee.company_id,
-            roster_id: 0,
-            start_date: newState.start_date,
-            end_date: newState.end_date,
-            shift: "FULL",
-            status: "",
-            created_by: globalState?.user?.fullname || "",
-            updated_by: globalState?.user?.fullname || "",
-          });
-        }
         newState.employees = [
           ...(newState.employees ?? []),
           ...selectedEmployees,
@@ -825,79 +687,12 @@ const AddSchedule = () => {
         ];
       }
     });
+
     // Update the state with the auto-assigned employees
     setScheduleDetailsState(newState);
-  };*/
-
-  /*const useSelectedTemplate = (selectedTemplate: IRosterTemplate) => {
-    const newState: IRoster = {
-      ...scheduleDetailsState,
-      employees: [],
-      schedules: [],
-    };
-
-    let errorOccurred = false;
-
-    // Loop through the selected positions and auto-assign employees
-    if (selectedTemplate.positions) {
-      selectedTemplate.positions.forEach((positionData) => {
-        const selectedCount = positionData.count;
-        const position = positionData.position;
-
-        const availableEmployees: IUser[] = employeeList.filter(
-          (emp) => emp.position === position
-        );
-        const updatedSchedules: IUserSchedule[] = [];
-
-        if (availableEmployees.length > 0 && selectedCount > 0) {
-          const selectedEmployees: IUser[] = [];
-          const shuffledCandidates: IUser[] = [...availableEmployees];
-          for (let i = 0; i < selectedCount; i++) {
-            if (shuffledCandidates.length === 0) {
-              toast.error(`Not enough employees for position: ${position}`);
-              errorOccurred = true; // If no more candidates are available, break the loop
-            }
-            const randomIndex = Math.floor(
-              Math.random() * shuffledCandidates.length
-            );
-            const selectedEmployee: IUser = shuffledCandidates.splice(
-              randomIndex,
-              1
-            )[0];
-            selectedEmployees.push(selectedEmployee);
-            // if subscription push shift pref
-            //else push full
-            updatedSchedules.push({
-              user_id: selectedEmployee.id,
-              user_company_id: selectedEmployee.company_id,
-              roster_id: 0,
-              start_date: newState.start_date,
-              end_date: newState.end_date,
-              shift: "FULL",
-              status: "",
-              created_by: globalState?.user?.fullname || "",
-              updated_by: globalState?.user?.fullname || "",
-            });
-          }
-          newState.employees = [
-            ...(newState.employees ?? []),
-            ...selectedEmployees,
-          ];
-          newState.schedules = [
-            ...(newState.schedules ?? []),
-            ...updatedSchedules,
-          ];
-        } else {
-          toast.error(`Not enough employees for position: ${position}`);
-          errorOccurred = true;
-        }
-      });
-    }
-    // Update the state with the auto-assigned employees
-    setScheduleDetailsState(newState);
-    return !errorOccurred;
   };
-  */
+
+  console.log(scheduleDetailsState);
 
   const selectEmployeeShift = (employee: IUser, shift: string) => {
     // First, find the corresponding IUserSchedule for the user
@@ -1060,16 +855,19 @@ const AddSchedule = () => {
                 )
             )}
             <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("AM");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
+              {!maxEmployee ? (
+                <Button
+                  style={{ width: "50px" }}
+                  onClick={() => {
+                    setShowEmployeeListModal(true);
+                    setEmpShift("AM");
+                  }}
+                  size="sm"
+                >
+                  Add
+                </Button>
+              ) : // Render something else or nothing when maxEmployee is true
+              null}
             </div>
           </div>
           <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
@@ -1096,16 +894,18 @@ const AddSchedule = () => {
                 )
             )}
             <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("PM");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
+              {!maxEmployee ? (
+                <Button
+                  style={{ width: "50px" }}
+                  onClick={() => {
+                    setShowEmployeeListModal(true);
+                    setEmpShift("PM");
+                  }}
+                  size="sm"
+                >
+                  Add
+                </Button>
+              ) : null}
             </div>
           </div>
           <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
@@ -1132,82 +932,22 @@ const AddSchedule = () => {
                 )
             )}
             <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("FULL");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
+              {!maxEmployee ? (
+                <Button
+                  style={{ width: "50px" }}
+                  onClick={() => {
+                    setShowEmployeeListModal(true);
+                    setEmpShift("FULL");
+                  }}
+                  size="sm"
+                >
+                  Add
+                </Button>
+              ) : 
+              null}
             </div>
           </div>
         </div>
-
-        {/*
-        <div className="mb-3">
-          <div className="mr-5">
-            <Label htmlFor="schedule-employees" value="Employees Available" />
-            <div className="flex">
-              <TextInput
-                placeholder="Search Position..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                autoComplete="off"
-              />
-            </div>
-          </div>
-          <div id="people-section" className="overflow-x-auto flex">
-            <div className="my-10 ">
-              <Table theme={customTableTheme}>
-                <Table.Head>
-                  <Table.HeadCell>Employee</Table.HeadCell>
-                  <Table.HeadCell>Position</Table.HeadCell>
-                  <Table.HeadCell></Table.HeadCell>
-                </Table.Head>
-                <Table.Body className="divide-y">
-                  {loading ? (
-                    <Table.Row>
-                      <Table.Cell colSpan={6} className="text-center">
-                        <Spinner size="xl" />
-                      </Table.Cell>
-                    </Table.Row>
-                  ) : (
-                    generateEmployeeList()
-                  )}
-                </Table.Body>
-              </Table>
-            </div>
-            <div className="mx-20">{generateSelectedEmployeeList()}</div>
-          </div>
-          <div className="flex">
-            <div className="mx-20">
-              <Pagination
-                currentPage={currentPage}
-                // layout="pagination"
-                onPageChange={(page) => {
-                  setCurrentPage(page);
-                }}
-                showIcons
-                totalPages={totalPages}
-              />
-            </div>
-            <div className="mx-80">
-              <Pagination
-                currentPage={currentPage}
-                // layout="pagination"
-                onPageChange={(page) => {
-                  setCurrentPage(page);
-                }}
-                showIcons
-                totalPages={totalPages}
-              />
-            </div>
-          </div>
-        </div>
-              */}
 
         <div className="mt-12 flex justify-end">
           <Button
@@ -1224,7 +964,6 @@ const AddSchedule = () => {
       </form>
 
       <div>
-        {/*autoAssignModal()*/}
         {submitModal()}
         {employeeListModal()}
         {<CreateScheduleModal {...modalProps} />}
