@@ -229,7 +229,12 @@ UserScheduleRouter.get(
         return Number(employeeWorkingHours) > Number(dataWorkingHours);
       });
 
-      res.status(200).json(generateResultJson(employeesWithWorkingHours));
+      const employeesWithWorkingHoursFix = employeesWithWorkingHours.map(item => ({
+        ...item,
+        profile_image :item.profile_image?.toString() ?? ""
+      }));
+
+      res.status(200).json(generateResultJson(employeesWithWorkingHoursFix));
     } catch (error) {
       console.error(error);
       res.status(400).send("Error checking user schedules for conflicts.");

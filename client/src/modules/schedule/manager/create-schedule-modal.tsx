@@ -12,20 +12,26 @@ import { toast } from "react-toastify";
 import { PATHS } from "../../../configs/constants";
 import { useNavigate } from "react-router-dom";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
-import { IRoster, IRosterPosition } from "../../../shared/model/schedule.model";
-import { getAllEmployees, getDepartmentAllEmployees } from "../../../shared/api/user.api";
+import { IRoster, IRosterTemplate, IRosterPosition } from "../../../shared/model/schedule.model";
+import {
+  getAllEmployees,
+  getDepartmentAllEmployees,
+} from "../../../shared/api/user.api";
 import { getAllLocations } from "../../../shared/api/location.api";
 import { ICompanyLocation } from "../../../shared/model/company.model";
 
 type IProps = {
   createScheduleModal: boolean;
   setCreateScheduleModal: React.Dispatch<React.SetStateAction<boolean>>;
-  rosterPosition:IRosterPosition[];
+  rosterPosition: IRosterPosition[];
   setRosterPosition: React.Dispatch<React.SetStateAction<IRosterPosition[]>>;
-  rosterType:string;
-  setRosterType:React.Dispatch<React.SetStateAction<string>>;
-  locationId:number;
-  setLocationId:React.Dispatch<React.SetStateAction<number>>;
+  rosterType: string;
+  setRosterType: React.Dispatch<React.SetStateAction<string>>;
+  locationId: number;
+  setLocationId: React.Dispatch<React.SetStateAction<number>>;
+  rosterSetting: boolean;
+  setRosterSettings: React.Dispatch<React.SetStateAction<boolean>>;
+  filteredTemplateList: IRosterTemplate[];
 };
 
 const CreateScheduleModal = (props: IProps) => {
@@ -34,7 +40,6 @@ const CreateScheduleModal = (props: IProps) => {
   const [positions, setPositions] = useState<{
     [key: string]: number;
   }>({});
-  //const [schedulePosition, setSchedulePosition] = React.useState<IRosterPosition[]>([])
   const [showConfirmationModal, setShowConfirmationModal] =
     React.useState(false);
 
@@ -57,7 +62,7 @@ const CreateScheduleModal = (props: IProps) => {
     getAllLocations(globalState?.user?.company_id || 0)
       .then((res) => {
         setLocations(res.data);
-        props.setLocationId(Number(res.data[0].id))
+        props.setLocationId(Number(res.data[0].id));
       })
       .finally(() => {});
   }, [props.createScheduleModal]);
@@ -73,10 +78,13 @@ const CreateScheduleModal = (props: IProps) => {
     props.setRosterPosition(newPositions);
   }, [positionSelectedCount]);
 
-  const [numOfEmployee, setNumOfEmployee] = useState(0)
+  const [numOfEmployee, setNumOfEmployee] = useState(0);
   useEffect(() => {
-    const totalCount = props.rosterPosition.reduce((total, pos) => total + pos.count, 0);
-    setNumOfEmployee(totalCount)
+    const totalCount = props.rosterPosition.reduce(
+      (total, pos) => total + pos.count,
+      0
+    );
+    setNumOfEmployee(totalCount);
   }, [numOfEmployee, props.rosterPosition]);
 
   const [selectedPosition, setSelectedPosition] = useState("");
@@ -108,31 +116,34 @@ const CreateScheduleModal = (props: IProps) => {
 
   const [submitLoading, setSubmitLoading] = React.useState(false);
   useEffect(() => {
-    if(submitLoading){
+    if (submitLoading) {
       /*createRosterTemplate().finally(()=>{
         toast.success("Template create successfully");
         setShowConfirmationModal(false);
         
       })*/
       props.setCreateScheduleModal((prev) => false);
-      setSubmitLoading(false)
+      setSubmitLoading(false);
       setShowConfirmationModal(false);
     }
   }, [submitLoading]);
- 
+
   return (
     <div>
       <Modal
         show={props.createScheduleModal}
-        onClose={() => {props.setCreateScheduleModal((prev) => false)
+        onClose={() => {
+          props.setCreateScheduleModal((prev) => false);
           navigate(`/${PATHS.SCHEDULE}`, { replace: true });
-      }}
+        }}
       >
         <Modal.Header>Create Roster</Modal.Header>
         <Modal.Body>
-        <Label className="my-2 text-l" value="Location"></Label>
+          <Label className="my-2 text-l" value="Location"></Label>
           <div className="flex my-2">
-            <Select onChange={(e) => props.setLocationId(Number(e.target.value))}>
+            <Select
+              onChange={(e) => props.setLocationId(Number(e.target.value))}
+            >
               {locations?.map((loc, idx) => (
                 <option key={idx} value={loc.id}>
                   {loc.name}
@@ -185,24 +196,77 @@ const CreateScheduleModal = (props: IProps) => {
               No of Employees - {numOfEmployee}
             </div>
           ) : null}
-          <div className="my-2">
-            <Label
-              className="mr-2 text-l"
-              htmlFor="shift-template"
-              value="Shift"
-            />
-            <Checkbox
-              className="flex w-10 h-10"
-              value={props.rosterType}
-              checked={props.rosterType == "SHIFT"}
-              onChange={() => {
-                if (props.rosterType == "SHIFT") {
-                  props.setRosterType("PROJECT")
-                } else {
-                  props.setRosterType("SHIFT")
-                }
-              }}
-            />
+          <div>
+            <div className="my-2 flex">
+              <div>
+                <Label
+                  className="mr-2 text-l"
+                  htmlFor="shift-template"
+                  value="Shift"
+                />
+                <Checkbox
+                  className="flex w-10 h-10"
+                  value={props.rosterType}
+                  checked={props.rosterType == "SHIFT"}
+                  onChange={() => {
+                    if (props.rosterType == "SHIFT") {
+                      props.setRosterType("PROJECT");
+                    } else {
+                      props.setRosterType("SHIFT");
+                    }
+                  }}
+                />
+              </div>
+              <div className="mx-5">
+                <Label
+                  className="mr-2 text-l"
+                  htmlFor="shift-template"
+                  value="Project"
+                />
+                <Checkbox
+                  className="flex w-10 h-10"
+                  value={props.rosterType}
+                  checked={props.rosterType == "PROJECT"}
+                  onChange={() => {
+                    if (props.rosterType == "SHIFT") {
+                      props.setRosterType("PROJECT");
+                    } else {
+                      props.setRosterType("SHIFT");
+                    }
+                  }}
+                />
+              </div>
+              {props.filteredTemplateList.length > 0 && (
+            <div>
+              <Label htmlFor="employees-template" value="Template" />
+              <Select
+                onChange={(e) => {
+                  const selectedTemplateName = e.target.value;
+                  const selectedTemplateObject = props.filteredTemplateList.find(
+                    (template) => template.id === Number(selectedTemplateName)
+                  );
+                
+                  if (selectedTemplateObject?.positions) {
+                    selectedTemplateObject.positions.forEach((pos) => {
+                      setPositionSelectedCount((prevPositionSelectedCount) => ({
+                        ...prevPositionSelectedCount,
+                        [pos.position]: pos.count,
+                      }));
+                    });
+                    
+                  }
+                }}
+              >
+                <option value="-">-</option>
+                {props.filteredTemplateList.map((template, index) => (
+                  <option key={index} value={template.id}>
+                    {template.name}
+                  </option>
+                ))}
+              </Select>
+            </div>
+          )}
+            </div>
           </div>
         </Modal.Body>
         <Modal.Footer>
@@ -235,7 +299,8 @@ const CreateScheduleModal = (props: IProps) => {
               size="sm"
               disabled={submitLoading}
               onClick={() => {
-                setSubmitLoading(true)
+                setSubmitLoading(true);
+                props.setRosterSettings(false);
               }}
             >
               Yes

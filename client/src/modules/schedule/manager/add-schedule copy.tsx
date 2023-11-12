@@ -12,9 +12,8 @@ import {
   TextInput,
   CustomFlowbiteTheme,
   Pagination,
-  Avatar,
 } from "flowbite-react";
-import { HiUserGroup, HiX } from "react-icons/hi";
+import { HiUserGroup } from "react-icons/hi";
 import React from "react";
 import moment from "moment";
 import { GlobalStateContext } from "../../../configs/global-state-provider";
@@ -35,7 +34,6 @@ import {
   createRoster,
 } from "../../../shared/api/roster.api";
 import CreateScheduleModal from "./create-schedule-modal";
-import { getSubscriptionModelByCompanyId, getSubscriptionModelById } from "../../../shared/api/subscription.api"
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -56,15 +54,13 @@ const AddSchedule = () => {
   const [employeeList, setEmployeeList] = useState<IUser[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredEmployeeList, setFilteredEmployeeList] = useState<IUser[]>([]);
-  
+
   const [currentPage, setCurrentPage] = useState(location?.state?.page || 1);
   const [sizePerPage, setSizePerPage] = useState(
     location?.state?.sizePerPage || 5
   );
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
-
-  const [subscription, SetSubscription] = React.useState(false);
 
   const startIndex = (currentPage - 1) * sizePerPage;
   const endIndex = startIndex + sizePerPage;
@@ -121,7 +117,7 @@ const AddSchedule = () => {
             roster_id: 0,
             start_date: prevState.start_date,
             end_date: prevState.end_date,
-            shift: empShift,
+            shift: "FULL",
             status: "",
             created_by: globalState?.user?.fullname || "",
             updated_by: globalState?.user?.fullname || "",
@@ -138,14 +134,24 @@ const AddSchedule = () => {
       };
     });
   };
-  const [empShift, setEmpShift] = React.useState("FULL");
+
   const [createScheduleModal, setCreateScheduleModal] = React.useState(true);
   const [rosterPosition, setRosterPosition] = React.useState<IRosterPosition[]>(
     []
   );
-  const [rosterType, setRosterType] = React.useState("SHIFT");
+  const [rosterType, setRosterType] = React.useState("PROJECT");
   const [locationId, setLocationId] = React.useState(0);
-  const [rosterSetting, setRosterSettings] = React.useState(true);
+
+  const modalProps = {
+    createScheduleModal,
+    setCreateScheduleModal,
+    rosterPosition,
+    setRosterPosition,
+    rosterType,
+    setRosterType,
+    locationId,
+    setLocationId,
+  };
 
   useEffect(() => {
     setScheduleDetailsState((prev) => ({
@@ -214,17 +220,6 @@ const AddSchedule = () => {
       })
       .finally(() => {
         setLoading((prev) => false);
-      });
-  }, []);
-
-  useEffect(() => {
-    getSubscriptionModelByCompanyId(
-      scheduleDetailsState.company_id || 0,
-    )
-      .then((res) => {
-        SetSubscription(res.data.type.toLowerCase().includes("premium"))
-      })
-      .finally(() => {
       });
   }, []);
 
@@ -389,62 +384,6 @@ const AddSchedule = () => {
       );
     }
   };
-  const [showEmployeeListModal, setShowEmployeeListModal] =
-    React.useState(false);
-  const employeeListModal = () => {
-    return (
-      <Modal
-        show={showEmployeeListModal}
-        onClose={() => setShowEmployeeListModal(false)}
-      >
-        <Modal.Header>Employee List</Modal.Header>
-        <Modal.Body>
-          <Label htmlFor="schedule-employees" value="Employees Available" />
-          <div className="flex">
-            <TextInput
-              placeholder="Search Position..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              autoComplete="off"
-            />
-          </div>
-          {filteredEmployeeList.map((emp, idx) => (
-            <div className="mt-3 grid grid-cols-5 flex" key={idx}>
-              <Avatar
-                size="md"
-                img={emp.profile_image || ""}
-                rounded
-                style={{ display: "inline-block", margin: "0" }}
-              />
-              {emp.fullname}
-              <div>{emp.position}</div>
-              <div></div>
-              {scheduleDetailsState.employees &&
-              scheduleDetailsState.employees.some(
-                (employees) => employees.id === emp.id
-              ) ? (
-                <Button
-                  color="failure"
-                  size="sm"
-                  onClick={() => handleAddOrRemoveEmployee(emp)}
-                >
-                  Remove
-                </Button>
-              ) : (
-                <Button
-                  color="success"
-                  size="sm"
-                  onClick={() => handleAddOrRemoveEmployee(emp)}
-                >
-                  Add
-                </Button>
-              )}
-            </div>
-          ))}
-        </Modal.Body>
-      </Modal>
-    );
-  };
 
   const submitModal = () => {
     // Get all unique positions from employees
@@ -519,7 +458,7 @@ const AddSchedule = () => {
     }
   }, [submitLoading]);
 
-  /*const autoAssignModal = () => {
+  const autoAssignModal = () => {
     const [positionCount, setPositionCount] = useState({});
 
     useEffect(() => {
@@ -635,66 +574,8 @@ const AddSchedule = () => {
       </Modal>
     );
   };
-  */
 
-  const autoAssignPersonnel = () => {
-    const newState: IRoster = {
-      ...scheduleDetailsState,
-      employees: [],
-      schedules: [],
-    };
-    scheduleDetailsState.positions?.forEach((pos) =>{
-      const selectedCount = pos.count;
-      const availableEmployees: IUser[] = employeeList.filter(
-        (emp) => emp.position === pos.position
-      );
-      const updatedSchedules: IUserSchedule[] = [];
-
-      if (availableEmployees.length > 0 && selectedCount > 0) {
-        const selectedEmployees: IUser[] = [];
-        const shuffledCandidates: IUser[] = [...availableEmployees];
-        for (let i = 0; i < selectedCount; i++) {
-          if (shuffledCandidates.length === 0) {
-            break; // If no more candidates are available, break the loop
-          }
-          const randomIndex = Math.floor(
-            Math.random() * shuffledCandidates.length
-          );
-          const selectedEmployee: IUser = shuffledCandidates.splice(
-            randomIndex,
-            1
-          )[0];
-          selectedEmployees.push(selectedEmployee);
-          // if subscription push shift pref
-          selectedEmployee.preferences
-          //else push full
-          updatedSchedules.push({
-            user_id: selectedEmployee.id,
-            user_company_id: selectedEmployee.company_id,
-            roster_id: 0,
-            start_date: newState.start_date,
-            end_date: newState.end_date,
-            shift: "FULL",
-            status: "",
-            created_by: globalState?.user?.fullname || "",
-            updated_by: globalState?.user?.fullname || "",
-          });
-        }
-        newState.employees = [
-          ...(newState.employees ?? []),
-          ...selectedEmployees,
-        ];
-        newState.schedules = [
-          ...(newState.schedules ?? []),
-          ...updatedSchedules,
-        ];
-      }
-    });
-    // Update the state with the auto-assigned employees
-    setScheduleDetailsState(newState);
-  };
-
-  /*const autoAssignPersonnelOld = (positionSelectedCount) => {
+  const autoAssignPersonnel = (positionSelectedCount) => {
     setAutoAssignShowModal(false);
     const newState: IRoster = {
       ...scheduleDetailsState,
@@ -751,9 +632,9 @@ const AddSchedule = () => {
     });
     // Update the state with the auto-assigned employees
     setScheduleDetailsState(newState);
-  };*/
+  };
 
-  /*const useSelectedTemplate = (selectedTemplate: IRosterTemplate) => {
+  const useSelectedTemplate = (selectedTemplate: IRosterTemplate) => {
     const newState: IRoster = {
       ...scheduleDetailsState,
       employees: [],
@@ -821,7 +702,7 @@ const AddSchedule = () => {
     setScheduleDetailsState(newState);
     return !errorOccurred;
   };
-  */
+
 
   const selectEmployeeShift = (employee: IUser, shift: string) => {
     // First, find the corresponding IUserSchedule for the user
@@ -856,20 +737,6 @@ const AddSchedule = () => {
     });
   };
 
-  const modalProps = {
-    createScheduleModal,
-    setCreateScheduleModal,
-    rosterPosition,
-    setRosterPosition,
-    rosterType,
-    setRosterType,
-    locationId,
-    setLocationId,
-    rosterSetting,
-    setRosterSettings,
-    filteredTemplateList,
-  };
-
   return (
     <div>
       <p className="header">Create Schedule</p>
@@ -880,7 +747,7 @@ const AddSchedule = () => {
           <Button
             size="sm"
             onClick={() => {
-              autoAssignPersonnel();
+              setAutoAssignShowModal(true);
             }}
           >
             <p>Auto Assign</p>
@@ -926,7 +793,7 @@ const AddSchedule = () => {
             />
           </div>
 
-          {/*filteredTemplateList.length > 0 && (
+          {filteredTemplateList.length > 0 && (
             <div style={{ marginLeft: "auto" }}>
               <Label htmlFor="employees-template" value="Template" />
               <Select
@@ -956,121 +823,8 @@ const AddSchedule = () => {
                 ))}
               </Select>
             </div>
-                )*/}
+          )}
         </div>
-
-        <div className="mt-3 grid grid-cols-5 flex">
-          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
-            <p className="text-md">AM SHIFT</p>
-          </div>
-          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-          {scheduleDetailsState.employees?.map(
-              (emp, idx) =>
-                selectEmployeeShift(emp, "AM") && (
-                  <div className="flex items-center justify-center" key={idx}>
-                    <>
-                      <Avatar size="md" img={emp.profile_image || ""} rounded />
-                      <p>{emp.fullname}</p>
-                      <Button
-                        color="failure"
-                        style={{ width: "15px", height: "15px" }}
-                        onClick={() => setShowEmployeeListModal(true)}
-                        size="sm"
-                      >
-                        <HiX />
-                      </Button>
-                    </>
-                  </div>
-                )
-            )}
-            <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("AM");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
-            </div>
-          </div>
-          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
-            <p className="text-md">PM SHIFT</p>
-          </div>
-          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-            {scheduleDetailsState.employees?.map(
-              (emp, idx) =>
-                selectEmployeeShift(emp, "PM") && (
-                  <div className="flex items-center justify-center" key={idx}>
-                    <>
-                      <Avatar size="md" img={emp.profile_image || ""} rounded />
-                      <p>{emp.fullname}</p>
-                      <Button
-                        color="failure"
-                        style={{ width: "15px", height: "15px" }}
-                        onClick={() => setShowEmployeeListModal(true)}
-                        size="sm"
-                      >
-                        <HiX />
-                      </Button>
-                    </>
-                  </div>
-                )
-            )}
-            <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("PM");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
-            </div>
-          </div>
-          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
-            <p className="text-md">FULL SHIFT</p>
-          </div>
-          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-          {scheduleDetailsState.employees?.map(
-              (emp, idx) =>
-                selectEmployeeShift(emp, "FULL") && (
-                  <div className="flex items-center justify-center" key={idx}>
-                    <>
-                      <Avatar size="md" img={emp.profile_image || ""} rounded />
-                      <p>{emp.fullname}</p>
-                      <Button
-                        color="failure"
-                        style={{ width: "15px", height: "15px" }}
-                        onClick={() => setShowEmployeeListModal(true)}
-                        size="sm"
-                      >
-                        <HiX />
-                      </Button>
-                    </>
-                  </div>
-                )
-            )}
-            <div className="flex items-center justify-center">
-              <Button
-                style={{ width: "50px" }}
-                onClick={() => {
-                  setShowEmployeeListModal(true);
-                  setEmpShift("FULL");
-                }}
-                size="sm"
-              >
-                Add
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/*
         <div className="mb-3">
           <div className="mr-5">
             <Label htmlFor="schedule-employees" value="Employees Available" />
@@ -1131,7 +885,6 @@ const AddSchedule = () => {
             </div>
           </div>
         </div>
-              */}
 
         <div className="mt-12 flex justify-end">
           <Button
@@ -1148,10 +901,8 @@ const AddSchedule = () => {
       </form>
 
       <div>
-        {/*autoAssignModal()*/}
+        {autoAssignModal()}
         {submitModal()}
-        {employeeListModal()}
-        {<CreateScheduleModal {...modalProps} />}
       </div>
     </div>
   );
