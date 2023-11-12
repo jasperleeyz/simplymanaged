@@ -705,7 +705,7 @@ const AddSchedule = () => {
         const candidatesWithStartDayPref: IUser[] = availableEmployees.filter(
           (emp) => emp.preferences?.[0]?.preference?.split(',').includes(start_day)
         );
-  
+        if(subscription){
         // Select employees with start_day preference
         candidatesWithStartDayPref.forEach((candidate) => {
           if (selectedEmployees.length < selectedCount) {
@@ -728,6 +728,7 @@ const AddSchedule = () => {
             });
           }
         });
+      }
   
         // Fill remaining slots with random candidates
         for (let i = selectedEmployees.length; i < selectedCount; i++) {
@@ -741,7 +742,7 @@ const AddSchedule = () => {
           const randomCandidate: IUser = filteredAvailableEmployees.splice(randomIndex, 1)[0];
           const shiftPref = randomCandidate.preferences?.[1]?.preference?.split(',');
           const shift =
-            shiftPref && shiftPref.length > 0
+            subscription && shiftPref && shiftPref.length > 0
               ? shiftPref[Math.floor(Math.random() * shiftPref.length)]
               : "FULL";
   
