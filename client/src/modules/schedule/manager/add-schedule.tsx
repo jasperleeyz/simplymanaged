@@ -187,6 +187,7 @@ const AddSchedule = () => {
   }, [locationId]);
 
   const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
+  const [filteredTemplateList, setFilteredTemplateList] = useState<IRosterTemplate[]>([]);
   useEffect(() => {
     //setLoading((prev) => true);
     getRosterTemplate(globalState?.user?.company_id || 0)
@@ -197,6 +198,24 @@ const AddSchedule = () => {
         //  setLoading((prev) => false);
       });
   }, []);
+
+  useEffect(() => {
+    const newFilteredTemplateList = templateList.filter(template => {
+      return template.roster_type === scheduleDetailsState.type;
+    });
+    setFilteredTemplateList(newFilteredTemplateList);
+  }, [templateList, scheduleDetailsState.type]);
+
+  useEffect(() => {
+    const newFilteredEmployeeList = employeeList.filter(employee => {
+      const matchingPosition = rosterPosition.find(position => position.position === employee.position);
+      return matchingPosition && matchingPosition.count > 0;
+    });
+
+    setFilteredEmployeeList(newFilteredEmployeeList);
+  }, [rosterPosition, employeeList]);
+
+  
 
   useEffect(() => {
     setLoading((prev) => true);
@@ -914,13 +933,13 @@ const AddSchedule = () => {
             />
             */}
           </div>
-          {templateList.length > 0 && (
+          {filteredTemplateList.length > 0 && (
             <div style={{ marginLeft: "auto" }}>
               <Label htmlFor="employees-template" value="Template" />
               <Select
                 onChange={(e) => {
                   const selectedTemplateName = e.target.value;
-                  const selectedTemplateObject = templateList.find(
+                  const selectedTemplateObject = filteredTemplateList.find(
                     (template) => template.name === selectedTemplateName
                   );
                   if (selectedTemplateObject)
@@ -937,7 +956,7 @@ const AddSchedule = () => {
                 }}
               >
                 <option value="-">-</option>
-                {templateList.map((template, index) => (
+                {filteredTemplateList.map((template, index) => (
                   <option key={index} value={template.name}>
                     {template.name}
                   </option>
