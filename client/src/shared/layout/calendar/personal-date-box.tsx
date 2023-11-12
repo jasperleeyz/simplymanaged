@@ -23,7 +23,6 @@ const PersonalDateBox = ({
   const user = React.useContext(GlobalStateContext).globalState?.user;
   const rosterType = schedule?.roster?.type;
   const [roster, setRoster] = React.useState<IRoster | null>({} as any);
-  console.log(date.toDate(), leave);
 
   /*React.useEffect(() => {
     if(schedule) {

@@ -102,6 +102,8 @@ const CreateScheduleModal = (props: IProps) => {
         ...prevPositionSelectedCount,
         [position]: currentCount + 1,
       }));
+    } else {
+      toast.error("Position has reached max available employee count");
     }
   };
 

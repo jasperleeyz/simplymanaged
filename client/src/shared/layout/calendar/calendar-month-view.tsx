@@ -157,8 +157,13 @@ const CalendarMonthView = ({
               <Table.Row key={idx}>
                 {week.days.map((day, didx) => {
                   const scheduleForDay = scheduleList?.filter((schedule) => {
+                    console.log("Start date: ", schedule.start_date);
+                    console.log("End date: ", schedule.end_date);
                       const startDate = new Date(schedule.start_date).getDate();
                       const endDate = new Date(schedule.end_date).getDate();
+                      console.log("Start date after convert: ", startDate);
+                      console.log("End date after convert: ", endDate);
+                    console.log("Day date: ", day.date());
                       return startDate <= day.date() && day.date() <= endDate;
                   });
                   const rosterForDay = rosterList?.filter((schedule) => {
