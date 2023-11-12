@@ -51,7 +51,7 @@ const ViewSchedule = () => {
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />
           <div id="schedule-employees">
             {roster.map((rosteridx, idx) => (
-              <div  className="mt-2">
+              <div key={idx} className="mt-2">
                 <div className="flex">
                   <p style={{ marginRight: "10px" }}>
                     Created by: {rosteridx.created_by}
