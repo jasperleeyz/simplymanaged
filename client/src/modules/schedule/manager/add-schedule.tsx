@@ -214,6 +214,15 @@ const AddSchedule = () => {
       });
   }, [
   ]);
+
+  useEffect(() => {
+    const newFilteredEmployeeList = employeeList.filter(employee => {
+      const matchingPosition = rosterPosition.find(position => position.position === employee.position);
+      return matchingPosition && matchingPosition.count > 0;
+    });
+
+    setFilteredEmployeeList(newFilteredEmployeeList);
+  }, [rosterPosition, employeeList]);
   
   const setSchedulesToDefault = () => {
     setScheduleDetailsState((prev) => ({
@@ -224,7 +233,7 @@ const AddSchedule = () => {
   };
 
   const generateEmployeeList = () => {
-    if (employeeList.length === 0) {
+    if (filteredEmployeeList.length === 0) {
       return (
         <Table.Row>
           <Table.Cell colSpan={2} className="text-center">
@@ -234,7 +243,7 @@ const AddSchedule = () => {
       );
     }
 
-    return employeeList.map((emp, idx) => (
+    return filteredEmployeeList.map((emp, idx) => (
       <Table.Row
         key={idx}
         className="bg-white dark:border-gray-700 dark:bg-gray-800"
