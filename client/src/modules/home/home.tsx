@@ -1,4 +1,3 @@
-import { Avatar, Card } from "flowbite-react";
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { capitalizeString } from "../../configs/utils";
@@ -15,6 +14,9 @@ import {
   getPersonalRequests,
 } from "../../shared/api/request.api";
 import { IRequest } from "../../shared/model/request.model";
+import { ICompanyCode } from "../../shared/model/company.model";
+import { getAllCompanyCodes } from "../../shared/api/company-code.api";
+import { Avatar, Card } from "flowbite-react";
 
 const Home = () => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
@@ -32,6 +34,7 @@ const Home = () => {
   const [pendingRequests, setPendingRequests] = React.useState<IRequest[]>([]);
   const [requestsPendingMyApproval, setRequestsPendingMyApproval] =
     React.useState<IRequest[]>([]);
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
 
   React.useEffect(() => {
     // TODO: retrieve schedules for the week
@@ -42,7 +45,17 @@ const Home = () => {
         new Date(),
         moment(new Date()).add(7, "days").toDate()
       ).then((res) => {
-        setScheduleForTheWeek(res.data);
+        const filtered = res.data.filter((schedule: IUserSchedule) => moment(schedule.start_date).startOf('day').isSameOrAfter(moment().startOf('day')));
+        setScheduleForTheWeek(filtered.slice(0, 5));
+      }),
+      getAllCompanyCodes(
+        globalState?.user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        `equals(code_type,POSITION)`
+      ).then((res) => {
+        setCodeList(res.data);
       }),
       getPersonalRequests(
         1,
@@ -94,7 +107,7 @@ const Home = () => {
         <p className="mt-3 font-semibold text-xl">
           {capitalizeString(user?.fullname)}
         </p>
-        <p>{capitalizeString(user?.position)}</p>
+        <p>{capitalizeString(codeList.find((c) => c.code === user?.position)?.description || "")}</p>
         <p>{capitalizeString(user?.department?.department_name)}</p>
       </div>
       <div className="md:w-4/5 md:border-l-2 md:px-5">

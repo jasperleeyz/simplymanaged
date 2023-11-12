@@ -9,20 +9,20 @@ interface IProps {
 }
 
 const UpcomingShiftComponent = ({ schedule }: IProps) => {
-
-  //const user = React.useContext(GlobalStateContext).globalState?.user;
-  // const scheduleUser = schedule.employeesSelected.find((emp) => emp.id === user?.id);
-  //const scheduleUser = { shift: "AM" }
+  const company = React.useContext(GlobalStateContext).globalState?.user?.company;
 
   return (
     <div>
-        <p>Date: {moment(schedule.start_date).format("DD/MM/yyyy")}</p>
+        <p>Date: {moment(schedule.start_date).format("DD/MM/YYYY")}{
+          !moment(schedule.start_date).startOf('day').isSame(moment(schedule.end_date).startOf('day'))
+         ? ` to ${moment(schedule.end_date).format("DD/MM/YYYY")}` : null}</p>
         {schedule?.roster?.location?.name ? (
           <p>Location: {schedule?.roster?.location?.name}</p> 
         ) : (
-          <p>Location: {React.useContext(GlobalStateContext).globalState?.user?.company?.name}</p> 
+          null 
         )}
         <p>Shift: {schedule?.shift}</p>
+        
     </div>
   )
 }

@@ -13,6 +13,8 @@ import {
 } from "../../../shared/api/user-schedule.api";
 import { getRosterFromAndTo } from "../../api/roster.api";
 import { IRoster, IUserSchedule } from "../../model/schedule.model";
+import { IRequest } from "../../model/request.model";
+import { getApprovedLeaveFromAndTo } from "../../api/request.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -41,8 +43,7 @@ const CalendarMonthView = ({
   location,
 }: IProps) => {
   const { globalState } = useContext(GlobalStateContext);
-  const [loading, setLoading] =
-    React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   const cal = [] as CalObject[];
 
   const date = moment(new Date(year, month, 1));
@@ -61,49 +62,65 @@ const CalendarMonthView = ({
 
   const [scheduleList, setScheduleList] = useState<IUserSchedule[]>([]);
   const [rosterList, setRosterList] = useState<IRoster[]>([]);
+  const [leaveList, setLeaveList] = useState<IRequest[]>([]);
 
   useEffect(() => {
     const from = new Date(year, month);
     const to = new Date(year, month + 1);
     setLoading((prev) => true);
     if (isPersonal) {
-      getUserScheduleFromAndTo(
+      Promise.all([
+        getUserScheduleFromAndTo(
+          globalState?.user?.company_id || 0,
+          globalState?.user?.id || 0,
+          from,
+          to
+        ).then((res) => {
+          setScheduleList(res.data);
+        }),
+        getApprovedLeaveFromAndTo(from, to).then((res) => {
+          setLeaveList(res.data);
+        }),
+      ]).finally(() => {
+        setLoading((prev) => false);
+      });
+    } else {
+      getRosterFromAndTo(
         globalState?.user?.company_id || 0,
-        globalState?.user?.id || 0,
+        location || 0,
         from,
         to
       )
         .then((res) => {
-          setScheduleList(res.data);
-        })
-        .finally(() => {setLoading((prev) => false);});
-    } else {
-      getRosterFromAndTo(globalState?.user?.company_id || 0, location || 0, from, to)
-        .then((res) => {
-          if(globalState?.user?.role == ROLES.MANAGER)
-          {
+          if (globalState?.user?.role == ROLES.MANAGER) {
             setRosterList(res.data);
-          }
-          else{
+          } else {
             const resData: IRoster[] = res.data as IRoster[];
             const schedulesToRemove: number[] = [];
-            resData.map((ros, ridx) =>{
-              if(ros.type == "SHIFT"){
-              const filteredPositions = ros.positions?.filter((pos) => {
-                return pos.position === globalState?.user?.position; // Example condition
-              });
-              const filteredSchedulePositions = ros.schedules?.filter((sch) =>{
-                return sch.user?.position === globalState?.user?.position;
-              })
-              if(filteredPositions && filteredSchedulePositions){
-                if(filteredSchedulePositions?.length < filteredPositions[0]?.count)
-                {
-                  schedulesToRemove.push(ridx)
+            resData.map((ros, ridx) => {
+              if (ros.type == "SHIFT") {
+                const filteredPositions = ros.positions?.filter((pos) => {
+                  return pos.position === globalState?.user?.position; // Example condition
+                });
+                const filteredSchedulePositions = ros.schedules?.filter(
+                  (sch) => {
+                    return sch.user?.position === globalState?.user?.position;
+                  }
+                );
+                if (filteredPositions && filteredSchedulePositions) {
+                  if (
+                    filteredSchedulePositions?.length <
+                    filteredPositions[0]?.count
+                  ) {
+                    schedulesToRemove.push(ridx);
+                  }
                 }
               }
-          }});
-            const filteredResData = resData.filter((_, ridx) => schedulesToRemove.includes(ridx));
-            setRosterList(filteredResData)
+            });
+            const filteredResData = resData.filter((_, ridx) =>
+              schedulesToRemove.includes(ridx)
+            );
+            setRosterList(filteredResData);
           }
         })
         .finally(() => {
@@ -111,7 +128,6 @@ const CalendarMonthView = ({
         });
     }
   }, [isPersonal, month, year, location]);
-
 
   /*const scheduleForMonth = scheduleList?.filter(
     (schedule) =>
@@ -134,58 +150,72 @@ const CalendarMonthView = ({
           <Table.HeadCell>Saturday</Table.HeadCell>
         </Table.Head>
         <Table.Body>
-        {loading ? (
-                <Table.Row>
-                  <Table.Cell colSpan={6} className="text-center">
-                    <Spinner size="xl" />
-                  </Table.Cell>
-                </Table.Row>
-            ) : (
-              <>
-          {cal.map((week, idx) => {
-            return (
-              <Table.Row key={idx}>
-                {week.days.map((day, didx) => {
-                  const scheduleForDay = scheduleList?.filter((schedule) => {
-                      const startDate = new Date(schedule.start_date).getDate();
-                      const endDate = new Date(schedule.end_date).getDate();
-                      return startDate <= day.date() && day.date() <= endDate;
-                  });
-                  const rosterForDay = rosterList?.filter((schedule) => {
-                      const startDate = new Date(schedule.start_date).getDate();
-                      return startDate === day.date();
-                  });
-                  return (
-                    <Table.Cell key={didx}>
-                      {day.month() === month ? (
-                        !isPersonal ? (
-                          <ScheduleDateBox
-                            date={day}
-                            roster={
-                              rosterForDay?.length >= 1
-                                ? rosterForDay
-                                : null
-                            }
-                          />
-                        ) : (
-                          <PersonalDateBox
-                            date={day}
-                            schedule={
-                              scheduleForDay?.length === 1
-                                ? scheduleForDay[0]
-                                : null
-                            }
-                          />
-                        )
-                      ) : null}
-                    </Table.Cell>
-                  );
-                })}
-              </Table.Row>
-            );
-          })}
-          </>)
-}
+          {loading ? (
+            <Table.Row>
+              <Table.Cell colSpan={6} className="text-center">
+                <Spinner size="xl" />
+              </Table.Cell>
+            </Table.Row>
+          ) : (
+            <>
+              {cal.map((week, idx) => {
+                return (
+                  <Table.Row key={idx}>
+                    {week.days.map((day, didx) => {
+                      const scheduleForDay = scheduleList?.filter(
+                        (schedule) => {
+                          return (
+                            moment(schedule.start_date).startOf('day').isSameOrBefore(day.startOf('day')) &&
+                            day.startOf('day').isSameOrBefore(moment(schedule.end_date).startOf('day'))
+                          );
+                        }
+                      );
+                      const rosterForDay = rosterList?.filter((schedule) => {
+                        const startDate = new Date(
+                          schedule.start_date
+                        ).getDate();
+                        return startDate === day.date();
+                      });
+                      const leaveForDay = leaveList?.filter((leave) => {
+                        return moment(leave?.leave_request?.start_date).startOf('day').isSameOrBefore(day.startOf('day')) &&
+                        day.startOf('day').isSameOrBefore(moment(leave?.leave_request?.end_date).startOf('day'));
+                      });
+                      return (
+                        <Table.Cell key={didx}>
+                          {day.month() === month ? (
+                            !isPersonal ? (
+                              <ScheduleDateBox
+                                date={day}
+                                roster={
+                                  rosterForDay?.length >= 1
+                                    ? rosterForDay
+                                    : null
+                                }
+                              />
+                            ) : (
+                              <PersonalDateBox
+                                date={day}
+                                schedule={
+                                  scheduleForDay?.length >= 1
+                                    ? scheduleForDay[0]
+                                    : null
+                                }
+                                leave={
+                                  leaveForDay?.length >= 1
+                                    ? leaveForDay[0]
+                                    : null
+                                }
+                              />
+                            )
+                          ) : null}
+                        </Table.Cell>
+                      );
+                    })}
+                  </Table.Row>
+                );
+              })}
+            </>
+          )}
         </Table.Body>
       </Table>
     </div>

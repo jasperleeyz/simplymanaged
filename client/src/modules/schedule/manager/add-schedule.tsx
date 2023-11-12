@@ -35,7 +35,12 @@ import {
   createRoster,
 } from "../../../shared/api/roster.api";
 import CreateScheduleModal from "./create-schedule-modal";
-import { getSubscriptionModelByCompanyId } from "../../../shared/api/subscription.api";
+import {
+  getSubscriptionModelByCompanyId,
+  getSubscriptionModelById,
+} from "../../../shared/api/subscription.api";
+import { ICompanyCode } from "../../../shared/model/company.model";
+import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -152,6 +157,7 @@ const AddSchedule = () => {
   const [rosterType, setRosterType] = React.useState("SHIFT");
   const [locationId, setLocationId] = React.useState(0);
   const [rosterSetting, setRosterSettings] = React.useState(true);
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
 
   useEffect(() => {
     setScheduleDetailsState((prev) => ({
@@ -231,14 +237,25 @@ const AddSchedule = () => {
       .finally(() => {
         setLoading((prev) => false);
       });
-  }, []);
+  }, [scheduleDetailsState.start_date, scheduleDetailsState.end_date]);
 
   useEffect(() => {
-    getSubscriptionModelByCompanyId(scheduleDetailsState.company_id || 0)
-      .then((res) => {
+    Promise.all([
+      getSubscriptionModelByCompanyId(
+        scheduleDetailsState.company_id || 0
+      ).then((res) => {
         SetSubscription(res.data.type.toLowerCase().includes("premium"));
-      })
-      .finally(() => {});
+      }),
+      getAllCompanyCodes(
+        globalState?.user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        `equals(code_type,POSITION)`
+      ).then((res) => {
+        setCodeList(res.data);
+      }),
+    ]).finally(() => {});
   }, []);
 
   
@@ -298,7 +315,7 @@ useEffect(() => {
           {emp.fullname}
         </Table.Cell>
         <Table.Cell>
-          <label>{emp.position}</label>
+          <label>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</label>
         </Table.Cell>
         <Table.Cell>
           <div className="inline-block">
@@ -364,7 +381,7 @@ useEffect(() => {
                       {emp.fullname}
                     </Table.Cell>
                     <Table.Cell>
-                      <label>{emp.position}</label>
+                      <label>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</label>
                     </Table.Cell>
                     {scheduleDetailsState.type === "SHIFT" && (
                       <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark-text-white">
@@ -445,7 +462,7 @@ useEffect(() => {
                 style={{ display: "inline-block", margin: "0" }}
               />
               {emp.fullname}
-              <div>{emp.position}</div>
+              <div>{codeList.find((c) => c.code === emp.position)?.description || emp.position}</div>
               <div></div>
               {scheduleDetailsState.employees &&
               scheduleDetailsState.employees.some(

@@ -700,6 +700,8 @@ requestRouter.get("/leave-balance", async (req, res) => {
       throw new Error("Leave balance not found");
     }
 
+    const year = new Date().getFullYear();
+
     // find all pending and approved leave request for the user
     const requests = await prisma.request.findMany({
       where: {
@@ -711,6 +713,12 @@ requestRouter.get("/leave-balance", async (req, res) => {
         },
         leave_request: {
           type: leave_type,
+          start_date: {
+            gte: new Date(`${year}-01-01`),
+          },
+          end_date: {
+            lte: new Date(`${year}-12-31`),
+          },
         },
       },
       include: {
@@ -816,29 +824,22 @@ const checkIfRosterIsOpenForBidding = (
   const user_schedule = roster.schedules;
   const positions = roster.positions;
 
+  let shifts = [] as string[];
+
+  // get count for each position for the roster
+  positions?.forEach((position: any) => {
+    employeePositionsCount[position.position] = position.count;
+  });
+
+  // reduce count based on scheduled users and shift
   user_schedule.forEach((schedule: any) => {
     if (employeePositionsCount[schedule.user.position]) {
-      employeePositionsCount[schedule.user.position]["count"] +=
+      employeePositionsCount[schedule.user.position] -=
         schedule.shift.toUpperCase() === "FULL" ? 1 : 0.5;
-      if (employeePositionsCount[schedule.user.position][schedule.shift])
-        employeePositionsCount[schedule.user.position][schedule.shift] += 1;
-      else employeePositionsCount[schedule.user.position][schedule.shift] = 1;
-    } else {
-      employeePositionsCount[schedule.user.position] = {};
-      employeePositionsCount[schedule.user.position]["count"] =
-        schedule.shift.toUpperCase() === "FULL" ? 1 : 0.5;
-      employeePositionsCount[schedule.user.position][schedule.shift] = 1;
     }
   });
 
-  positions.forEach((position: any) => {
-    employeePositionsCount[position.position]["count"] =
-      position.count - employeePositionsCount[position.position]["count"];
-  });
-
-  let shifts = [] as string[];
-
-  if (employeePositionsCount[user_pos]["count"] === 0.5) {
+  if (employeePositionsCount[user_pos] === 0.5) {
     if (
       employeePositionsCount[user_pos]["AM"] <
       employeePositionsCount[user_pos]["PM"]
@@ -847,7 +848,7 @@ const checkIfRosterIsOpenForBidding = (
     } else {
       shifts = ["PM"];
     }
-  } else if (employeePositionsCount[user_pos]["count"] >= 1) {
+  } else if (employeePositionsCount[user_pos] >= 1) {
     shifts = ["FULL", "AM", "PM"];
   }
 
@@ -970,6 +971,38 @@ requestRouter.post("/create-bid", async (req, res) => {
       message = error.message;
     }
     return res.status(400).send(message);
+  }
+});
+
+requestRouter.get("/approved-leave", async (req, res) => {
+  try {
+    const { from, to } = req.query;
+    const logged_in_user = req.headers["x-access-user"] as any;
+    const company_id = logged_in_user["company_id"];
+    const user_id = logged_in_user["user_id"];
+
+    const approved_leaves = await prisma.request.findMany({
+      where: {
+        company_id: Number(company_id),
+        user_id: Number(user_id),
+        type: "LEAVE",
+        status: "A",
+        leave_request: {
+          start_date: {
+            gte: new Date(from as string),
+            lte: new Date(to as string),
+          },
+        },
+      },
+      include: {
+        leave_request: true,
+      },
+    });
+
+    return res.status(200).json(generateResultJson(approved_leaves));
+  } catch (err) {
+    console.error(err);
+    return res.status(400).send("Error getting approved leave requests");
   }
 });
 
