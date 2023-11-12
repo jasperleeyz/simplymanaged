@@ -316,7 +316,6 @@ const ProfilePage = () => {
 export default ProfilePage;
 
 const getPreferenceCheckboxes = (isEdit, index, pref, formikProps) => {
-  console.log(pref)
   const getPreferredWorkDaysCheckboxes = () => {
     return (
       <>
