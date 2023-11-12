@@ -229,6 +229,7 @@ UserScheduleRouter.get(
           },
           select: {
             id: true,
+            company_id: true,
             fullname: true,
             position: true,
             profile_image: true,
