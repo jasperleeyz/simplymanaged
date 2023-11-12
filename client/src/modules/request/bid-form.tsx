@@ -41,40 +41,34 @@ const BidForm = () => {
     user_pos: string
   ) => {
     const employeePositionsCount = {};
-
-    user_schedule.forEach((schedule: any) => {
-      if (employeePositionsCount[schedule.user.position]) {
-        employeePositionsCount[schedule.user.position]["count"] +=
-          schedule.shift.toUpperCase() === "FULL" ? 1 : 0.5;
-        if (employeePositionsCount[schedule.user.position][schedule.shift])
-          employeePositionsCount[schedule.user.position][schedule.shift] += 1;
-        else employeePositionsCount[schedule.user.position][schedule.shift] = 1;
-      } else {
-        employeePositionsCount[schedule.user.position] = {};
-        employeePositionsCount[schedule.user.position]["count"] =
-          schedule.shift.toUpperCase() === "FULL" ? 1 : 0.5;
-        employeePositionsCount[schedule.user.position][schedule.shift] = 1;
-      }
-    });
-
-    positions.forEach((position: any) => {
-      employeePositionsCount[position.position]["count"] =
-        position.count - employeePositionsCount[position.position]["count"];
-    });
-
     let shifts = [] as string[];
 
-    if (employeePositionsCount[user_pos]["count"] === 0.5) {
-      if (
-        employeePositionsCount[user_pos]["AM"] <
-        employeePositionsCount[user_pos]["PM"]
-      ) {
-        shifts = ["AM"];
-      } else {
-        shifts = ["PM"];
+    if (roster) {
+      // get count for each position for the roster
+      positions?.forEach((position: any) => {
+        employeePositionsCount[position.position] = position.count;
+      });
+
+      // reduce count based on scheduled users and shift
+      user_schedule.forEach((schedule: any) => {
+        if (employeePositionsCount[schedule.user.position]) {
+          employeePositionsCount[schedule.user.position] -=
+            schedule.shift.toUpperCase() === "FULL" ? 1 : 0.5;
+        }
+      });
+
+      if (employeePositionsCount[user_pos] === 0.5) {
+        if (
+          employeePositionsCount[user_pos]["AM"] <
+          employeePositionsCount[user_pos]["PM"]
+        ) {
+          shifts = ["AM"];
+        } else {
+          shifts = ["PM"];
+        }
+      } else if (employeePositionsCount[user_pos] >= 1) {
+        shifts = ["FULL", "AM", "PM"];
       }
-    } else if (employeePositionsCount[user_pos]["count"] >= 1) {
-      shifts = ["FULL", "AM", "PM"];
     }
 
     return (
@@ -131,7 +125,7 @@ const BidForm = () => {
               ) {
                 // prompt user to confirm
                 await promptUser().then((res2) => {
-                  if(res2 === "NO") return;
+                  if (res2 === "NO") return;
                   else {
                     createBidRequest(values).then((res3) => {
                       toast.success("Bid request created successfully");
