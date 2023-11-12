@@ -215,7 +215,7 @@ const AddSchedule = () => {
       .finally(() => {
         setLoading((prev) => false);
       });
-  }, []);
+  }, [scheduleDetailsState.start_date, scheduleDetailsState.end_date]);
 
   useEffect(() => {
     getSubscriptionModelByCompanyId(

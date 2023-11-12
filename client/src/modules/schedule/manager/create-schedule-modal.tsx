@@ -18,7 +18,8 @@ import {
   getDepartmentAllEmployees,
 } from "../../../shared/api/user.api";
 import { getAllLocations } from "../../../shared/api/location.api";
-import { ICompanyLocation } from "../../../shared/model/company.model";
+import { ICompanyCode, ICompanyLocation } from "../../../shared/model/company.model";
+import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
 
 type IProps = {
   createScheduleModal: boolean;
@@ -128,6 +129,20 @@ const CreateScheduleModal = (props: IProps) => {
     }
   }, [submitLoading]);
 
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
+
+  useEffect(() => {
+    getAllCompanyCodes(
+      globalState?.user?.company_id || 0,
+      undefined,
+      undefined,
+      undefined,
+      `equals(code_type,POSITION)`
+    ).then((res) => {
+      setCodeList(res.data);
+    });
+  }, []);
+
   return (
     <div>
       <Modal
@@ -156,7 +171,7 @@ const CreateScheduleModal = (props: IProps) => {
             <Select onChange={(e) => setSelectedPosition(e.target.value)}>
               {Object.keys(positions).map((position, index) => (
                 <option key={index} value={position}>
-                  {position}
+                  {codeList.find((c) => c.code === position)?.description || position}
                 </option>
               ))}
             </Select>
@@ -188,7 +203,7 @@ const CreateScheduleModal = (props: IProps) => {
                 <div className="my-2" key={index}>
                   {positionSelectedCount[position] > 0 && (
                     <div>
-                      {position} - {positionSelectedCount[position]}
+                      {codeList.find((c) => c.code === position)?.description || position} - {positionSelectedCount[position]}
                     </div>
                   )}
                 </div>
