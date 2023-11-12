@@ -40,9 +40,18 @@ const PersonalDateBox = ({
       <div className="flex items-center justify-between">
         <p>{date.date()}</p>
         <div className="rounded-full">
-          {rosterType === "SHIFT" &&
-            moment(schedule?.start_date).isAfter(new Date()) && (
-              <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
+          {moment(schedule?.start_date).isAfter(new Date()) && (
+            <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
+              <Dropdown.Item
+                onClick={() => {
+                  navigate(`/${PATHS.SCHEDULE}/${PATHS.VIEW_PERSONAL_SCHEDULE}`, {
+                    state: { schedule },
+                  });
+                }}
+              >
+                View
+              </Dropdown.Item>
+              {rosterType === "SHIFT" && (
                 <Dropdown.Item
                   onClick={() => {
                     navigate(`/${PATHS.REQUESTS}/${PATHS.ADD_SWAP_REQUEST}`, {
@@ -52,8 +61,9 @@ const PersonalDateBox = ({
                 >
                   Swap
                 </Dropdown.Item>
-              </Dropdown>
-            )}
+              )}
+            </Dropdown>
+          )}
         </div>
       </div>
       <br />
@@ -65,16 +75,24 @@ const PersonalDateBox = ({
       {date.isAfter(moment(new Date())) && schedule ? (
         <div>
           <div className="bg-green-300 rounded p-1">
-            <p className="font-bold text-sm text-black">{schedule.roster?.location?.name}</p>
-            <p className="font-bold text-sm text-black">{schedule?.roster?.type}</p>
+            <p className="font-bold text-sm text-black">
+              {schedule.roster?.location?.name}
+            </p>
+            <p className="font-bold text-sm text-black">
+              {schedule?.roster?.type}
+            </p>
             {/* <p className="font-bold text-sm text-black">{schedule?.status}</p> */}
           </div>
         </div>
       ) : date.isBefore(moment(new Date())) && schedule ? (
         <div>
           <div className="bg-red-300 rounded p-1">
-            <p className="font-bold text-sm text-black">{schedule.roster?.location?.name}</p>
-            <p className="font-bold text-sm text-black">{schedule?.roster?.type}</p>
+            <p className="font-bold text-sm text-black">
+              {schedule.roster?.location?.name}
+            </p>
+            <p className="font-bold text-sm text-black">
+              {schedule?.roster?.type}
+            </p>
             {/* <p className="font-bold text-sm text-black">{schedule?.status}</p> */}
           </div>
         </div>

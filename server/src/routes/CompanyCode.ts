@@ -19,12 +19,12 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
       company_id: Number(company_id),
     };
 
-    const companyCodes = await prisma.$transaction([
-      prisma.companyCode.count({where: findObject.where}),
+    const companyCodes = (await prisma.$transaction([
+      prisma.companyCode.count({ where: findObject.where }),
       prisma.companyCode.findMany(findObject),
-    ]) as [number, any[]];
+    ])) as [number, any[]];
 
-    for(let companyCode of companyCodes[1]) {
+    for (let companyCode of companyCodes[1]) {
       if (companyCode.code_type === "LEAVE_TYPE") {
         const balance = await prisma.companyLeaveBalance.findFirst({
           where: {
@@ -45,10 +45,10 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
       size
     );
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving company codes.");
+    return res.status(400).send("Error retrieving company codes.");
   }
 });
 
@@ -77,8 +77,7 @@ companyCodeRouter.post("/create-update", async (req, res) => {
 
       // return error if code type already exists
       if (existing_code_type !== null) {
-        res.status(400).send("Code type already exists");
-        return;
+        return res.status(400).send("Code type already exists");
       } else {
         // create new code type
         await prisma.$transaction(async (tx) => {
@@ -104,44 +103,70 @@ companyCodeRouter.post("/create-update", async (req, res) => {
     let companyCode;
 
     if (id) {
-      companyCode = await prisma.companyCode.update({
-        where: {
-          company_id_id: {
-            company_id: company_id,
-            id: id,
+      companyCode = await prisma.$transaction(async (tx) => {
+        // const existing_code = await tx.companyCode.findFirst({
+        //   where: {
+        //     id: id,
+        //     company_id: company_id,
+        //   },
+        // });
+      
+        const updated_company_code = await tx.companyCode.update({
+          where: {
+            company_id_id: {
+              company_id: company_id,
+              id: id,
+            },
           },
-        },
-        data: {
-          code_type: code_type,
-          code: code.toLocaleUpperCase().trim(),
-          description: description.toLocaleUpperCase().trim(),
-          status: status,
-          updated_by: logged_in_user?.name,
-          // updated_date: new Date(),
-        },
-      });
+          data: {
+            code_type: code_type,
+            code: code.toLocaleUpperCase().trim(),
+            description: description.toLocaleUpperCase().trim(),
+            status: status,
+            updated_by: logged_in_user?.name,
+            // updated_date: new Date(),
+          },
+        });
 
-      await prisma.companyLeaveBalance.upsert({
-        where: {
-          company_id_leave_type: {
-            company_id: company_id,
-            leave_type: code,
-          },
-        },
-        create: {
-          balance: Number(leave_balance),
-          company_id: company_id,
-          leave_type: code,
-          created_by: logged_in_user?.name,
-          updated_by: logged_in_user?.name,
-        },
-        update: {
-          balance: Number(leave_balance),
-          updated_by: logged_in_user?.name,
-        },
+        if (code_type === "LEAVE_TYPE") {
+          await tx.companyLeaveBalance.upsert({
+            where: {
+              company_id_leave_type: {
+                company_id: company_id,
+                leave_type: code,
+              },
+            },
+            create: {
+              company_id: company_id,
+              balance: Number(leave_balance),
+              leave_type: code,
+              created_by: logged_in_user?.name,
+              updated_by: logged_in_user?.name,
+            },
+            update: {
+              balance: Number(leave_balance),
+              updated_by: logged_in_user?.name,
+            },
+          });
+        }
+
+        // // need to update existing employees' position code if position code is updated
+        // if(existing_code?.code_type === "POSITION" && existing_code.code !== code) {
+        //   await tx.user.updateMany({
+        //     where: {
+        //       company_id: company_id,
+        //       position: existing_code.code,
+        //     },
+        //     data: {
+        //       position: code,
+        //     }
+        //   });
+        // }
+
+        return updated_company_code;
       });
     } else {
-      companyCode = prisma.$transaction(async (tx) => {
+      companyCode = await prisma.$transaction(async (tx) => {
         return await tx.companyCode.create({
           data: {
             code_type: code_type,
@@ -173,9 +198,11 @@ companyCodeRouter.post("/create-update", async (req, res) => {
       }
     }
 
-    res.status(200).json(generateResultJson(companyCode));
+    return res.status(200).json(generateResultJson(companyCode));
   } catch (error) {
     console.error(error);
-    res.status(400).send(`Error ${id ? "updating" : "creating"} company code.`);
+    return res
+      .status(400)
+      .send(`Error ${id ? "updating" : "creating"} company code.`);
   }
 });

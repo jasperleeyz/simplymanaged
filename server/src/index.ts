@@ -1,7 +1,13 @@
 import { PrismaClient } from "@prisma/client";
 import express from "express";
 import { routes } from "./routes/index";
-import { checkPassword, generatePasswordResetToken, generateSalt, hashPassword, verifyPasswordResetToken } from "./utils/security";
+import {
+  checkPassword,
+  generatePasswordResetToken,
+  generateSalt,
+  hashPassword,
+  verifyPasswordResetToken,
+} from "./utils/security";
 import { sendPasswordResetEmail, sendRejectedEmail } from "./utils/email";
 import { USER_STATUS } from "./utils/constants";
 import { ValidationError } from "./errors/validation-error";
@@ -28,11 +34,16 @@ app.use(express.static(path.join(__dirname, "../client/build")));
 
 // set cors options
 const corsOptions = {
-  origin: process.env.WEBPAGE_URL,
-  optionsSuccessStatus: 200,
+  origin: "*",
+  methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+  allowedHeaders: "Access-Control-Allow-Headers,Access-Control-Allow-Origin,Access-Control-Request-Method,Access-Control-Request-Headers,Authorization,Origin,Cache-Control,Content-Type,X-Token,X-Refresh-Token",   
+  // credentials: true,   
+  preflightContinue: false,
+  optionsSuccessStatus: 204,
 };
 // use cors
 app.use(cors(corsOptions));
+// app.options("*", cors());
 
 // to parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
@@ -48,40 +59,9 @@ app.use(auth);
 
 // create logger
 
-
 // use master router
 app.use("/api", routes);
 
-app.post(`/test/email`, async (req, res) => {
-  // console.info("In " + req.path);
-  try {
-    await sendRejectedEmail(
-      "jasperleejk@gmail.com",
-      "Jasper Lee",
-      "SIM Global Education",
-      // {username: "jasperleejk@gmail.com", password: "password"}
-    ).then(() => {
-      res.status(200).send("Email sent");
-    }).catch((error) => {
-      console.error(error);
-      res.status(400).send("Error sending email.");
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(400).send("Error sending email.");
-  }
-});
-
-app.post(`/test/encoding`, async (req, res) => {
-  try {
-    const buf = Buffer.from(req.body.profile_image);
-
-    res.status(200).send(buf.toString());
-  } catch (error) {
-    console.error(error);
-    res.status(400).send("Error encoding.");
-  }
-});
 
 app.post(`/api/login`, async (req, res) => {
   try {
@@ -90,55 +70,22 @@ app.post(`/api/login`, async (req, res) => {
       throw new ValidationError("Both email and password are required");
     }
 
-    // TODO: to remove after testing
-    const getRole = (email: string) => {
-      if (email === "superadmin@email.com") return "SA";
-      else if (email === "systemadmin@email.com") return "A";
-      else if (email === "manager@email.com") return "M";
-      else return "E";
-    };
-    // TODO: to remove if else after testing
-    let user = undefined;
-    if (
-      [
-        "superadmin@email.com",
-        "systemadmin@email.com",
-        "manager@email.com",
-        "employee@email.com",
-      ].includes(email)
-    ) {
-      user = {
+    const user = await prisma.user.findFirst({
+      where: {
         email: email,
-        password: hashPassword("password", generateSalt()),
-        role: getRole(email),
-        fullname: "Gojo Satoru",
-        id: 0,
-        company_id: 0,
-        contact_no: "99999999",
-        position: "STORE MANAGER",
-        status: "A",
-        employment_details: {
-          user_id: 0,
-          user_company_id: 0,
-          working_hours: 8,
-          employment_type: "FULL-TIME",
-        },
-        profile_image:
-          "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
-        preferences: [],
-      };
-    } else {
-      user = await prisma.user.findFirst({
-        where: {
-          email: email,
-          status: USER_STATUS.ACTIVE,
-        },
-      });
-    }
+        status: USER_STATUS.ACTIVE,
+      },
+    });
 
     if (user && checkPassword(password, user.password)) {
       const token = jwt.sign(
-        { user_id: user.id, company_id: user.company_id, email: user.email, name: user.fullname, role: user.role },
+        {
+          user_id: user.id,
+          company_id: user.company_id,
+          email: user.email,
+          name: user.fullname,
+          role: user.role,
+        },
         process.env.JWT_SECRET,
         {
           expiresIn: "1d", // expires in 24 hours
@@ -147,15 +94,15 @@ app.post(`/api/login`, async (req, res) => {
 
       jwt.verify(token, process.env.JWT_SECRET);
 
-      user.profile_image = user?.profile_image?.toString() as string;
+      user.profile_image = user?.profile_image?.toString() as any;
       const { password, ...userWithoutPassword } = user;
 
-      res.status(200).json({
+      return res.status(200).json({
         user: userWithoutPassword,
         bearerToken: token,
       });
     } else {
-      res.status(400).send("Invalid email or password");
+      return res.status(400).send("Invalid email or password");
     }
   } catch (error) {
     console.error(error);
@@ -163,13 +110,12 @@ app.post(`/api/login`, async (req, res) => {
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 
-
-app.post('/api/forget-password', async (req, res) => {
-  try{
+app.post("/api/forget-password", async (req, res) => {
+  try {
     const { email } = req.body;
     if (!email) {
       throw new ValidationError("Email is required");
@@ -182,31 +128,35 @@ app.post('/api/forget-password', async (req, res) => {
       },
     });
 
-    if(user) {
+    if (user) {
       // generate token for password reset validation
       const token = generatePasswordResetToken(email);
       await sendPasswordResetEmail(email, user.fullname, token);
     }
 
-    res.status(200).json({data: "success"});
+    return res.status(200).json({ data: "success" });
   } catch (error) {
     console.error(error);
     let message = "Error encountered. Please try again later.";
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 
 app.post("/api/reset-password", async (req, res) => {
-  try{
-    const { user, password: passwordB64, confirm_password: confirmPasswordB64 } = req.body;
+  try {
+    const {
+      user,
+      password: passwordB64,
+      confirm_password: confirmPasswordB64,
+    } = req.body;
 
     if (!user || !passwordB64 || !confirmPasswordB64) {
       throw new ValidationError("Missing required params.");
     }
-    if(passwordB64 !== confirmPasswordB64) {
+    if (passwordB64 !== confirmPasswordB64) {
       throw new ValidationError("Passwords do not match.");
     }
 
@@ -227,20 +177,19 @@ app.post("/api/reset-password", async (req, res) => {
       },
     });
 
-    res.status(200).json({data: "success"});
+    return res.status(200).json({ data: "success" });
   } catch (error) {
     console.error(error);
     let message = "Error encountered. Please try again later.";
     if (error instanceof ValidationError) {
       message = error.message;
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
 
-
 app.post("/api/reset-password/:token", async (req, res) => {
-  try{
+  try {
     const { token } = req.params;
     const decoded = verifyPasswordResetToken(token);
 
@@ -256,10 +205,10 @@ app.post("/api/reset-password/:token", async (req, res) => {
         email: true,
         fullname: true,
         company_id: true,
-      }
+      },
     });
 
-    res.status(200).json({data: user});
+    return res.status(200).json({ data: user });
   } catch (error) {
     console.error(error);
     let message = "Error encountered. Please try again later.";
@@ -268,10 +217,9 @@ app.post("/api/reset-password/:token", async (req, res) => {
     } else if (error instanceof jwt.JsonWebTokenError) {
       message = "invalid";
     }
-    res.status(400).send(message);
+    return res.status(400).send(message);
   }
 });
-
 
 app.get("*", (req, res) => {
   // res.sendFile(path.resolve(__dirname, '../../client/build', 'index.html'))

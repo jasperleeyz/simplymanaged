@@ -15,6 +15,7 @@ import { IApplicationCode } from "../../shared/model/application.model";
 import { getAllCodes } from "../../shared/api/code.api";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import moment from "moment";
+import { isNumber, validEmail } from "../../configs/utils";
 
 const CompanyPage = () => {
   const companyId =
@@ -28,9 +29,9 @@ const CompanyPage = () => {
 
   React.useEffect(() => {
     Promise.all([
-      // getCompanyById(companyId || 0).then((response) => {
-      //   setCompany(response.data);
-      // }),
+      getCompanyById(companyId || 0).then((response) => {
+        setCompany(response.data);
+      }),
       getAllCodes(
         undefined,
         undefined,
@@ -67,8 +68,14 @@ const CompanySchema = (industryList: IApplicationCode[]) =>
   Yup.object().shape({
     uen: Yup.string().required("Field is required"),
     address: Yup.string().required("Field is required"),
-    contact_no: Yup.string().required("Field is required"),
-    email: Yup.string().email("Invalid email").required("Field is required"),
+    contact_no: Yup.string()
+      .length(8, "Contact No. must be 8 digits")
+      .test("is-number", "Contact No. must be a number", (val) => isNumber(val))
+      .required("Field is required"),
+    email: Yup.string()
+      .email("Invalid email")
+      .test("valid-email", "Invalid email", (val) => validEmail(val))
+      .required("Field is required"),
     name: Yup.string().required("Field is required"),
     industry: Yup.string()
       .test("within-list", "Invalid industry", (value) => {
@@ -395,7 +402,7 @@ const getBody = (company, navigate, industryList) => {
         </div>
       </div>
       {/*MAYBE NOT NEEDED*/}
-      <p className="mt-4 font-bold text-xl" style={{ color: "#1E90FF" }}>
+      {/* <p className="mt-4 font-bold text-xl" style={{ color: "#1E90FF" }}>
         Manage subscription
       </p>
       <div className="grid grid-cols-4">
@@ -413,7 +420,7 @@ const getBody = (company, navigate, industryList) => {
       <div className="grid grid-cols-4">
         <p className="mt-3 text-md">Cost</p>
         <p className="mt-3 font-bold text-md">Free</p>
-      </div>
+      </div> */}
     </>
   );
 };

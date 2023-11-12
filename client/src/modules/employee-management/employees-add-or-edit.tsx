@@ -5,7 +5,7 @@ import { Formik } from "formik";
 import * as Yup from "yup";
 import { Avatar, Button, FileInput, Label } from "flowbite-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { MAX_PROFILE_IMAGE_SIZE, PATHS } from "../../configs/constants";
+import { CODE_STATUS, MAX_PROFILE_IMAGE_SIZE, PATHS } from "../../configs/constants";
 import LabeledTextInput from "../../shared/layout/form/labeled-text-input";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import { toast } from "react-toastify";
@@ -104,7 +104,7 @@ const AddOrEditUser = () => {
         undefined,
         undefined,
         undefined,
-        "in(code_type,[position,employment_type])"
+        `in(code_type,[position,employment_type]),equals(status,${CODE_STATUS.ACTIVE})`
       )
         .then((res) => {
           setCodeList(res.data);

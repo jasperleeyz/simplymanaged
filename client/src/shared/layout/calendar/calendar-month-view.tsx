@@ -82,7 +82,6 @@ const CalendarMonthView = ({
         .then((res) => {
           if(globalState?.user?.role == ROLES.MANAGER)
           {
-            console.log(res.data)
             setRosterList(res.data);
           }
           else{
@@ -107,9 +106,12 @@ const CalendarMonthView = ({
             setRosterList(filteredResData)
           }
         })
-        .finally(() => {setLoading((prev) => false);});
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
   }, [isPersonal, month, year, location]);
+
 
   /*const scheduleForMonth = scheduleList?.filter(
     (schedule) =>

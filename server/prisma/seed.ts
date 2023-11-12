@@ -144,6 +144,12 @@ const companyData: Prisma.CompanyCreateInput[] = [
         updated_by: "SYSTEM",
         updated_date: new Date(),
         password: hashPassword(process.env.SA_PW || "password", generateSalt()),
+        employment_details: {
+          create: {
+            employment_type: null,
+            working_hours: null,
+          },
+        }
       },
     },
   },

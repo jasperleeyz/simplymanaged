@@ -21,14 +21,37 @@ locationRouter.get("/:company_id", async (req, res) => {
       prisma.companyLocation.findMany(findObject),
     ]);
 
-    res
+    return res
       .status(200)
       .json(generateResultJson(locations[1], locations[0], page, size));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting locations.");
+    return res.status(400).send("Error getting locations.");
   }
 });
+
+locationRouter.get("/:company_id/:location_id", async (req, res) => {
+  const { company_id, location_id } = req.params;
+
+  try {
+    const location = await prisma.companyLocation.findUnique({
+      where: {
+        id_company_id: {
+          id: Number(location_id),
+          company_id: Number(company_id),
+        },
+      },
+    });
+    
+    return res
+      .status(200)
+      .json(generateResultJson(location));
+  } catch (error) {
+    console.error(error);
+    return res.status(400).send("Error getting location.");
+  }
+});
+
 
 locationRouter.post("/create-update", async (req, res) => {
     const { id, company_id, name, address } = req.body;
@@ -67,9 +90,9 @@ locationRouter.post("/create-update", async (req, res) => {
         });
       }
   
-      res.status(200).json(generateResultJson(loc));
+      return res.status(200).json(generateResultJson(loc));
     } catch (error) {
       console.error(error);
-      res.status(400).send(`Error ${id ? "updating": "adding"} location.`);
+      return res.status(400).send(`Error ${id ? "updating": "adding"} location.`);
     }
   });

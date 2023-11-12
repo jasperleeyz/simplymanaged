@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, UserSchedule } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { ValidationError } from "../errors/validation-error";
@@ -6,6 +6,7 @@ import { ValidationError } from "../errors/validation-error";
 export const UserScheduleRouter = express.Router();
 
 const prisma = new PrismaClient();
+
 
 UserScheduleRouter.get(
   "/get-schedule/:user_company_id/:user_id",
@@ -34,10 +35,10 @@ UserScheduleRouter.get(
         size
       );
 
-      res.status(200).json(result);
+      return res.status(200).json(result);
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error retrieving user schedules.");
+      return res.status(400).send("Error retrieving user schedules.");
     }
   }
 );
@@ -87,14 +88,14 @@ UserScheduleRouter.get(
       }
 
       const resultz = generateResultJson(result);
-      res.status(200).json(resultz);
+      return res.status(200).json(resultz);
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error retrieving user schedules.");
+      return res.status(400).send("Error retrieving user schedules.");
     }
   }
 );
-
+/*
 UserScheduleRouter.get(
   "/get-non-conflict-user/:user_company_id/:deparment_id/:start_date/:end_date",
   async (req, res) => {
@@ -136,7 +137,99 @@ UserScheduleRouter.get(
         size
       );
 
-      res.status(200).json(result);
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error(error);
+      return res.status(400).send("Error checking user schedules for conflicts.");
+    }
+  }
+);
+*/
+UserScheduleRouter.get(
+  "/get-non-conflict-user/:user_company_id/:department_id/:start_date/:end_date",
+  async (req, res) => {
+    const { user_company_id, department_id, start_date, end_date } = req.params;
+
+    try {
+      const firstDay = new Date(start_date);
+      firstDay.setDate(firstDay.getDate() - firstDay.getDay());
+
+      const lastDay = new Date(end_date);
+      lastDay.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+
+      const rawWeekSchedule: { id: number; user_id: number; user_company_id: number; roster_id: number; start_date: Date; end_date: Date; shift: string; status: string; created_by: string; created_date: Date; updated_by: string; updated_date: Date; }[][] = await prisma.$transaction([
+        prisma.userSchedule.findMany({
+          where: {
+            user_company_id: Number(user_company_id),
+            start_date: { gte: firstDay },
+            end_date: { lte: lastDay },
+          },
+        }),
+      ]);
+
+      const getWeekSchedule: UserSchedule[] = rawWeekSchedule.flat();
+
+      const employeeIdTaggedHour: Record<number, number> = {};
+      getWeekSchedule.forEach((entry: UserSchedule) => {
+        const { user_id, shift, start_date } = entry;
+
+        let hours = 0;
+
+        if (shift === 'AM' || shift === 'PM') {
+          // If shift is AM or PM, add 4 hours
+          hours = 4;
+        } else if (shift === 'FULL') {
+          // If shift is full, add 8 hours
+          hours = 8;
+        }
+        if (!employeeIdTaggedHour[user_id]) {
+          employeeIdTaggedHour[user_id] = 0;
+      }
+
+        employeeIdTaggedHour[user_id] = employeeIdTaggedHour[user_id] + hours;
+      });
+
+      // Fetch schedules that do not conflict with the specified date range
+      const nonConflictingSchedules = await prisma.$transaction([
+        prisma.userSchedule.findMany({
+          where: {
+            user_company_id: Number(user_company_id),
+            start_date: { lte: new Date(end_date) },
+            end_date: { gte: new Date(start_date) },
+          },
+        }),
+      ]);
+
+      const nonConflictingUserIds = nonConflictingSchedules[0].map(
+        (schedule) => schedule.user_id
+      );
+
+      const employees = await prisma.$transaction([
+        prisma.user.findMany({
+          where: {
+            NOT: {
+              id: {
+                in: nonConflictingUserIds,
+              },
+            },
+            company_id: Number(user_company_id),
+            department_id: Number(department_id),
+          },
+          include: {
+            employment_details: true,
+          },
+        }),
+      ]);
+
+      const employeesWithWorkingHours = employees.flat().filter((employee) => {
+        const employeeWorkingHours = employee.employment_details?.working_hours || 0;
+        const dataWorkingHours = employeeIdTaggedHour[employee.id] || 0;
+
+        // Include the employee if their working hours are greater than the data
+        return Number(employeeWorkingHours) > Number(dataWorkingHours);
+      });
+
+      res.status(200).json(generateResultJson(employeesWithWorkingHours));
     } catch (error) {
       console.error(error);
       res.status(400).send("Error checking user schedules for conflicts.");
@@ -145,36 +238,88 @@ UserScheduleRouter.get(
 );
 
 UserScheduleRouter.get(
-  "/get-non-conflict-user-roster/:user_company_id/:roster_id/:start_date/:end_date",
+  "/get-non-conflict-user-roster/:user_company_id/:department_id/:roster_id/:start_date/:end_date",
   async (req, res) => {
-    const { page, size, sort, filter } = req.query;
-    const { user_company_id, roster_id, start_date, end_date } = req.params;
+    const { user_company_id, department_id, roster_id, start_date, end_date } = req.params;
 
     try {
-      const findObject = generateFindObject(page, size, sort, filter);
-      findObject.where = {
-        ...findObject.where,
-        company_id: Number(user_company_id),
-      };
+      const firstDay = new Date(start_date);
+      firstDay.setDate(firstDay.getDate() - firstDay.getDay());
+
+      const lastDay = new Date(end_date);
+      lastDay.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+
+      const rawWeekSchedule: { id: number; user_id: number; user_company_id: number; roster_id: number; start_date: Date; end_date: Date; shift: string; status: string; created_by: string; created_date: Date; updated_by: string; updated_date: Date; }[][] = await prisma.$transaction([
+        prisma.userSchedule.findMany({
+          where: {
+            user_company_id: Number(user_company_id),
+            start_date: { gte: firstDay },
+            end_date: { lte: lastDay },
+          },
+        }),
+      ]);
+
+      const getWeekSchedule: UserSchedule[] = rawWeekSchedule.flat();
+
+      const employeeIdTaggedHour: Record<number, number> = {};
+      getWeekSchedule.forEach((entry: UserSchedule) => {
+        const { user_id, shift, start_date } = entry;
+
+        let hours = 0;
+
+        if (shift === 'AM' || shift === 'PM') {
+          // If shift is AM or PM, add 4 hours
+          hours = 4;
+        } else if (shift === 'FULL') {
+          // If shift is full, add 8 hours
+          hours = 8;
+        }
+        if (!employeeIdTaggedHour[user_id]) {
+          employeeIdTaggedHour[user_id] = 0;
+      }
+
+        employeeIdTaggedHour[user_id] = employeeIdTaggedHour[user_id] + hours;
+      });
 
       // Fetch schedules that do not conflict with the specified date range
       const nonConflictingSchedules = await prisma.$transaction([
         prisma.userSchedule.findMany({
           where: {
             user_company_id: Number(user_company_id),
-            start_date: { lte: new Date(end_date) }, // Start date is before the end date
-            end_date: { gte: new Date(start_date) }, // End date is after the start date
+            start_date: { lte: new Date(end_date) },
+            end_date: { gte: new Date(start_date) },
           },
         }),
       ]);
+
       const nonConflictingUserIds = nonConflictingSchedules[0].map(
         (schedule) => schedule.user_id
       );
-      const allUsers = await prisma.user.findMany(findObject);
 
-      const usersWithoutConflicts = allUsers.filter(
-        (user) => !nonConflictingUserIds.includes(user.id)
-      );
+      const employees = await prisma.$transaction([
+        prisma.user.findMany({
+          where: {
+            NOT: {
+              id: {
+                in: nonConflictingUserIds,
+              },
+            },
+            company_id: Number(user_company_id),
+            department_id: Number(department_id),
+          },
+          include: {
+            employment_details: true,
+          },
+        }),
+      ]);
+
+      const employeesWithWorkingHours = employees.flat().filter((employee) => {
+        const employeeWorkingHours = employee.employment_details?.working_hours || 0;
+        const dataWorkingHours = employeeIdTaggedHour[employee.id] || 0;
+
+        // Include the employee if their working hours are greater than the data
+        return Number(employeeWorkingHours) > Number(dataWorkingHours);
+      });
 
       const rosterUsers = await prisma.userSchedule.findMany({
         where: {
@@ -185,32 +330,25 @@ UserScheduleRouter.get(
         },
       });
 
-// Extract user data from the rosterUsers
-const rosterUserIds = rosterUsers.map((schedule) => schedule.user.id);
+      // Extract user data from the rosterUsers
+      const rosterUserIds = rosterUsers.map((schedule) => schedule.user.id);
 
-// Query users based on the rosterUserIds
-const usersFromRoster = await prisma.user.findMany({
-  where: {
-    id: {
-      in: rosterUserIds,
-    },
-  },
-});
+      // Query users based on the rosterUserIds
+      const usersFromRoster = await prisma.user.findMany({
+        where: {
+          id: {
+            in: rosterUserIds,
+          },
+        },
+      });
 
-// Combine the results from usersWithoutConflicts and usersFromRoster
-const combinedUsers = [...usersWithoutConflicts, ...usersFromRoster];
+      // Combine the results from usersWithoutConflicts and usersFromRoster
+      const combinedUsers = [...employeesWithWorkingHours, ...usersFromRoster];
 
-      const result = generateResultJson(
-        combinedUsers,
-        combinedUsers.length,
-        page,
-        size
-      );
-
-      res.status(200).json(result);
+      return res.status(200).json(generateResultJson(combinedUsers));
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error checking user schedules for conflicts.");
+      return res.status(400).send("Error checking user schedules for conflicts.");
     }
   }
 );
@@ -243,13 +381,13 @@ UserScheduleRouter.post("/create", async (req, res) => {
           updated_by,
         },
       });
-      res.status(200).json({
+      return res.status(200).json({
         schedule: createdSchedule,
       });
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating schedule.");
+    return res.status(400).send("Error creating schedule.");
   }
 });
 
@@ -272,16 +410,17 @@ UserScheduleRouter.get(
         include: {
           roster: {
             select: {
+              location_id: true,
               type: true,
             },
           },
         },
       });
 
-      res.status(200).json(generateResultJson(userSchedules));
+      return res.status(200).json(generateResultJson(userSchedules));
     } catch (error) {
       console.error(error);
-      res.status(400).send("Error retrieving user schedules.");
+      return res.status(400).send("Error retrieving user schedules.");
     }
   }
 );
@@ -308,7 +447,7 @@ UserScheduleRouter.get("/all-upcoming-shift-schedules", async (req, res) => {
     return res.status(200).json(generateResultJson(schedules));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving upcoming shift schedules.");
+    return res.status(400).send("Error retrieving upcoming shift schedules.");
   }
 });
 
@@ -335,7 +474,7 @@ UserScheduleRouter.get(
           },
         },
       });
-      
+
       // only retrieve schedules that are full shift and not same date as the selected schedule's date
       // if the selected schedule for swapping is full shift
       if ((shift as string).toUpperCase() === "FULL") {
@@ -426,7 +565,7 @@ UserScheduleRouter.get(
       if (error instanceof ValidationError) {
         message = error.message;
       }
-      res.status(400).send(message);
+      return res.status(400).send(message);
     }
   }
 );

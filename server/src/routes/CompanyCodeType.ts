@@ -30,9 +30,9 @@ companyCodeTypeRouter.get("/:company_id", async (req, res) => {
       size
     );
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving company code types.");
+    return res.status(400).send("Error retrieving company code types.");
   }
 });

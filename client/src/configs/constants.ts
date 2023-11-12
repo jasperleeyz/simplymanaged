@@ -29,6 +29,7 @@ export const PATHS = {
   CREATE_SCHEDULE: "create-schedule",
   EDIT_SCHEDULE: "edit-schedule",
   VIEW_SCHEDULE: "view-schedule",
+  VIEW_PERSONAL_SCHEDULE: "view-personal-schedule",
 
   MY_PROFILE: "my-profile",
   EDIT_PROFILE: "edit",
@@ -134,8 +135,8 @@ export const CODE_TYPE = {
 }
 
 export const PREFERENCE = {
-  PREFFERED_WORK_DAYS: "PREFFERED_WORK_DAYS",
-  PREFFERED_WORK_SHIFT: "PREFFERED_WORK_SHIFT",
+  PREFERRED_WORKING_DAYS: "PREFERRED_WORKING_DAYS",
+  PREFERRED_WORKING_SHIFT: "PREFERRED_WORKING_SHIFT",
 }
 
 export const MAX_PROFILE_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB

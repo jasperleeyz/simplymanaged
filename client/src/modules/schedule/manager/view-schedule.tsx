@@ -21,22 +21,23 @@ const ViewSchedule = () => {
   const roster = location.state?.roster as IRoster[];
   const type = location.state?.type as string;
   const startDate = moment(new Date(roster[0].start_date));
-  const [rosterToDelete, setRosterToDelete] = React.useState<IRoster | null>(null);
+  const [rosterToDelete, setRosterToDelete] = React.useState<IRoster | null>(
+    null
+  );
   const [submitLoading, setSubmitLoading] = React.useState(false);
   useEffect(() => {
-    if(submitLoading && rosterToDelete){
+    if (submitLoading && rosterToDelete) {
       deleteRoster(rosterToDelete).finally(() => {
         toast.success("Roster delete successfully");
         navigate(`/${PATHS.SCHEDULE}`, { replace: true });
-        setRosterToDelete(null)
-        setSubmitLoading(false)
-      })
+        setRosterToDelete(null);
+        setSubmitLoading(false);
+      });
     }
   }, [submitLoading]);
 
   const [openModal, setOpenModal] = React.useState(false);
   const modalProps = { openModal, setOpenModal };
-  console.log(roster);
   return (
     <div id="schedule-details-main">
       <p className="header">Schedule Details</p>
@@ -50,63 +51,70 @@ const ViewSchedule = () => {
           <Label htmlFor="schedule-employees" value="Scheduled Employees" />
           <div id="schedule-employees">
             {roster.map((rosteridx, idx) => (
-              <div className = "mt-2">
+              <div key={idx} className="mt-2">
                 <div className="flex">
-                <p style={{ marginRight: '10px' }}>Created by: {rosteridx.created_by}</p>
-                <p style={{ marginRight: '10px' }}>Start Date: {new Date(rosteridx.start_date).toLocaleDateString()}</p>
-                <p>End Date: {new Date(rosteridx.end_date).toLocaleDateString()}</p>
+                  <p style={{ marginRight: "10px" }}>
+                    Created by: {rosteridx.created_by}
+                  </p>
+                  <p style={{ marginRight: "10px" }}>
+                    Start Date:{" "}
+                    {new Date(rosteridx.start_date).toLocaleDateString()}
+                  </p>
+                  <p>
+                    End Date:{" "}
+                    {new Date(rosteridx.end_date).toLocaleDateString()}
+                  </p>
                 </div>
-              <div className="border border-solid border-black p-2 mt-2">
-                <p>{rosteridx.type}</p>
-                <div key={idx} className=" grid grid-cols-5 gap-4">
-                  {rosteridx.schedules?.map((schedule, scheduleIdx) => (
-                    <div key={scheduleIdx}>
-                      <p>{capitalizeString(schedule.user?.fullname || "")}</p>
-                      <p>{capitalizeString(schedule.user?.position || "")}</p>
-                      <p>{schedule.shift} Shift</p>
-                      <p>{schedule.user?.contact_no}</p>
+                <div className="border border-solid border-black p-2 mt-2">
+                  <p>{rosteridx.type}</p>
+                  <div key={idx} className=" grid grid-cols-5 gap-4">
+                    {rosteridx.schedules?.map((schedule, scheduleIdx) => (
+                      <div key={`${idx}-${scheduleIdx}`}>
+                        <Avatar
+                          size="md"
+                          img={schedule.user?.profile_image || ""}
+                          rounded
+                          style={{ display: "inline-block", margin: "0" }}
+                        />
+                        <p>{capitalizeString(schedule.user?.fullname || "")}</p>
+                        <p>{capitalizeString(schedule.user?.position || "")}</p>
+                        <p>{schedule.shift} Shift</p>
+                        <p>{schedule.user?.contact_no}</p>
+                      </div>
+                    ))}
+                  </div>
+                  {startDate.isSameOrAfter(moment(), "day") && (
+                    <div
+                      className="mt-4 flex"
+                      style={{ justifyContent: "flex-end" }}
+                    >
+                      <EditButton
+                        size="sm"
+                        style={{ marginRight: "10px" }}
+                        onClick={() => {
+                          navigate(
+                            `/${PATHS.SCHEDULE}/${PATHS.EDIT_SCHEDULE}`,
+                            {
+                              state: { rosteridx },
+                              replace: true,
+                            }
+                          );
+                        }}
+                      />
+                      <DeleteButton
+                        size="sm"
+                        onClick={() => {
+                          setRosterToDelete(rosteridx);
+                          setSubmitLoading(true);
+                        }}
+                      />
                     </div>
-                  ))}
+                  )}
                 </div>
-                {startDate.isSameOrAfter(moment(), 'day') && (
-                  <div className="mt-4 flex" style={{ justifyContent: "flex-end" }}>
-                  <EditButton size="sm" style={{ marginRight: "10px" }} onClick={() => {
-                    navigate(`/${PATHS.SCHEDULE}/${PATHS.EDIT_SCHEDULE}`, {
-                      state: { rosteridx },
-                      replace: true
-                    });
-                  }}/>
-                  <DeleteButton size="sm"
-                  onClick={() => {
-                    setRosterToDelete(rosteridx);
-                    setSubmitLoading(true);
-                    }} />
-                </div>
-                )}
-              </div>
               </div>
             ))}
-            {/* {schedule.employeesSelected.map((employee, idx) => (
-              <div key={idx} className="flex mt-4">
-                <Avatar size="sm" img={employee.profileImage} rounded>
-                  <p>{capitalizeString(employee.name)}</p>
-                  <p>{capitalizeString(employee.position)}</p>
-                  <p>{employee.shift} Shift</p>
-                  <p>{employee.phoneNo}</p>
-                </Avatar>
-              </div>
-            ))} */}
           </div>
         </div>
-        {/*
-        <div className="mt-4 col-span-2">
-          <div className="flex gap-4">
-            <BackButton size="sm" />
-            <EditButton size="sm" />
-            <DeleteButton size="sm" />
-          </div>
-        </div>
-*/}
       </div>
     </div>
   );

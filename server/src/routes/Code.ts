@@ -20,10 +20,10 @@ codeRouter.get("/", async (req, res) => {
     // create result object
     const result = generateResultJson(codes[1], codes[0], page, size);
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving codes.");
+    return res.status(400).send("Error retrieving codes.");
   }
 });
 
@@ -60,7 +60,7 @@ codeRouter.get("/registration", async (req, res) => {
       return newCode;
     }).sort((a, b) => a.code - b.code);
 
-    res.status(200).json(
+    return res.status(200).json(
       generateResultJson({
         industry: industry_codes,
         no_of_employees: updated_no_of_employees_codes,
@@ -68,7 +68,7 @@ codeRouter.get("/registration", async (req, res) => {
     );
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving codes.");
+    return res.status(400).send("Error retrieving codes.");
   }
 });
 
@@ -83,13 +83,13 @@ codeRouter.get("/:id", async (req, res) => {
     });
 
     if (code === null) {
-      res.status(400).send("Code not found.");
+      return res.status(400).send("Code not found.");
     } else {
-      res.status(200).json(generateResultJson(code));
+      return res.status(200).json(generateResultJson(code));
     }
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving code.");
+    return res.status(400).send("Error retrieving code.");
   }
 });
 
@@ -116,8 +116,7 @@ codeRouter.post("/create-update", async (req, res) => {
 
       // return error if code type already exists
       if (code_type !== null) {
-        res.status(400).send("Code type already exists");
-        return;
+        return res.status(400).send("Code type already exists");
       } else {
         // create new code type
         await prisma.codeType.create({
@@ -162,10 +161,10 @@ codeRouter.post("/create-update", async (req, res) => {
       });
     }
 
-    res.status(200).json(generateResultJson(result));
+    return res.status(200).json(generateResultJson(result));
   } catch (error) {
     console.error(error);
-    res.status(400).send(error);
+    return res.status(400).send(error);
   }
 });
 

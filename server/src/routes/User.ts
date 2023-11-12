@@ -15,72 +15,33 @@ userRouter.get("/info", async (req, res) => {
   try {
     const logged_in_user = req.headers?.["x-access-user"] as any;
 
-    // TODO: to remove after testing
-    const getRole = (email: string) => {
-      if (email === "superadmin@email.com") return "SA";
-      else if (email === "systemadmin@email.com") return "A";
-      else if (email === "manager@email.com") return "M";
-      else return "E";
-    };
-    // TODO: to remove if else after testing
-    let user = undefined as any;
-    if (
-      [
-        "superadmin@email.com",
-        "systemadmin@email.com",
-        "manager@email.com",
-        "employee@email.com",
-      ].includes(logged_in_user?.email)
-    ) {
-      user = {
+    const user = await prisma.user.findFirst({
+      where: {
+        company_id: logged_in_user?.company_id,
         email: logged_in_user?.email,
-        password: hashPassword("password", generateSalt()),
-        role: getRole(logged_in_user?.email),
-        fullname: "Gojo Satoru",
-        id: 0,
-        company_id: 0,
-        contact_no: "99999999",
-        position: "STORE MANAGER",
-        status: "A",
-        department_id: 1,
-        employment_details: {
-          user_id: 0,
-          user_company_id: 0,
-          working_hours: 8,
-          employment_type: "FULL-TIME",
-        },
-        profile_image:
-          "https://flowbite.com/docs/images/people/profile-picture-5.jpg",
-        preferences: [],
-      };
-    } else {
-      user = await prisma.user.findFirst({
-        where: {
-          company_id: logged_in_user?.company_id,
-          email: logged_in_user?.email,
-        },
-        include: {
-          employment_details: true,
-          preferences: true,
-          department_in_charge: true,
-          department: true,
-        },
-      });
-    }
+      },
+      include: {
+        employment_details: true,
+        preferences: true,
+        department_in_charge: true,
+        department: true,
+      },
+    });
+    
 
     if (user) {
-      user.profile_image = user.profile_image?.toString() as string;
+      user.profile_image = user.profile_image?.toString() as any;
       const { password, ...userWithoutPassword } = user;
 
-      res.status(200).json({
+      return res.status(200).json({
         user: userWithoutPassword,
       });
     } else {
-      res.status(400).send("Error getting user info");
+      return res.status(400).send("Error getting user info");
     }
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user info");
+    return res.status(400).send("Error getting user info");
   }
 });
 
@@ -110,12 +71,12 @@ userRouter.get("/", async (req, res) => {
       return userWithoutPassword;
     });
 
-    res
+    return res
       .status(200)
       .json(generateResultJson(usersWithoutPassword, users[0], page, size));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting users.");
+    return res.status(400).send("Error getting users.");
   }
 });
 
@@ -146,12 +107,12 @@ userRouter.get("/department/:department_id", async (req, res) => {
       return userWithoutPassword;
     });
 
-    res
+    return res
       .status(200)
       .json(generateResultJson(usersWithoutPassword, users[0], page, size));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting users.");
+    return res.status(400).send("Error getting users.");
   }
 });
 
@@ -173,10 +134,10 @@ userRouter.get("/:user_id", async (req, res) => {
     userWithoutPassword.profile_image =
       (userWithoutPassword?.profile_image?.toString() as any) || null;
 
-    res.status(200).json(generateResultJson(userWithoutPassword));
+    return res.status(200).json(generateResultJson(userWithoutPassword));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user.");
+    return res.status(400).send("Error getting user.");
   }
 });
 
@@ -220,12 +181,11 @@ userRouter.post("/create", async (req, res) => {
     }
 
     if (subscription?.employee_quantity <= userCount) {
-      res
+      return res
         .status(400)
         .send(
           "Error creating employee. Employee limit has been reached for your subscription."
         );
-      return;
     }
 
     const user = await prisma.$transaction(async (tx) => {
@@ -287,12 +247,12 @@ userRouter.post("/create", async (req, res) => {
 
     const { password: userPassword, ...userWithoutPassword } = user;
 
-    res.status(200).json({
+    return res.status(200).json({
       user: userWithoutPassword,
     });
   } catch (error) {
     console.error(error);
-    res
+    return res
       .status(400)
       .send("Error creating new employee. Please try again later.");
   }
@@ -345,10 +305,10 @@ userRouter.post("/update", async (req, res) => {
               employment_type: employment_details_without_ids.employment_type,
             },
             update: {
-              working_hours: Number(
+              working_hours: employment_details_without_ids.working_hours ? Number(
                 employment_details_without_ids.working_hours
-              ).toFixed(2),
-              employment_type: employment_details_without_ids.employment_type,
+              ).toFixed(2) : null,
+              employment_type: employment_details_without_ids.employment_type ? employment_details_without_ids.employment_type : null,
             },
           },
         },
@@ -390,12 +350,12 @@ userRouter.post("/update", async (req, res) => {
     userWithoutPassword.profile_image = userWithoutPassword.profile_image ? userWithoutPassword.profile_image.toString() as any : "";
     userWithoutPassword.preferences = prefs;
 
-    res.status(200).json({
+    return res.status(200).json({
       user: userWithoutPassword,
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error updating employee. Please try again later.");
+    return res.status(400).send("Error updating employee. Please try again later.");
   }
 });
 
@@ -461,13 +421,13 @@ userRouter.post("/change-password", async (req, res) => {
       },
     });
 
-    res.status(200).json(generateResultJson("success"));
+    return res.status(200).json(generateResultJson("success"));
   } catch (error) {
     console.error(error);
     if (error instanceof ValidationError) {
-      res.status(400).send(error.message);
+      return res.status(400).send(error.message);
     } else {
-      res.status(400).send("Error changing password. Please try again later.");
+      return res.status(400).send("Error changing password. Please try again later.");
     }
   }
 });
@@ -514,10 +474,10 @@ userRouter.get("/check-working-hours", async (req, res) => {
       currentWeekWorkingHours += schedule.shift === "FULL" ? 8 : 4;
     });
 
-    res.status(200).json(generateResultJson({ workingHoursPerWeek: Number(workingHoursPerWeek), currentWeekWorkingHours: Number(currentWeekWorkingHours) }));
+    return res.status(200).json(generateResultJson({ workingHoursPerWeek: Number(workingHoursPerWeek), currentWeekWorkingHours: Number(currentWeekWorkingHours) }));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user.");
+    return res.status(400).send("Error getting user.");
   }
 });
 
@@ -539,9 +499,9 @@ userRouter.get("/:user_id", async (req, res) => {
     userWithoutPassword.profile_image =
       (userWithoutPassword?.profile_image?.toString() as any) || null;
 
-    res.status(200).json(generateResultJson(userWithoutPassword));
+    return res.status(200).json(generateResultJson(userWithoutPassword));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error getting user.");
+    return res.status(400).send("Error getting user.");
   }
 });

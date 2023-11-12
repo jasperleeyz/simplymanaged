@@ -217,15 +217,15 @@ model UserPreference {
   updated_date    DateTime @updatedAt
   user            User     @relation("user_preferences", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
-  @@index([user_id, user_company_id])
   @@unique([user_id, user_company_id, module])
+  @@index([user_id, user_company_id])
 }
 
 model EmploymentDetails {
   user_id         Int
   user_company_id Int
-  working_hours   Decimal @db.Decimal(5, 2)
-  employment_type String
+  working_hours   Decimal? @db.Decimal(5, 2)
+  employment_type String?
   user            User    @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@id([user_id, user_company_id])
@@ -389,10 +389,12 @@ model RosterTemplatePosition {
 model Sequences {
   id             Int      @id @default(autoincrement())
   company_id     Int
-  sequence_key   String   @unique
+  sequence_key   String   
   sequence_value Int      @default(1)
   created_by     String   @default("SYSTEM")
   created_date   DateTime @default(now())
   updated_by     String   @default("SYSTEM")
   updated_date   DateTime @updatedAt
+
+  @@unique([company_id, sequence_key])
 }

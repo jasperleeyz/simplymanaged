@@ -114,6 +114,7 @@ const AddOrEditCompanyCode = () => {
                 id="code-type"
                 name="code_type"
                 labelValue="Code Type"
+                disabled={id ? true : false}
                 value={props.values.code_type}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}
@@ -165,6 +166,7 @@ const AddOrEditCompanyCode = () => {
                 id="code"
                 name="code"
                 labelValue="Code"
+                disabled={id ? true : false}
                 value={props.values.code?.toLocaleUpperCase()}
                 onChange={props.handleChange}
                 onBlur={props.handleBlur}

@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
-import { Avatar, Label } from "flowbite-react";
+import { Avatar, Checkbox, Label } from "flowbite-react";
 import IUser from "../../shared/model/user.model";
-import { PATHS, USER_STATUS } from "../../configs/constants";
+import { PATHS, PREFERENCE, USER_STATUS } from "../../configs/constants";
 import BackButton from "../../shared/layout/buttons/back-button";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { toast } from "react-toastify";
@@ -10,6 +10,7 @@ import { getEmployeeById } from "../../shared/api/user.api";
 import LabeledField from "../../shared/layout/fields/labeled-field";
 import { getAllCompanyCodes } from "../../shared/api/company-code.api";
 import { ICompanyCode } from "../../shared/model/company.model";
+import { capitalizeString } from "../../configs/utils";
 
 const EmployeesViewPage = () => {
   const globalState = useContext(GlobalStateContext)?.globalState;
@@ -105,11 +106,6 @@ const EmployeesViewPage = () => {
             }
           />
           <LabeledField
-            id="employment-working-hours"
-            labelValue="Working Hours"
-            value={viewEmployee?.employment_details?.working_hours || "N/A"}
-          />
-          <LabeledField
             id="account-status"
             labelValue="Account Status"
             value={USER_STATUS[viewEmployee?.status || "N/A"]}
@@ -118,15 +114,16 @@ const EmployeesViewPage = () => {
         <hr className="w-full my-6 border-gray-200 sm:mx-auto dark:border-gray-700 lg:my-8" />
         <p className="header">Preferences</p>
         <div id="preferences-section" className="px-12">
-          <LabeledField
-            id="preferences-working-days"
-            labelValue="Preferred Working Days"
-            value={
-              viewEmployee?.preferences
-                ? viewEmployee?.preferences["working_days"] || "N/A"
-                : "N/A"
-            }
-          />
+          {viewEmployee.preferences?.map((pref, idx) => {
+            return (
+              <div key={idx}>
+                <Label htmlFor={pref.module.toLowerCase()}>
+                  {capitalizeString(pref.module.replaceAll("_", " "))}
+                </Label>
+                {getPreferenceCheckboxes(idx, pref)}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
@@ -134,3 +131,41 @@ const EmployeesViewPage = () => {
 };
 
 export default EmployeesViewPage;
+
+const getPreferenceCheckboxes = (index, pref) => {
+  const getPreferredWorkDaysCheckboxes = () => {
+    return (
+      <>
+      {["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"].map((day, idx) => {
+        return (
+          <div key={idx}>
+            <Checkbox id={day} disabled value={day} checked={pref.preference?.includes(day)}/>
+            <Label className="ml-1" htmlFor={day}>{day?.toUpperCase()}</Label>
+          </div>
+        );
+      })}
+      </>
+    )
+  };
+
+  const getPreferredWorkShiftsCheckboxes = () => {
+    return (
+      <>
+      {["FULL", "AM", "PM"].map((shift, idx) => {
+        return (
+          <div key={idx}>
+            <Checkbox id={shift} disabled value={shift} checked={pref.preference?.includes(shift)}/>
+            <Label className="ml-1" htmlFor={shift}>{shift?.toUpperCase()}</Label>
+          </div>
+        );
+      })}
+      </>
+    );
+  };
+
+  return (
+    <div id={pref.module.toLowerCase()} className="flex flex-wrap gap-3">
+      {pref.module === PREFERENCE.PREFERRED_WORKING_DAYS ? getPreferredWorkDaysCheckboxes() : getPreferredWorkShiftsCheckboxes()}
+    </div>
+  );
+};

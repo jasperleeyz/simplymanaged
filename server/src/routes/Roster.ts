@@ -41,10 +41,10 @@ RosterRouter.get("/get-roster-template/:company_id", async (req, res) => {
       size
     );
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving roster templates.");
+    return res.status(400).send("Error retrieving roster templates.");
   }
 });
 
@@ -73,10 +73,10 @@ RosterRouter.get("/get-roster-template-positions/:company_id/:roster_template_id
       size
     );
 
-    res.status(200).json(result);
+    return res.status(200).json(result);
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving roster template position.");
+    return res.status(400).send("Error retrieving roster template position.");
   }
 });
 
@@ -121,12 +121,12 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
         });
       }
     });
-    res.status(200).json({
+    return res.status(200).json({
       rosterTemplate: rosterTemplate,
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating roster template.");
+    return res.status(400).send("Error creating roster template.");
   }
 });
 
@@ -192,12 +192,12 @@ RosterRouter.post("/create/roster", async (req, res) => {
         });
       };
     });
-    res.status(200).json({
+    return res.status(200).json({
       roster: roster,
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error creating roster");
+    return res.status(400).send("Error creating roster");
   }
 });
 
@@ -224,12 +224,12 @@ RosterRouter.delete("/delete/roster-template", async (req, res) => {
 
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Roster template deleted',
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error deleting roster template.");
+    return res.status(400).send("Error deleting roster template.");
   }
 });
 
@@ -256,6 +256,7 @@ RosterRouter.get("/get-roster-from-to/:company_id/:location_id", async (req, res
                 fullname:true,
                 position:true,
                 contact_no:true,
+                profile_image:true,
               }
             }
           }
@@ -265,10 +266,21 @@ RosterRouter.get("/get-roster-from-to/:company_id/:location_id", async (req, res
       },
     });
 
-    res.status(200).json(generateResultJson(roster));
+    const rosterWithProfileImagesAsString = roster.map(item => ({
+      ...item,
+      schedules: item.schedules.map(schedule => ({
+        ...schedule,
+        user: {
+          ...schedule.user,
+          profile_image: schedule.user?.profile_image?.toString() ?? "",
+        },
+      })),
+    }));
+
+    return res.status(200).json(generateResultJson(rosterWithProfileImagesAsString));
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error retrieving roster.");
+    return res.status(400).send("Error retrieving roster.");
   }
 });
 
@@ -300,12 +312,12 @@ RosterRouter.delete("/delete/roster", async (req, res) => {
 
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Roster deleted',
     });
   } catch (error) {
     console.error(error);
-    res.status(500).send("Error deleting roster template.");
+    return res.status(400).send("Error deleting roster template.");
   }
 });
 
@@ -356,11 +368,11 @@ RosterRouter.post("/update/roster", async (req, res) => {
         });
       }
     });
-    res.status(200).json({
+    return res.status(200).json({
       roster: roster,
     });
   } catch (error) {
     console.error(error);
-    res.status(400).send("Error updating Roster.");
+    return res.status(400).send("Error updating Roster.");
   }
 });
