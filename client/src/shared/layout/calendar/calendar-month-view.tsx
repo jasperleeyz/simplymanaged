@@ -165,8 +165,8 @@ const CalendarMonthView = ({
                       const scheduleForDay = scheduleList?.filter(
                         (schedule) => {
                           return (
-                            moment(schedule.start_date).isSameOrBefore(day) &&
-                            day.isSameOrBefore(moment(schedule.end_date))
+                            moment(schedule.start_date).startOf('day').isSameOrBefore(day.startOf('day')) &&
+                            day.startOf('day').isSameOrBefore(moment(schedule.end_date).startOf('day'))
                           );
                         }
                       );
@@ -177,8 +177,8 @@ const CalendarMonthView = ({
                         return startDate === day.date();
                       });
                       const leaveForDay = leaveList?.filter((leave) => {
-                        return moment(leave?.leave_request?.start_date).isSameOrBefore(day) &&
-                        day.isSameOrBefore(moment(leave?.leave_request?.end_date));
+                        return moment(leave?.leave_request?.start_date).startOf('day').isSameOrBefore(day.startOf('day')) &&
+                        day.startOf('day').isSameOrBefore(moment(leave?.leave_request?.end_date).startOf('day'));
                       });
                       return (
                         <Table.Cell key={didx}>
