@@ -7,7 +7,6 @@ export const UserScheduleRouter = express.Router();
 
 const prisma = new PrismaClient();
 
-
 UserScheduleRouter.get(
   "/get-schedule/:user_company_id/:user_id",
   async (req, res) => {
@@ -157,7 +156,20 @@ UserScheduleRouter.get(
       const lastDay = new Date(end_date);
       lastDay.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
 
-      const rawWeekSchedule: { id: number; user_id: number; user_company_id: number; roster_id: number; start_date: Date; end_date: Date; shift: string; status: string; created_by: string; created_date: Date; updated_by: string; updated_date: Date; }[][] = await prisma.$transaction([
+      const rawWeekSchedule: {
+        id: number;
+        user_id: number;
+        user_company_id: number;
+        roster_id: number;
+        start_date: Date;
+        end_date: Date;
+        shift: string;
+        status: string;
+        created_by: string;
+        created_date: Date;
+        updated_by: string;
+        updated_date: Date;
+      }[][] = await prisma.$transaction([
         prisma.userSchedule.findMany({
           where: {
             user_company_id: Number(user_company_id),
@@ -175,16 +187,16 @@ UserScheduleRouter.get(
 
         let hours = 0;
 
-        if (shift === 'AM' || shift === 'PM') {
+        if (shift === "AM" || shift === "PM") {
           // If shift is AM or PM, add 4 hours
           hours = 4;
-        } else if (shift === 'FULL') {
+        } else if (shift === "FULL") {
           // If shift is full, add 8 hours
           hours = 8;
         }
         if (!employeeIdTaggedHour[user_id]) {
           employeeIdTaggedHour[user_id] = 0;
-      }
+        }
 
         employeeIdTaggedHour[user_id] = employeeIdTaggedHour[user_id] + hours;
       });
@@ -222,17 +234,20 @@ UserScheduleRouter.get(
       ]);
 
       const employeesWithWorkingHours = employees.flat().filter((employee) => {
-        const employeeWorkingHours = employee.employment_details?.working_hours || 0;
+        const employeeWorkingHours =
+          employee.employment_details?.working_hours || 0;
         const dataWorkingHours = employeeIdTaggedHour[employee.id] || 0;
 
         // Include the employee if their working hours are greater than the data
         return Number(employeeWorkingHours) > Number(dataWorkingHours);
       });
 
-      const employeesWithWorkingHoursFix = employeesWithWorkingHours.map(item => ({
-        ...item,
-        profile_image :item.profile_image?.toString() ?? ""
-      }));
+      const employeesWithWorkingHoursFix = employeesWithWorkingHours.map(
+        (item) => ({
+          ...item,
+          profile_image: item.profile_image?.toString() ?? "",
+        })
+      );
 
       res.status(200).json(generateResultJson(employeesWithWorkingHoursFix));
     } catch (error) {
@@ -245,7 +260,8 @@ UserScheduleRouter.get(
 UserScheduleRouter.get(
   "/get-non-conflict-user-roster/:user_company_id/:department_id/:roster_id/:start_date/:end_date",
   async (req, res) => {
-    const { user_company_id, department_id, roster_id, start_date, end_date } = req.params;
+    const { user_company_id, department_id, roster_id, start_date, end_date } =
+      req.params;
 
     try {
       const firstDay = new Date(start_date);
@@ -254,7 +270,20 @@ UserScheduleRouter.get(
       const lastDay = new Date(end_date);
       lastDay.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
 
-      const rawWeekSchedule: { id: number; user_id: number; user_company_id: number; roster_id: number; start_date: Date; end_date: Date; shift: string; status: string; created_by: string; created_date: Date; updated_by: string; updated_date: Date; }[][] = await prisma.$transaction([
+      const rawWeekSchedule: {
+        id: number;
+        user_id: number;
+        user_company_id: number;
+        roster_id: number;
+        start_date: Date;
+        end_date: Date;
+        shift: string;
+        status: string;
+        created_by: string;
+        created_date: Date;
+        updated_by: string;
+        updated_date: Date;
+      }[][] = await prisma.$transaction([
         prisma.userSchedule.findMany({
           where: {
             user_company_id: Number(user_company_id),
@@ -272,16 +301,16 @@ UserScheduleRouter.get(
 
         let hours = 0;
 
-        if (shift === 'AM' || shift === 'PM') {
+        if (shift === "AM" || shift === "PM") {
           // If shift is AM or PM, add 4 hours
           hours = 4;
-        } else if (shift === 'FULL') {
+        } else if (shift === "FULL") {
           // If shift is full, add 8 hours
           hours = 8;
         }
         if (!employeeIdTaggedHour[user_id]) {
           employeeIdTaggedHour[user_id] = 0;
-      }
+        }
 
         employeeIdTaggedHour[user_id] = employeeIdTaggedHour[user_id] + hours;
       });
@@ -319,7 +348,8 @@ UserScheduleRouter.get(
       ]);
 
       const employeesWithWorkingHours = employees.flat().filter((employee) => {
-        const employeeWorkingHours = employee.employment_details?.working_hours || 0;
+        const employeeWorkingHours =
+          employee.employment_details?.working_hours || 0;
         const dataWorkingHours = employeeIdTaggedHour[employee.id] || 0;
 
         // Include the employee if their working hours are greater than the data
@@ -353,7 +383,9 @@ UserScheduleRouter.get(
       return res.status(200).json(generateResultJson(combinedUsers));
     } catch (error) {
       console.error(error);
-      return res.status(400).send("Error checking user schedules for conflicts.");
+      return res
+        .status(400)
+        .send("Error checking user schedules for conflicts.");
     }
   }
 );
@@ -405,12 +437,26 @@ UserScheduleRouter.get(
 
       const userSchedules = await prisma.userSchedule.findMany({
         where: {
-          user_company_id: Number(companyId),
-          user_id: Number(userId),
-          start_date: {
-            gte: from as string,
-            lte: to as string,
-          },
+          AND: [
+            {
+              user_company_id: Number(companyId),
+              user_id: Number(userId),
+            },
+          ],
+          OR: [
+            {
+              start_date: {
+                gte: from as string,
+                lte: to as string,
+              },
+            },
+            {
+              end_date: {
+                gte: from as string,
+                lte: to as string,
+              },
+            },
+          ],
         },
         include: {
           roster: {
@@ -504,8 +550,8 @@ UserScheduleRouter.get(
               },
               position: {
                 equals: current_user?.position,
-              }
-            }
+              },
+            },
           },
           include: {
             user: {
@@ -542,8 +588,8 @@ UserScheduleRouter.get(
             },
             position: {
               equals: current_user?.position,
-            }
-          }
+            },
+          },
         },
         include: {
           user: {
@@ -574,4 +620,3 @@ UserScheduleRouter.get(
     }
   }
 );
-
