@@ -13,6 +13,8 @@ import {
 } from "../../../shared/api/user-schedule.api";
 import { getRosterFromAndTo } from "../../api/roster.api";
 import { IRoster, IUserSchedule } from "../../model/schedule.model";
+import { IRequest } from "../../model/request.model";
+import { getApprovedLeaveFromAndTo } from "../../api/request.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -61,12 +63,14 @@ const CalendarMonthView = ({
 
   const [scheduleList, setScheduleList] = useState<IUserSchedule[]>([]);
   const [rosterList, setRosterList] = useState<IRoster[]>([]);
+  const [leaveList, setLeaveList] = useState<IRequest[]>([]);
 
   useEffect(() => {
     const from = new Date(year, month);
     const to = new Date(year, month + 1);
     setLoading((prev) => true);
     if (isPersonal) {
+      Promise.all([
       getUserScheduleFromAndTo(
         globalState?.user?.company_id || 0,
         globalState?.user?.id || 0,
@@ -75,7 +79,13 @@ const CalendarMonthView = ({
       )
         .then((res) => {
           setScheduleList(res.data);
+        }),
+        getApprovedLeaveFromAndTo(
+          from, to
+        ).then((res) => {
+          setLeaveList(res.data);
         })
+      ])
         .finally(() => {setLoading((prev) => false);});
     } else {
       getRosterFromAndTo(globalState?.user?.company_id || 0, location || 0, from, to)
@@ -155,6 +165,11 @@ const CalendarMonthView = ({
                       const startDate = new Date(schedule.start_date).getDate();
                       return startDate === day.date();
                   });
+                  const leaveForDay = leaveList?.filter((leave) => {
+                      const startDate = new Date(leave?.leave_request?.start_date || "").getDate();
+                      const endDate = new Date(leave?.leave_request?.end_date || "").getDate();
+                      return startDate <= day.date() && day.date() <= endDate;
+                  });
                   return (
                     <Table.Cell key={didx}>
                       {day.month() === month ? (
@@ -173,6 +188,11 @@ const CalendarMonthView = ({
                             schedule={
                               scheduleForDay?.length === 1
                                 ? scheduleForDay[0]
+                                : null
+                            }
+                            leave={
+                              leaveForDay?.length === 1
+                                ? leaveForDay[0]
                                 : null
                             }
                           />

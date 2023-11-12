@@ -6,15 +6,18 @@ import { GlobalStateContext } from "../../../configs/global-state-provider";
 import { HiDotsHorizontal } from "react-icons/hi";
 import { Dropdown } from "flowbite-react";
 import { PATHS } from "../../../configs/constants";
+import { IRequest } from "../../model/request.model";
 
 type IProps = {
   date?: moment.Moment;
   schedule?: IUserSchedule | null;
+  leave?: IRequest | null;
 };
 
 const PersonalDateBox = ({
   date = moment(new Date()),
   schedule = null,
+  leave = null,
 }: IProps) => {
   const navigate = useNavigate();
   const user = React.useContext(GlobalStateContext).globalState?.user;
@@ -40,7 +43,7 @@ const PersonalDateBox = ({
       <div className="flex items-center justify-between">
         <p>{date.date()}</p>
         <div className="rounded-full">
-          {moment(schedule?.start_date).isAfter(new Date()) && (
+          {schedule && !leave && moment(schedule?.start_date).isAfter(new Date()) && (
             <Dropdown label={<HiDotsHorizontal />} arrowIcon={false} inline>
               <Dropdown.Item
                 onClick={() => {
@@ -67,12 +70,21 @@ const PersonalDateBox = ({
         </div>
       </div>
       <br />
-      {!schedule && (
+      {!schedule && !leave && (
         <div className="relative">
           <p className="absolute whitespace-normal">No schedule for the day</p>
         </div>
       )}
-      {date.isAfter(moment(new Date())) && schedule ? (
+      {leave && (
+        <div>
+          <div className="bg-yellow-200 rounded p-1">
+            <p className="font-bold text-sm text-black">
+              LEAVE
+            </p>
+          </div>
+        </div>
+      )}
+      {date.isAfter(moment(new Date())) && schedule && !leave ? (
         <div>
           <div className="bg-green-300 rounded p-1">
             <p className="font-bold text-sm text-black">
@@ -84,7 +96,7 @@ const PersonalDateBox = ({
             {/* <p className="font-bold text-sm text-black">{schedule?.status}</p> */}
           </div>
         </div>
-      ) : date.isBefore(moment(new Date())) && schedule ? (
+      ) : date.isBefore(moment(new Date())) && schedule && !leave ? (
         <div>
           <div className="bg-red-300 rounded p-1">
             <p className="font-bold text-sm text-black">

@@ -9,6 +9,7 @@ interface IProps {
 }
 
 const UpcomingShiftComponent = ({ schedule }: IProps) => {
+  const company = React.useContext(GlobalStateContext).globalState?.user?.company;
 
   //const user = React.useContext(GlobalStateContext).globalState?.user;
   // const scheduleUser = schedule.employeesSelected.find((emp) => emp.id === user?.id);
@@ -20,7 +21,7 @@ const UpcomingShiftComponent = ({ schedule }: IProps) => {
         {schedule?.roster?.location?.name ? (
           <p>Location: {schedule?.roster?.location?.name}</p> 
         ) : (
-          <p>Location: {React.useContext(GlobalStateContext).globalState?.user?.company?.name}</p> 
+          <p>Location: {company?.name}</p> 
         )}
         <p>Shift: {schedule?.shift}</p>
     </div>
