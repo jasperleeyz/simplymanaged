@@ -256,6 +256,7 @@ RosterRouter.get("/get-roster-from-to/:company_id/:location_id", async (req, res
                 fullname:true,
                 position:true,
                 contact_no:true,
+                profile_image:true,
               }
             }
           }
@@ -265,7 +266,18 @@ RosterRouter.get("/get-roster-from-to/:company_id/:location_id", async (req, res
       },
     });
 
-    return res.status(200).json(generateResultJson(roster));
+    const rosterWithProfileImagesAsString = roster.map(item => ({
+      ...item,
+      schedules: item.schedules.map(schedule => ({
+        ...schedule,
+        user: {
+          ...schedule.user,
+          profile_image: schedule.user?.profile_image?.toString() ?? "",
+        },
+      })),
+    }));
+
+    return res.status(200).json(generateResultJson(rosterWithProfileImagesAsString));
   } catch (error) {
     console.error(error);
     return res.status(400).send("Error retrieving roster.");
