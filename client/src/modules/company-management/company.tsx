@@ -402,7 +402,7 @@ const getBody = (company, navigate, industryList) => {
         </div>
       </div>
       {/*MAYBE NOT NEEDED*/}
-      <p className="mt-4 font-bold text-xl" style={{ color: "#1E90FF" }}>
+      {/* <p className="mt-4 font-bold text-xl" style={{ color: "#1E90FF" }}>
         Manage subscription
       </p>
       <div className="grid grid-cols-4">
@@ -420,7 +420,7 @@ const getBody = (company, navigate, industryList) => {
       <div className="grid grid-cols-4">
         <p className="mt-3 text-md">Cost</p>
         <p className="mt-3 font-bold text-md">Free</p>
-      </div>
+      </div> */}
     </>
   );
 };
