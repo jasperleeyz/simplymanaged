@@ -14,6 +14,9 @@ import { deleteRoster } from "../../../shared/api/roster.api";
 import { toast } from "react-toastify";
 import DeleteSchedulePrompt from "../../../modules/schedule/manager/delete-schedule-prompt";
 import moment from "moment";
+import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
+import { GlobalStateContext } from "../../../configs/global-state-provider";
+import { ICompanyCode } from "../../../shared/model/company.model";
 
 const ViewSchedule = () => {
   const location = useLocation();
@@ -21,10 +24,12 @@ const ViewSchedule = () => {
   const roster = location.state?.roster as IRoster[];
   const type = location.state?.type as string;
   const startDate = moment(new Date(roster[0].start_date));
+  const user = React.useContext(GlobalStateContext).globalState?.user;
   const [rosterToDelete, setRosterToDelete] = React.useState<IRoster | null>(
     null
   );
   const [submitLoading, setSubmitLoading] = React.useState(false);
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
   useEffect(() => {
     if (submitLoading && rosterToDelete) {
       deleteRoster(rosterToDelete).finally(() => {
@@ -35,6 +40,20 @@ const ViewSchedule = () => {
       });
     }
   }, [submitLoading]);
+
+  useEffect(() => {
+    Promise.all([
+      getAllCompanyCodes(
+        user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        `equals(code_type,POSITION)`
+      ).then((res) => {
+        setCodeList(res.data);
+      })
+    ])
+  }, []);
 
   const [openModal, setOpenModal] = React.useState(false);
   const modalProps = { openModal, setOpenModal };
@@ -77,7 +96,7 @@ const ViewSchedule = () => {
                           style={{ display: "inline-block", margin: "0" }}
                         />
                         <p>{capitalizeString(schedule.user?.fullname || "")}</p>
-                        <p>{capitalizeString(schedule.user?.position || "")}</p>
+                        <p>{capitalizeString(codeList.find((c) => c.code === schedule.user?.position)?.description || "")}</p>
                         <p>{schedule.shift} Shift</p>
                         <p>{schedule.user?.contact_no}</p>
                       </div>

@@ -186,12 +186,12 @@ const CalendarMonthView = ({
                           <PersonalDateBox
                             date={day}
                             schedule={
-                              scheduleForDay?.length === 1
+                              scheduleForDay?.length >= 1
                                 ? scheduleForDay[0]
                                 : null
                             }
                             leave={
-                              leaveForDay?.length === 1
+                              leaveForDay?.length >= 1
                                 ? leaveForDay[0]
                                 : null
                             }
