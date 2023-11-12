@@ -103,46 +103,70 @@ companyCodeRouter.post("/create-update", async (req, res) => {
     let companyCode;
 
     if (id) {
-      companyCode = await prisma.companyCode.update({
-        where: {
-          company_id_id: {
-            company_id: company_id,
-            id: id,
-          },
-        },
-        data: {
-          code_type: code_type,
-          code: code.toLocaleUpperCase().trim(),
-          description: description.toLocaleUpperCase().trim(),
-          status: status,
-          updated_by: logged_in_user?.name,
-          // updated_date: new Date(),
-        },
-      });
-
-      if (code_type === "LEAVE_TYPE") {
-        await prisma.companyLeaveBalance.upsert({
+      companyCode = await prisma.$transaction(async (tx) => {
+        // const existing_code = await tx.companyCode.findFirst({
+        //   where: {
+        //     id: id,
+        //     company_id: company_id,
+        //   },
+        // });
+      
+        const updated_company_code = await tx.companyCode.update({
           where: {
-            company_id_leave_type: {
+            company_id_id: {
               company_id: company_id,
-              leave_type: code,
+              id: id,
             },
           },
-          create: {
-            company_id: company_id,
-            balance: Number(leave_balance),
-            leave_type: code,
-            created_by: logged_in_user?.name,
+          data: {
+            code_type: code_type,
+            code: code.toLocaleUpperCase().trim(),
+            description: description.toLocaleUpperCase().trim(),
+            status: status,
             updated_by: logged_in_user?.name,
-          },
-          update: {
-            balance: Number(leave_balance),
-            updated_by: logged_in_user?.name,
+            // updated_date: new Date(),
           },
         });
-      }
+
+        if (code_type === "LEAVE_TYPE") {
+          await tx.companyLeaveBalance.upsert({
+            where: {
+              company_id_leave_type: {
+                company_id: company_id,
+                leave_type: code,
+              },
+            },
+            create: {
+              company_id: company_id,
+              balance: Number(leave_balance),
+              leave_type: code,
+              created_by: logged_in_user?.name,
+              updated_by: logged_in_user?.name,
+            },
+            update: {
+              balance: Number(leave_balance),
+              updated_by: logged_in_user?.name,
+            },
+          });
+        }
+
+        // // need to update existing employees' position code if position code is updated
+        // if(existing_code?.code_type === "POSITION" && existing_code.code !== code) {
+        //   await tx.user.updateMany({
+        //     where: {
+        //       company_id: company_id,
+        //       position: existing_code.code,
+        //     },
+        //     data: {
+        //       position: code,
+        //     }
+        //   });
+        // }
+
+        return updated_company_code;
+      });
     } else {
-      companyCode = prisma.$transaction(async (tx) => {
+      companyCode = await prisma.$transaction(async (tx) => {
         return await tx.companyCode.create({
           data: {
             code_type: code_type,
