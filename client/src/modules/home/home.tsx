@@ -1,4 +1,3 @@
-import { Avatar, Card } from "flowbite-react";
 import React from "react";
 import { GlobalStateContext } from "../../configs/global-state-provider";
 import { capitalizeString } from "../../configs/utils";
@@ -17,6 +16,7 @@ import {
 import { IRequest } from "../../shared/model/request.model";
 import { ICompanyCode } from "../../shared/model/company.model";
 import { getAllCompanyCodes } from "../../shared/api/company-code.api";
+import { Avatar, Card } from "flowbite-react";
 
 const Home = () => {
   const user = React.useContext(GlobalStateContext).globalState?.user;
@@ -45,7 +45,8 @@ const Home = () => {
         new Date(),
         moment(new Date()).add(7, "days").toDate()
       ).then((res) => {
-        setScheduleForTheWeek(res.data);
+        const filtered = res.data.filter((schedule: IUserSchedule) => moment(schedule.start_date).startOf('day').isSameOrAfter(moment().startOf('day')));
+        setScheduleForTheWeek(filtered.slice(0, 5));
       }),
       getAllCompanyCodes(
         globalState?.user?.company_id || 0,
