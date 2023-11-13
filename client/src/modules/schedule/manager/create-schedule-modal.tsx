@@ -60,12 +60,14 @@ const CreateScheduleModal = (props: IProps) => {
   const [locations, setLocations] = useState<ICompanyLocation[]>();
 
   useEffect(() => {
+    if(props.createScheduleModal){
     getAllLocations(globalState?.user?.company_id || 0)
       .then((res) => {
         setLocations(res.data);
         props.setLocationId(Number(res.data[0].id));
       })
       .finally(() => {});
+    }
   }, [props.createScheduleModal]);
 
   const [positionSelectedCount, setPositionSelectedCount] = React.useState({});
