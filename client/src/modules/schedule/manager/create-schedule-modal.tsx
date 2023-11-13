@@ -259,19 +259,26 @@ const CreateScheduleModal = (props: IProps) => {
               <Select
                 onChange={(e) => {
                   const selectedTemplateName = e.target.value;
-                  const selectedTemplateObject = props.filteredTemplateList.find(
-                    (template) => template.id === Number(selectedTemplateName)
-                  );
-                
-                  if (selectedTemplateObject?.positions) {
-                    selectedTemplateObject.positions.forEach((pos) => {
-                      setPositionSelectedCount((prevPositionSelectedCount) => ({
-                        ...prevPositionSelectedCount,
-                        [pos.position]: pos.count,
-                      }));
-                    });
-                    
+                  if(selectedTemplateName == "-"){
+                    setPositionSelectedCount([])
                   }
+                  else{
+                    const selectedTemplateObject = props.filteredTemplateList.find(
+                      (template) => template.id === Number(selectedTemplateName)
+                    );
+                  
+                    if (selectedTemplateObject?.positions) {
+                      setPositionSelectedCount([])
+                      selectedTemplateObject.positions.forEach((pos) => {
+                        setPositionSelectedCount((prevPositionSelectedCount) => ({
+                          ...prevPositionSelectedCount,
+                          [pos.position]: pos.count,
+                        }));
+                      });
+                      
+                    }
+                  }
+                  
                 }}
               >
                 <option value="-">-</option>

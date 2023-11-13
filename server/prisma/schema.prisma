@@ -226,7 +226,7 @@ model EmploymentDetails {
   user_company_id Int
   working_hours   Decimal? @db.Decimal(5, 2)
   employment_type String?
-  user            User    @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
+  user            User     @relation("employment_details", fields: [user_id, user_company_id], references: [id, company_id], onDelete: Cascade)
 
   @@id([user_id, user_company_id])
   @@index([user_id, user_company_id])
@@ -389,7 +389,7 @@ model RosterTemplatePosition {
 model Sequences {
   id             Int      @id @default(autoincrement())
   company_id     Int
-  sequence_key   String   
+  sequence_key   String
   sequence_value Int      @default(1)
   created_by     String   @default("SYSTEM")
   created_date   DateTime @default(now())

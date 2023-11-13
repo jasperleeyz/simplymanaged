@@ -50,7 +50,7 @@ export interface IUserSchedule {
   id?: number;
   user_id: number;
   user_company_id: number;
-  roster_id: number;
+  roster_id?: number;
   start_date: Date;
   end_date: Date;
   shift: string;
