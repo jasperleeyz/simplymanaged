@@ -17,6 +17,7 @@ import {
   updateRequest,
 } from "../../shared/api/request.api";
 import moment from "moment";
+import { getAllCompanyCodes } from "../../shared/api/company-code.api";
 
 interface ILoading {
   id: number;
@@ -48,6 +49,7 @@ const Requests = () => {
   const [requestLoading, setRequestLoading] = React.useState<boolean>(false);
   const [actionLoading, setActionLoading] = React.useState<ILoading[]>([]);
   const [refreshPage, setRefreshPage] = React.useState<boolean>(false);
+  const [leaveTypeList, setLeaveTypeList] = React.useState<any[]>([]);
 
   const updateStatus = (req: IRequest, status: string) => {
     setActionLoading((prev) => [...prev, { id: req.id, status }]);
@@ -118,6 +120,20 @@ const Requests = () => {
     history.replaceState({ isPersonal, currentPage, sizePerPage }, "");
   }, [isPersonal, currentPage, sizePerPage, refreshPage]);
 
+  React.useEffect(() => {
+    Promise.all([
+      getAllCompanyCodes(
+        globalState?.user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        `equals(code_type,leave_type)`
+      ).then((res) => {
+        setLeaveTypeList(res.data);
+      }),
+    ])
+  }, []);
+
   return (
     <div id="request-main">
       <p className="header">{isPersonal ? `My ` : ""}Requests</p>
@@ -142,7 +158,7 @@ const Requests = () => {
       </div>
       <div className="overflow-x-auto">
         {isPersonal ? (
-          <PersonalRequests page={currentPage} sizePerPage={10} />
+          <PersonalRequests page={currentPage} sizePerPage={10} leaveTypeList={leaveTypeList}/>
         ) : (
           <Table striped>
             <Table.Head>
@@ -183,6 +199,7 @@ const Requests = () => {
                                     request.leave_request?.end_date
                                   ).format(DATE.MOMENT_DDMMYYYY)}`}
                                 </p>
+                                <p>{leaveTypeList.find((lt) => lt.code === request.leave_request?.type).description}</p>
                                 {request.leave_request?.half_day && (
                                   <p>{`Half-day?: ${request.leave_request?.half_day}`}</p>
                                 )}

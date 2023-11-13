@@ -26,14 +26,17 @@ companyCodeRouter.get("/:company_id", async (req, res) => {
 
     for (let companyCode of companyCodes[1]) {
       if (companyCode.code_type === "LEAVE_TYPE") {
-        const balance = await prisma.companyLeaveBalance.findFirst({
+        const leave_details = await prisma.companyLeaveBalance.findFirst({
           where: {
             company_id: Number(company_id),
             leave_type: companyCode.code,
           },
         });
 
-        companyCode.leave_balance = balance?.balance || 0;
+        companyCode.leave_balance = leave_details?.balance || 0;
+        companyCode.require_doc = leave_details?.require_doc === "Y" ? true : false;
+        companyCode.auto_approve = leave_details?.auto_approve === "Y" ? true : false;
+        companyCode.has_half_day = leave_details?.has_half_day === "Y" ? true : false;
       }
     }
 
@@ -62,6 +65,9 @@ companyCodeRouter.post("/create-update", async (req, res) => {
     status,
     code_type_other,
     leave_balance,
+    require_doc,
+    auto_approve,
+    has_half_day,
   } = req.body;
   const logged_in_user = req.headers?.["x-access-user"] as any;
 
@@ -104,13 +110,7 @@ companyCodeRouter.post("/create-update", async (req, res) => {
 
     if (id) {
       companyCode = await prisma.$transaction(async (tx) => {
-        // const existing_code = await tx.companyCode.findFirst({
-        //   where: {
-        //     id: id,
-        //     company_id: company_id,
-        //   },
-        // });
-      
+
         const updated_company_code = await tx.companyCode.update({
           where: {
             company_id_id: {
@@ -140,28 +140,21 @@ companyCodeRouter.post("/create-update", async (req, res) => {
               company_id: company_id,
               balance: Number(leave_balance),
               leave_type: code,
+              require_doc: require_doc ? "Y" : "N",
+              auto_approve: auto_approve ? "Y" : "N",
+              has_half_day: has_half_day ? "Y" : "N",
               created_by: logged_in_user?.name,
               updated_by: logged_in_user?.name,
             },
             update: {
               balance: Number(leave_balance),
+              require_doc: require_doc ? "Y" : "N",
+              auto_approve: auto_approve ? "Y" : "N",
+              has_half_day: has_half_day ? "Y" : "N",
               updated_by: logged_in_user?.name,
             },
           });
         }
-
-        // // need to update existing employees' position code if position code is updated
-        // if(existing_code?.code_type === "POSITION" && existing_code.code !== code) {
-        //   await tx.user.updateMany({
-        //     where: {
-        //       company_id: company_id,
-        //       position: existing_code.code,
-        //     },
-        //     data: {
-        //       position: code,
-        //     }
-        //   });
-        // }
 
         return updated_company_code;
       });
@@ -191,6 +184,9 @@ companyCodeRouter.post("/create-update", async (req, res) => {
             company_id: company_id,
             leave_type: code,
             balance: Number(leave_balance),
+            require_doc: require_doc ? "Y" : "N",
+            auto_approve: auto_approve ? "Y" : "N",
+            has_half_day: has_half_day ? "Y" : "N",
             created_by: logged_in_user?.name,
             updated_by: logged_in_user?.name,
           },

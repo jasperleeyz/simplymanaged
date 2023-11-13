@@ -300,6 +300,9 @@ model CompanyLeaveBalance {
   company_id   Int
   leave_type   String
   balance      Int
+  auto_approve String   @default("N")
+  require_doc  String   @default("N")
+  has_half_day String   @default("N")
   created_by   String
   created_date DateTime @default(now())
   updated_by   String

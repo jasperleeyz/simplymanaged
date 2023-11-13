@@ -3,7 +3,7 @@
 import React from "react";
 import { Formik } from "formik";
 import * as Yup from "yup";
-import { Button, TextInput } from "flowbite-react";
+import { Button, Checkbox, Label, TextInput } from "flowbite-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { CODE_TYPE, PATHS } from "../../configs/constants";
 import LabeledTextInput from "../../shared/layout/form/labeled-text-input";
@@ -20,18 +20,28 @@ import { GlobalStateContext } from "../../configs/global-state-provider";
 const CodeSchema = Yup.object().shape({
   code_type: Yup.string().required("Field is required"),
   code_type_other: Yup.string().when("code_type", {
-    is: (val) => val === "other",
-    then: (schema) => schema.required("Field is required"),
+    is: (val) => val === "OTHER",
+    then: (schema) =>
+      schema
+        .matches(
+          /^[a-zA-Z0-9_]+$/,
+          "Only alphanumeric and underscore are allowed"
+        )
+        .required("Field is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
-  code: Yup.string().required("Field is required"),
+  code: Yup.string()
+    .matches(/^[a-zA-Z0-9_]+$/, "Only alphanumeric and underscore are allowed")
+    .required("Field is required"),
   description: Yup.string().required("Field is required"),
-  leave_balance: Yup.number()
-    .when("code_type", {
-      is: (val) => val === CODE_TYPE.LEAVE_TYPE,
-      then: (schema) => schema.min(1, "Leave balance must be greater than 0").required("Field is required"),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+  leave_balance: Yup.number().when("code_type", {
+    is: (val) => val === CODE_TYPE.LEAVE_TYPE,
+    then: (schema) =>
+      schema
+        .min(1, "Leave balance must be greater than 0")
+        .required("Field is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
 });
 
 const AddOrEditCompanyCode = () => {
@@ -52,6 +62,8 @@ const AddOrEditCompanyCode = () => {
     description: "",
     status: "A",
     leave_balance: 0,
+    require_doc: false,
+    auto_approve: false,
   });
 
   React.useEffect(() => {
@@ -198,25 +210,98 @@ const AddOrEditCompanyCode = () => {
                 }
               />
               {props.values.code_type === CODE_TYPE.LEAVE_TYPE ? (
-                <LabeledTextInput
-                  id="leave-balance"
-                  name="leave_balance"
-                  labelValue="Leave Balance"
-                  type={"number"}
-                  value={props.values.leave_balance}
-                  onChange={props.handleChange}
-                  onBlur={props.handleBlur}
-                  color={
-                    props.errors.leave_balance && props.touched.leave_balance
-                      ? "failure"
-                      : "gray"
-                  }
-                  helperText={
-                    props.errors.leave_balance && props.touched.leave_balance ? (
-                      <>{props.errors.leave_balance}</>
-                    ) : null
-                  }
-                />
+                <>
+                  <LabeledTextInput
+                    id="leave-balance"
+                    name="leave_balance"
+                    labelValue="Leave Balance"
+                    type={"number"}
+                    value={props.values.leave_balance}
+                    onChange={props.handleChange}
+                    onBlur={props.handleBlur}
+                    color={
+                      props.errors.leave_balance && props.touched.leave_balance
+                        ? "failure"
+                        : "gray"
+                    }
+                    helperText={
+                      props.errors.leave_balance &&
+                      props.touched.leave_balance ? (
+                        <>{props.errors.leave_balance}</>
+                      ) : null
+                    }
+                  />
+                  <div className="flex flex-col gap-2 pt-2">
+                    <div className="flex gap-2">
+                      <div className="flex h-5 items-center">
+                        <Checkbox
+                          id="require-doc"
+                          name="require_doc"
+                          checked={props.values.require_doc}
+                          onChange={(e) => {
+                            props.setFieldValue(
+                              e.target.name,
+                              e.target.checked
+                            );
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <Label
+                          htmlFor="require-doc"
+                          value="Requires supporting document/attachment"
+                        />
+                        <span className="text-sm text-gray-500">
+                          Employees will be required to upload supporting
+                          document when applying for this leave.
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex h-5 items-center">
+                        <Checkbox
+                          id="auto-approve"
+                          name="auto_approve"
+                          checked={props.values.auto_approve}
+                          onChange={(e) => {
+                            props.setFieldValue(
+                              e.target.name,
+                              e.target.checked
+                            );
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <Label htmlFor="auto-approve" value="Auto approve" />
+                        <span className="text-sm text-gray-500">
+                          Leave application will be automatically approved by
+                          the system
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex h-5 items-center">
+                        <Checkbox
+                          id="has-half-day"
+                          name="has_half_day"
+                          checked={props.values.has_half_day}
+                          onChange={(e) => {
+                            props.setFieldValue(
+                              e.target.name,
+                              e.target.checked
+                            );
+                          }}
+                        />
+                      </div>
+                      <div className="flex flex-col">
+                        <Label htmlFor="has-half-day" value="Half-day allowed" />
+                        <span className="text-sm text-gray-500">
+                          Indicate leave type allows half-day leave
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </>
               ) : null}
             </div>
             <div className="flex justify-end mt-12 gap-3">

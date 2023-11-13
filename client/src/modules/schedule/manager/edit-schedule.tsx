@@ -23,6 +23,8 @@ import {
 import {
   updateRoster,
 } from "../../../shared/api/roster.api";
+import { ICompanyCode } from "../../../shared/model/company.model";
+import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -260,6 +262,22 @@ const EditSchedule = () => {
     })}
   }, [submitLoading]);
 
+  const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
+
+  useEffect(() => {
+    Promise.all([
+      getAllCompanyCodes(
+        globalState?.user?.company_id || 0,
+        undefined,
+        undefined,
+        undefined,
+        `equals(code_type,POSITION)`
+      ).then((res) => {
+        setCodeList(res.data);
+      })
+    ])
+  }, []);
+
   const selectEmployeeShift = (employee: IUser, shift: string) => {
     // First, find the corresponding IUserSchedule for the user
     const userSchedule =
@@ -300,7 +318,8 @@ const EditSchedule = () => {
                 style={{ display: "inline-block", margin: "0" }}
               />
               {emp.fullname}
-              <div>{emp.position}</div>
+              <div>{codeList.find((c) => c.code === emp.position)?.description ||
+                  emp.position}</div>
               <div></div>
               {scheduleDetailsState.employees &&
               scheduleDetailsState.employees.some(

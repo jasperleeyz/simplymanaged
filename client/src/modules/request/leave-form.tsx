@@ -7,7 +7,6 @@ import BackButton from "../../shared/layout/buttons/back-button";
 import LabeledSelect from "../../shared/layout/form/labeled-select";
 import LabeledField from "../../shared/layout/fields/labeled-field";
 import { GlobalStateContext } from "../../configs/global-state-provider";
-import { ICompanyCode } from "../../shared/model/company.model";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -16,24 +15,26 @@ import {
   createLeaveRequest,
   getRemainingLeaveBalance,
 } from "../../shared/api/request.api";
-import {
-  ATTACHMENT_REQUIRED_LEAVES,
-  MAX_PROFILE_IMAGE_SIZE,
-} from "../../configs/constants";
+import { MAX_PROFILE_IMAGE_SIZE } from "../../configs/constants";
 import { HiX } from "react-icons/hi";
 
-const validationSchema = Yup.object().shape({
-  leave_type: Yup.string().required("Field is required"),
-  start_date: Yup.date().required("Field is required"),
-  end_date: Yup.date()
-    .min(Yup.ref("start_date"), "End date must not be earlier than start date")
-    .required("Field is required"),
-  attachment: Yup.string().when("leave_type", {
-    is: (leave_type) => ATTACHMENT_REQUIRED_LEAVES.includes(leave_type),
-    then: (schema) => schema.required("Field is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-});
+const validationSchema = (leaveTypeList) =>
+  Yup.object().shape({
+    leave_type: Yup.string().required("Field is required"),
+    start_date: Yup.date().required("Field is required"),
+    end_date: Yup.date()
+      .min(
+        Yup.ref("start_date"),
+        "End date must not be earlier than start date"
+      )
+      .required("Field is required"),
+    attachment: Yup.string().when("leave_type", {
+      is: (leave_type) =>
+        leaveTypeList.find((lt) => lt.code === leave_type).require_doc,
+      then: (schema) => schema.required("Field is required"),
+      otherwise: (schema) => schema.notRequired(),
+    }),
+  });
 
 const LeaveForm = () => {
   const user = React.useContext(GlobalStateContext)?.globalState?.user;
@@ -49,18 +50,21 @@ const LeaveForm = () => {
     attachment: "",
   });
   const [leaveBalance, setLeaveBalance] = React.useState(0);
-  const [leaveTypeList, setLeaveTypeList] = React.useState<ICompanyCode[]>([]);
+  const [leaveTypeList, setLeaveTypeList] = React.useState<any[]>([]);
 
   const handleChangeForLeaveType = (e: any) => {
     const leaveType = e.target.value;
-
-    getRemainingLeaveBalance(leaveType)
-      .then((res) => {
-        setLeaveBalance(res.data);
-      })
-      .catch((err) => {
-        toast.error("Error retrieving leave balance. Please try again later");
-      });
+    if (leaveType) {
+      getRemainingLeaveBalance(leaveType)
+        .then((res) => {
+          setLeaveBalance(res.data);
+        })
+        .catch((err) => {
+          toast.error("Error retrieving leave balance. Please try again later");
+        });
+    } else {
+      setLeaveBalance(0);
+    }
   };
 
   const countNumberOfDays = (
@@ -79,7 +83,7 @@ const LeaveForm = () => {
         undefined,
         undefined,
         undefined,
-        `equals(code_type,leave_type)`
+        `equals(code_type,leave_type),equals(status,A)`
       ).then((res) => {
         setLeaveTypeList(res.data);
       }),
@@ -103,21 +107,28 @@ const LeaveForm = () => {
               values.half_day
             );
 
-            if (user?.department_in_charge) {
-              values.status = "A";
-            }
-
             if (values.no_of_days > leaveBalance) {
               toast.error("Insufficient leave balance");
               return;
             } else {
               setSubmitting(true);
+              if (
+                user?.department_in_charge ||
+                leaveTypeList.find((lt) => lt.code === values.leave_type)
+                  ?.auto_approve
+              ) {
+                values.status = "A";
+              }
               await createLeaveRequest(
                 user?.company_id || 0,
                 user?.id || 0,
                 values
               ).then(() => {
-                toast.success(`Leave request created successfully`);
+                if (values.status === "A") {
+                  toast.success(`Leave request has been auto approved`);
+                } else {
+                  toast.success(`Leave request created successfully`);
+                }
                 navigate(`..`);
               });
             }
@@ -127,7 +138,7 @@ const LeaveForm = () => {
             setSubmitting(false);
           }
         }}
-        validationSchema={validationSchema}
+        validationSchema={validationSchema(leaveTypeList)}
       >
         {(props) => (
           <form onSubmit={props.handleSubmit} className="md:w-1/2 mx-auto">
@@ -204,14 +215,19 @@ const LeaveForm = () => {
                   ) : null
                 }
               />
-              {props.values["start_date"] &&
+              {
+              props.values.leave_type &&
+              props.values["start_date"] &&
               props.values["end_date"] &&
-              props.values["start_date"] === props.values["end_date"] ? (
+              props.values["start_date"] === props.values["end_date"] &&
+              leaveTypeList.find((lt) => lt.code === props.values.leave_type)?.has_half_day ? (
                 <div className="flex items-center gap-2">
                   {getHalfDayField(props)}
                 </div>
               ) : null}
-              {props.values["start_date"] &&
+              {
+              props.values.leave_type &&
+              props.values["start_date"] &&
               props.values["end_date"] &&
               !(props.values["start_date"] > props.values["end_date"]) ? (
                 <LabeledField
@@ -246,7 +262,8 @@ const LeaveForm = () => {
                 }
               />
             </div>
-            {ATTACHMENT_REQUIRED_LEAVES.includes(props.values.leave_type) && (
+            {leaveTypeList.find((lt) => lt.code === props.values.leave_type)
+              ?.require_doc && (
               <div className="mb-2">
                 <Label htmlFor="attachment">Attachment</Label>
                 <div className="flex">

@@ -98,6 +98,9 @@ export interface ICompanyLeaveBalance {
     company_id: number;
     leave_type: string;
     balance: number;
+    require_doc: boolean;
+    auto_approve: boolean;
+    has_half_day: boolean;
     created_by?: string;
     created_date?: Date;
     updated_by?: string;
