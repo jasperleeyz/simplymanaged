@@ -17,7 +17,7 @@ const CompanyCodeDetails = () => {
   const navigate = useNavigate();
   const logged_in_user = React.useContext(GlobalStateContext)?.globalState?.user;
 
-  const [code, setCode] = React.useState<ICompanyCode | undefined>(
+  const [code, setCode] = React.useState<any | undefined>(
     undefined
   );
   const [loading, setLoading] = React.useState(false);
@@ -80,6 +80,21 @@ const CompanyCodeDetails = () => {
           id="status"
           labelValue="Status"
           value={CODE_STATUS[code?.status || ""] || code?.status}
+        />
+        <LabeledField
+          id="require-doc"
+          labelValue="Requires Supporting Document/Attachment"
+          value={code?.require_doc ? "YES" : "NO"}
+        />
+        <LabeledField
+          id="auto-approve"
+          labelValue="Auto Approves"
+          value={code?.auto_approve ? "YES" : "NO"}
+        />
+        <LabeledField
+          id="has-half-day"
+          labelValue="Half-day Allowed"
+          value={code?.has_half_day ? "YES" : "NO"}
         />
         <LabeledField
           id="updated-date"

@@ -13,6 +13,7 @@ import moment from "moment";
 interface IProps {
   page: number;
   sizePerPage: number;
+  leaveTypeList?: any[];
 }
 
 interface ILoading {
@@ -20,7 +21,7 @@ interface ILoading {
   status: string;
 }
 
-const PersonalRequests = ({ page, sizePerPage }: IProps) => {
+const PersonalRequests = ({ page, sizePerPage, leaveTypeList }: IProps) => {
   const navigate = useNavigate();
   const [personalRequests, setPersonalRequests] = React.useState<IRequest[]>(
     []
@@ -109,6 +110,7 @@ const PersonalRequests = ({ page, sizePerPage }: IProps) => {
                         DATE.MOMENT_DDMMYYYY
                       )}`}
                     </p>
+                    <p>{leaveTypeList?.find((lt) => lt.code === request.leave_request?.type).description}</p>
                     {request.leave_request?.half_day && (
                       <p>{`Half-day?: ${request.leave_request?.half_day}`}</p>
                     )}

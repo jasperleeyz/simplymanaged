@@ -16,10 +16,11 @@ import BackButton from "../../shared/layout/buttons/back-button";
 const CodeSchema = Yup.object().shape({
   code_type: Yup.string().required("Field is required"),
   code_type_other: Yup.string().when("code_type", {
-    is: (val) => val === "other",
-    then: (schema) => schema.required("Field is required"),
+    is: (val) => val === "OTHER",
+    then: (schema) => schema.matches(/^[a-zA-Z0-9_]+$/, "Only alphanumeric and underscore are allowed").required("Field is required"),
+    otherwise: (schema) => schema.notRequired(),
   }),
-  code: Yup.string().required("Field is required"),
+  code: Yup.string().matches(/^[a-zA-Z0-9_]+$/, "Only alphanumeric and underscore are allowed").required("Field is required"),
   description: Yup.string().required("Field is required"),
 });
 
