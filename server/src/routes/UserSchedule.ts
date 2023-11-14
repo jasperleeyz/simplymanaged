@@ -633,7 +633,7 @@ UserScheduleRouter.get(
       schedules = schedules.filter(
         (schedule) =>
           !(
-            schedule.start_date.toISOString().split("T")[0] === date &&
+            schedule.start_date.toISOString().split("T")[0] === (date as string).split("T")[0] &&
             schedule.shift === shift
           )
       );
