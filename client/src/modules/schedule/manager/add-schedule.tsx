@@ -138,7 +138,7 @@ const AddSchedule = () => {
             updated_by: globalState?.user?.fullname || "",
           });
         } else {
-          //console.log(`Maximum allowed count.`);
+          toast.error("Position maxed");
         }
       }
 
@@ -149,9 +149,11 @@ const AddSchedule = () => {
       };
     });
   };
+  
   const [maxEmployee, setMaxEmployee] = React.useState(false);
 
   useEffect(() => {
+    let allPositionsMaxed = true;
     if (scheduleDetailsState.positions) {
       scheduleDetailsState.positions.forEach((pos) => {
         const maxCount = pos.count;
@@ -161,14 +163,13 @@ const AddSchedule = () => {
             (emp) => emp.position === pos.position
           ).length;
 
-          if (currentCount >= maxCount) {
-            setMaxEmployee(true);
-          } else {
-            setMaxEmployee(false);
-          }
+          if (currentCount < maxCount) {
+            allPositionsMaxed = false;
         }
+      }
       });
     }
+    setMaxEmployee(allPositionsMaxed)
   }, [scheduleDetailsState.employees, scheduleDetailsState.positions]);
 
   const [empShift, setEmpShift] = React.useState("FULL");
@@ -691,8 +692,6 @@ const AddSchedule = () => {
     // Update the state with the auto-assigned employees
     setScheduleDetailsState(newState);
   };
-
-  console.log(scheduleDetailsState);
 
   const selectEmployeeShift = (employee: IUser, shift: string) => {
     // First, find the corresponding IUserSchedule for the user

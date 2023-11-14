@@ -130,26 +130,39 @@ const EditSchedule = () => {
       const scheduleIndex = updatedSchedules.findIndex(
         (schedule) => schedule.user_id === user.id
       );
+      const updatedPosition = [...(prevState.positions || [])];
+      const posCount = updatedPosition.findIndex(
+        (pos) => pos.position === user.position
+      );
       if (userIndex !== -1) {
         // User is already in the employees array, remove them
         updatedEmployees.splice(userIndex, 1);
         // Remove the associated IUserSchedule
         updatedSchedules.splice(scheduleIndex, 1);
       } else {
-        // User is not in the employees array, add them
-        updatedEmployees.push(user);
-        // Create an associated IUserSchedule
-        updatedSchedules.push({
-          user_id: user.id,
-          user_company_id: user.company_id,
-          roster_id: 0,
-          start_date: prevState.start_date,
-          end_date: prevState.end_date,
-          shift: "FULL",
-          status: "",
-          created_by: globalState?.user?.fullname || "",
-          updated_by: globalState?.user?.fullname || "",
-        });
+        const maxCount = updatedPosition[posCount].count;
+        const currentCount = updatedEmployees.filter(
+          (emp) => emp.position === user.position
+        ).length;
+        if (currentCount < maxCount || 0) {
+          // User is not in the employees array, add them
+          updatedEmployees.push(user);
+          // Create an associated IUserSchedule
+          updatedSchedules.push({
+            user_id: user.id,
+            user_company_id: user.company_id,
+            roster_id: 0,
+            start_date: prevState.start_date,
+            end_date: prevState.end_date,
+            shift: empShift,
+            status: "",
+            created_by: globalState?.user?.fullname || "",
+            updated_by: globalState?.user?.fullname || "",
+          });
+        }
+        else {
+          toast.error("Position maxed");
+        }
       }
 
       return {
@@ -159,7 +172,7 @@ const EditSchedule = () => {
       };
     });
   };
-  console.log(scheduleDetailsState)
+
   useEffect(() => {
     setLoading((prev) => true);
     getNonConflictScheduleUserRoster(
@@ -318,8 +331,10 @@ const EditSchedule = () => {
                 style={{ display: "inline-block", margin: "0" }}
               />
               {emp.fullname}
-              <div>{codeList.find((c) => c.code === emp.position)?.description ||
-                  emp.position}</div>
+              <div>
+                {codeList.find((c) => c.code === emp.position)?.description ||
+                  emp.position}
+              </div>
               <div></div>
               {scheduleDetailsState.employees &&
               scheduleDetailsState.employees.some(
@@ -366,14 +381,6 @@ const EditSchedule = () => {
               value={moment(scheduleDetailsState.start_date).format(
                 "yyyy-MM-DD"
               )}
-              onChange={(e) => {
-                setSchedulesToDefault();
-                setScheduleDetailsState((prev) => ({
-                  ...prev,
-                  start_date: new Date(e.target.value),
-                  end_date: new Date(e.target.value),
-                }));
-              }}
             />
           </div>
           <div className="mr-5">
@@ -383,12 +390,6 @@ const EditSchedule = () => {
               type="date"
               min={moment(scheduleDetailsState.start_date).format("yyyy-MM-DD")}
               value={moment(scheduleDetailsState.end_date).format("yyyy-MM-DD")}
-              onChange={(e) => {
-                setScheduleDetailsState((prev) => ({
-                  ...prev,
-                  end_date: new Date(e.target.value),
-                }));
-              }}
             />
           </div>
         </div>

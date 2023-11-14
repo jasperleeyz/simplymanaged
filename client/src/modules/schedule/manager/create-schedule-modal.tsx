@@ -303,6 +303,7 @@ const CreateScheduleModal = (props: IProps) => {
               onClick={() => {
                 setShowConfirmationModal(true);
               }}
+              disabled = {numOfEmployee == 0}
             >
               Create
             </Button>
