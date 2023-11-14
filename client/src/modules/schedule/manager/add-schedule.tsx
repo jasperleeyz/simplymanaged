@@ -788,10 +788,12 @@ const AddSchedule = () => {
               min={moment(scheduleDetailsState.start_date).format("yyyy-MM-DD")}
               value={moment(scheduleDetailsState.end_date).format("yyyy-MM-DD")}
               onChange={(e) => {
+                if(scheduleDetailsState.type == "PROJECT"){
                 setScheduleDetailsState((prev) => ({
                   ...prev,
                   end_date: new Date(e.target.value),
                 }));
+              }
               }}
             />
           </div>
