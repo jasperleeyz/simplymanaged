@@ -82,7 +82,7 @@ const Login = () => {
     
     if (isAuthenticated && sessionStorage.getItem("bearerToken")) {
       navigate(
-        location.state?.from || 
+        // location.state?.from || 
         getHomeLink(globalState?.user?.role || ""), { replace: true });
     }
   }, [isAuthenticated]);

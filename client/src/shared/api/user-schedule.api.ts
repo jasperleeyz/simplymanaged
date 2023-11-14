@@ -211,7 +211,7 @@ export const getAllUpcomingShiftSchedules = async (): Promise<any> => {
 };
 
 export const getAvailableShiftSchedulesForSwapping = async (shift: string|undefined, date: Date|undefined): Promise<any> => {
-  const url = `/user-schedule/available-shift-schedules-for-swapping?shift=${shift ? shift : ""}&date=${date ? moment(date).format('YYYY-MM-DD') : ""}`;
+  const url = `/user-schedule/available-shift-schedules-for-swapping?shift=${shift ? shift : ""}&date=${date}`;
   return await fetch(url, {
     method: "GET",
   })
