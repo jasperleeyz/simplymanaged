@@ -199,7 +199,7 @@ const Requests = () => {
                                     request.leave_request?.end_date
                                   ).format(DATE.MOMENT_DDMMYYYY)}`}
                                 </p>
-                                <p>{leaveTypeList.find((lt) => lt.code === request.leave_request?.type).description}</p>
+                                <p>{leaveTypeList.find((lt) => lt.code === request.leave_request?.type)?.description}</p>
                                 {request.leave_request?.half_day && (
                                   <p>{`Half-day?: ${request.leave_request?.half_day}`}</p>
                                 )}
