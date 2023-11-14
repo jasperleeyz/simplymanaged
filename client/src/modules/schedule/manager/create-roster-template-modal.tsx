@@ -101,6 +101,9 @@ const CreateRosterTemplateModal = (props: IProps) => {
         no_of_employees: prevTemplate.no_of_employees + 1,
       }));
     }
+    else{
+      toast.error("Position has reached max available employee count");
+    }
   };
 
   const decrementSelectedCount = (position) => {
