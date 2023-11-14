@@ -149,7 +149,7 @@ const AddSchedule = () => {
       };
     });
   };
-  
+
   const [maxEmployee, setMaxEmployee] = React.useState(false);
 
   useEffect(() => {
@@ -165,11 +165,11 @@ const AddSchedule = () => {
 
           if (currentCount < maxCount) {
             allPositionsMaxed = false;
+          }
         }
-      }
       });
     }
-    setMaxEmployee(allPositionsMaxed)
+    setMaxEmployee(allPositionsMaxed);
   }, [scheduleDetailsState.employees, scheduleDetailsState.positions]);
 
   const [empShift, setEmpShift] = React.useState("FULL");
@@ -828,125 +828,191 @@ const AddSchedule = () => {
             </div>
                 )*/}
         </div>
+        {scheduleDetailsState.type == "SHIFT" ? (
+          <div className="mt-3 grid grid-cols-5 flex">
+            <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
+              <p className="text-md">AM SHIFT</p>
+            </div>
+            <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
+              {scheduleDetailsState.employees?.map(
+                (emp, idx) =>
+                  selectEmployeeShift(emp, "AM") && (
+                    <div className="flex items-center justify-center" key={idx}>
+                      <>
+                        <Avatar
+                          size="md"
+                          img={emp.profile_image || ""}
+                          rounded
+                        />
+                        <p>{emp.fullname}</p>
+                        <Button
+                          color="failure"
+                          style={{ width: "15px", height: "15px" }}
+                          onClick={() => handleAddOrRemoveEmployee(emp)}
+                          size="sm"
+                        >
+                          <HiX />
+                        </Button>
+                      </>
+                    </div>
+                  )
+              )}
+              <div className="flex items-center justify-center">
+                {!maxEmployee ? (
+                  <Button
+                    style={{ width: "50px" }}
+                    onClick={() => {
+                      setShowEmployeeListModal(true);
+                      setEmpShift("AM");
+                    }}
+                    size="sm"
+                  >
+                    Add
+                  </Button>
+                ) : // Render something else or nothing when maxEmployee is true
+                null}
+              </div>
+            </div>
+            <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
+              <p className="text-md">PM SHIFT</p>
+            </div>
+            <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
+              {scheduleDetailsState.employees?.map(
+                (emp, idx) =>
+                  selectEmployeeShift(emp, "PM") && (
+                    <div className="flex items-center justify-center" key={idx}>
+                      <>
+                        <Avatar
+                          size="md"
+                          img={emp.profile_image || ""}
+                          rounded
+                        />
+                        <p>{emp.fullname}</p>
+                        <Button
+                          color="failure"
+                          style={{ width: "15px", height: "15px" }}
+                          onClick={() => handleAddOrRemoveEmployee(emp)}
+                          size="sm"
+                        >
+                          <HiX />
+                        </Button>
+                      </>
+                    </div>
+                  )
+              )}
+              <div className="flex items-center justify-center">
+                {!maxEmployee ? (
+                  <Button
+                    style={{ width: "50px" }}
+                    onClick={() => {
+                      setShowEmployeeListModal(true);
+                      setEmpShift("PM");
+                    }}
+                    size="sm"
+                  >
+                    Add
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+            <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
+              <p className="text-md">FULL SHIFT</p>
+            </div>
+            <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
+              {scheduleDetailsState.employees?.map(
+                (emp, idx) =>
+                  selectEmployeeShift(emp, "FULL") && (
+                    <div className="flex items-center justify-center" key={idx}>
+                      <>
+                        <Avatar
+                          size="md"
+                          img={emp.profile_image || ""}
+                          rounded
+                        />
+                        <p>{emp.fullname}</p>
+                        <Button
+                          color="failure"
+                          style={{ width: "15px", height: "15px" }}
+                          onClick={() => handleAddOrRemoveEmployee(emp)}
+                          size="sm"
+                        >
+                          <HiX />
+                        </Button>
+                      </>
+                    </div>
+                  )
+              )}
+              <div className="flex items-center justify-center">
+                {!maxEmployee ? (
+                  <Button
+                    style={{ width: "50px" }}
+                    onClick={() => {
+                      setShowEmployeeListModal(true);
+                      setEmpShift("FULL");
+                    }}
+                    size="sm"
+                  >
+                    Add
+                  </Button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div>
+            <div className="border border-solid border-black flex p-2 mt-2 items-center justify-center">
+              <p className="text-md">Position</p>
+            </div>
+              {scheduleDetailsState.positions?.map((pos, idx) => (
+                <div
+                  className="p-2 border border-solid border-black grid grid-cols-5 mt-1 flex gap-3 flex"
+                  key={idx}
+                >
+                  <div className="col-span-1 flex items-center justify-center">
+                  {pos.position}
+                  </div>
+                  <div className="col-span-4 p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
+                  {scheduleDetailsState.employees?.map(
+                    (emp, idx) =>
+                      selectEmployeeShift(emp, "FULL") && (emp.position == pos.position) && (
+                        <div className="flex items-center justify-center" key={idx}>
+                        <>
+                          <Avatar
+                            size="md"
+                            img={emp.profile_image || ""}
+                            rounded
+                          />
+                          <p>{emp.fullname}</p>
+                          <Button
+                            color="failure"
+                            style={{ width: "15px", height: "15px" }}
+                            onClick={() => handleAddOrRemoveEmployee(emp)}
+                            size="sm"
+                          >
+                            <HiX />
+                          </Button>
+                        </>
+                      </div>
+                      )
+                  )}
+                  </div>
+                </div>
+              ))}
 
-        <div className="mt-3 grid grid-cols-5 flex">
-          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
-            <p className="text-md">AM SHIFT</p>
+            {!maxEmployee ? (
+              <Button className = "mt-2"
+                style={{ width: "50px", marginLeft: "auto" }}
+                onClick={() => {
+                  setShowEmployeeListModal(true);
+                  setEmpShift("FULL");
+                }}
+                size="sm"
+              >
+                Add
+              </Button>
+            ) : null}
           </div>
-          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-            {scheduleDetailsState.employees?.map(
-              (emp, idx) =>
-                selectEmployeeShift(emp, "AM") && (
-                  <div className="flex items-center justify-center" key={idx}>
-                    <>
-                      <Avatar size="md" img={emp.profile_image || ""} rounded />
-                      <p>{emp.fullname}</p>
-                      <Button
-                        color="failure"
-                        style={{ width: "15px", height: "15px" }}
-                        onClick={() => handleAddOrRemoveEmployee(emp)}
-                        size="sm"
-                      >
-                        <HiX />
-                      </Button>
-                    </>
-                  </div>
-                )
-            )}
-            <div className="flex items-center justify-center">
-              {!maxEmployee ? (
-                <Button
-                  style={{ width: "50px" }}
-                  onClick={() => {
-                    setShowEmployeeListModal(true);
-                    setEmpShift("AM");
-                  }}
-                  size="sm"
-                >
-                  Add
-                </Button>
-              ) : // Render something else or nothing when maxEmployee is true
-              null}
-            </div>
-          </div>
-          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
-            <p className="text-md">PM SHIFT</p>
-          </div>
-          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-            {scheduleDetailsState.employees?.map(
-              (emp, idx) =>
-                selectEmployeeShift(emp, "PM") && (
-                  <div className="flex items-center justify-center" key={idx}>
-                    <>
-                      <Avatar size="md" img={emp.profile_image || ""} rounded />
-                      <p>{emp.fullname}</p>
-                      <Button
-                        color="failure"
-                        style={{ width: "15px", height: "15px" }}
-                        onClick={() => handleAddOrRemoveEmployee(emp)}
-                        size="sm"
-                      >
-                        <HiX />
-                      </Button>
-                    </>
-                  </div>
-                )
-            )}
-            <div className="flex items-center justify-center">
-              {!maxEmployee ? (
-                <Button
-                  style={{ width: "50px" }}
-                  onClick={() => {
-                    setShowEmployeeListModal(true);
-                    setEmpShift("PM");
-                  }}
-                  size="sm"
-                >
-                  Add
-                </Button>
-              ) : null}
-            </div>
-          </div>
-          <div className="col-span-1 border border-solid border-black p-2 mt-2 flex items-center justify-center">
-            <p className="text-md">FULL SHIFT</p>
-          </div>
-          <div className="col-span-4 border border-solid border-black p-2 mt-2 grid grid-cols-5 flex items-center justify-center gap-3">
-            {scheduleDetailsState.employees?.map(
-              (emp, idx) =>
-                selectEmployeeShift(emp, "FULL") && (
-                  <div className="flex items-center justify-center" key={idx}>
-                    <>
-                      <Avatar size="md" img={emp.profile_image || ""} rounded />
-                      <p>{emp.fullname}</p>
-                      <Button
-                        color="failure"
-                        style={{ width: "15px", height: "15px" }}
-                        onClick={() => handleAddOrRemoveEmployee(emp)}
-                        size="sm"
-                      >
-                        <HiX />
-                      </Button>
-                    </>
-                  </div>
-                )
-            )}
-            <div className="flex items-center justify-center">
-              {!maxEmployee ? (
-                <Button
-                  style={{ width: "50px" }}
-                  onClick={() => {
-                    setShowEmployeeListModal(true);
-                    setEmpShift("FULL");
-                  }}
-                  size="sm"
-                >
-                  Add
-                </Button>
-              ) : 
-              null}
-            </div>
-          </div>
-        </div>
+        )}
 
         <div className="mt-12 flex justify-end">
           <Button
