@@ -37,7 +37,6 @@ const Home = () => {
   const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
 
   React.useEffect(() => {
-    // TODO: retrieve schedules for the week
     Promise.all([
       getUserScheduleFromAndTo(
         user?.company_id || 0,
@@ -45,7 +44,15 @@ const Home = () => {
         new Date(),
         moment(new Date()).add(7, "days").toDate()
       ).then((res) => {
-        const filtered = res.data.filter((schedule: IUserSchedule) => moment(schedule.start_date).startOf('day').isSameOrAfter(moment().startOf('day')));
+        const filtered = res.data.sort((a: IUserSchedule, b:IUserSchedule) => {
+          if(a.start_date < b.start_date) {
+            return -1;
+          }
+          if(a.start_date > b.start_date) {
+            return 1;
+          }
+          return 0;
+        }).filter((schedule: IUserSchedule) => moment(schedule.start_date).startOf('day').isSameOrAfter(moment().startOf('day')));
         setScheduleForTheWeek(filtered.slice(0, 5));
       }),
       getAllCompanyCodes(
