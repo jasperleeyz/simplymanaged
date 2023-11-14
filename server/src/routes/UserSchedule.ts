@@ -508,9 +508,9 @@ UserScheduleRouter.get("/all-upcoming-shift-schedules", async (req, res) => {
         start_date: {
           gt: new Date(),
         },
-        end_date: {
-          equals: prisma.userSchedule.fields.start_date,
-        },
+        // end_date: {
+        //   equals: prisma.userSchedule.fields.start_date,
+        // },
       },
     });
 
@@ -557,9 +557,9 @@ UserScheduleRouter.get(
             start_date: {
               gt: new Date(date as string),
             },
-            end_date: {
-              equals: prisma.userSchedule.fields.start_date,
-            },
+            // end_date: {
+            //   equals: prisma.userSchedule.fields.start_date,
+            // },
             shift: {
               equals: (shift as string).toUpperCase(),
             },
@@ -569,6 +569,11 @@ UserScheduleRouter.get(
               },
               position: {
                 equals: current_user?.position,
+              },
+            },
+            roster: {
+              type: {
+                equals: "SHIFT",
               },
             },
           },
@@ -595,9 +600,9 @@ UserScheduleRouter.get(
           start_date: {
             gte: new Date(date as string),
           },
-          end_date: {
-            equals: prisma.userSchedule.fields.start_date,
-          },
+          // end_date: {
+          //   equals: prisma.userSchedule.fields.start_date,
+          // },
           shift: {
             not: "FULL",
           },
@@ -607,6 +612,11 @@ UserScheduleRouter.get(
             },
             position: {
               equals: current_user?.position,
+            },
+          },
+          roster: {
+            type: {
+              equals: "SHIFT",
             },
           },
         },
