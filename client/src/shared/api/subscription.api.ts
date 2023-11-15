@@ -21,7 +21,7 @@ export const getAllSubscriptionModels = async (): Promise<any> => {
 };
 
 export const getSubscriptionModelByCompanyId = async (company_id: number): Promise<any> => {
-  return await fetch(`/subscription/model/${company_id}`, {
+  return await fetch(`/subscription/company/${company_id}`, {
     method: "GET",
   })
     .then((response) => {
