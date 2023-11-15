@@ -2,6 +2,7 @@ import { PrismaClient, UserSchedule } from "@prisma/client";
 import express from "express";
 import { generateFindObject, generateResultJson } from "../utils/utils";
 import { ValidationError } from "../errors/validation-error";
+import { start } from "repl";
 
 export const UserScheduleRouter = express.Router();
 
@@ -150,11 +151,15 @@ UserScheduleRouter.get(
     const { user_company_id, department_id, start_date, end_date } = req.params;
 
     try {
+      const startDay = new Date(start_date)
+      const endDay = new Date(end_date)
       const firstDay = new Date(start_date);
       firstDay.setDate(firstDay.getDate() - firstDay.getDay());
 
       const lastDay = new Date(end_date);
       lastDay.setDate(lastDay.getDate() + (6 - lastDay.getDay()));
+
+      const day_diff = endDay.getDate() - startDay.getDate()
 
       const rawWeekSchedule: {
         id: number;
@@ -247,13 +252,14 @@ UserScheduleRouter.get(
         }),
       ]);
 
+
       const employeesWithWorkingHours = employees.flat().filter((employee) => {
         const employeeWorkingHours =
           employee.employment_details?.working_hours || 0;
         const dataWorkingHours = employeeIdTaggedHour[employee.id] || 0;
 
         // Include the employee if their working hours are greater than the data
-        return Number(employeeWorkingHours) > Number(dataWorkingHours);
+        return Number(employeeWorkingHours) > Number(dataWorkingHours) + (day_diff * 8);
       });
 
       const employeesWithWorkingHoursFix = employeesWithWorkingHours.map(

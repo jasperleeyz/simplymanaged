@@ -94,7 +94,7 @@ RosterRouter.post("/create/roster-template", async (req, res) => {
 
     const id = await getNextSequenceValue(
       company_id,
-      SEQUENCE_KEYS.USER_SEQUENCE
+      SEQUENCE_KEYS.ROSTER_TEMPLATE_SEQUENCE
     )
     
     const rosterTemplate = await prisma.$transaction(async (tx) => {
@@ -144,56 +144,110 @@ RosterRouter.post("/create/roster", async (req, res) => {
       schedules,
       positions
     } = req.body;
-
-    const id = await getNextSequenceValue(
-      company_id,
-      SEQUENCE_KEYS.USER_SEQUENCE
-    )
     
-    const roster = await prisma.$transaction(async (tx) => {
-      const created = await tx.roster.create({
-        data: {
-          id: id,
-          company_id: company_id,
-          location_id: location_id,
-          department_id: department_id,
-          start_date: start_date,
-          end_date: end_date,
-          type: type,
-          created_by: created_by,
-          updated_by: updated_by,
-          updated_date: new Date()
-        },
-      });
-      for (const schedule of schedules) {
-        await tx.userSchedule.create({
+    if(type == "PROJECT"){
+      const id = await getNextSequenceValue(
+        company_id,
+        SEQUENCE_KEYS.ROSTER_SEQUENCE
+      )
+      const roster = await prisma.$transaction(async (tx) => {
+        const created = await tx.roster.create({
           data: {
-            user_id: schedule.user_id,
-            user_company_id: schedule.user_company_id,
-            roster_id: id,
-            start_date: schedule.start_date,
-            end_date: schedule.end_date,
-            shift: schedule.shift,
-            status: schedule.status,
-            created_by: schedule.created_by,
-            updated_by: schedule.updated_by,
+            id: id,
+            company_id: company_id,
+            location_id: location_id,
+            department_id: department_id,
+            start_date: start_date,
+            end_date: end_date,
+            type: type,
+            created_by: created_by,
+            updated_by: updated_by,
             updated_date: new Date()
           },
         });
-      };
-      for (const position of positions) {
-        await tx.rosterPosition.create({
-          data: {
-            roster_id: id,
-            company_id: position.company_id,
-            position: position.position,
-            count: position.count,
-          },
+        for (const schedule of schedules) {
+          await tx.userSchedule.create({
+            data: {
+              user_id: schedule.user_id,
+              user_company_id: schedule.user_company_id,
+              roster_id: id,
+              start_date: schedule.start_date,
+              end_date: schedule.end_date,
+              shift: schedule.shift,
+              status: schedule.status,
+              created_by: schedule.created_by,
+              updated_by: schedule.updated_by,
+              updated_date: new Date()
+            },
+          });
+        };
+        for (const position of positions) {
+          await tx.rosterPosition.create({
+            data: {
+              roster_id: id,
+              company_id: position.company_id,
+              position: position.position,
+              count: position.count,
+            },
+          });
+        };
+      });
+    }
+    else{
+      const currentDate = new Date(start_date)
+      const endDate = new Date(end_date)
+      while (currentDate <= endDate){
+        const id = await getNextSequenceValue(
+          company_id,
+          SEQUENCE_KEYS.ROSTER_SEQUENCE
+        )
+        const roster = await prisma.$transaction(async (tx) => {
+          const created = await tx.roster.create({
+            data: {
+              id: id,
+              company_id: company_id,
+              location_id: location_id,
+              department_id: department_id,
+              start_date: currentDate,
+              end_date: currentDate,
+              type: type,
+              created_by: created_by,
+              updated_by: updated_by,
+              updated_date: new Date()
+            },
+          });
+          for (const schedule of schedules) {
+            await tx.userSchedule.create({
+              data: {
+                user_id: schedule.user_id,
+                user_company_id: schedule.user_company_id,
+                roster_id: id,
+                start_date: currentDate,
+                end_date: currentDate,
+                shift: schedule.shift,
+                status: schedule.status,
+                created_by: schedule.created_by,
+                updated_by: schedule.updated_by,
+                updated_date: new Date()
+              },
+            });
+          };
+          for (const position of positions) {
+            await tx.rosterPosition.create({
+              data: {
+                roster_id: id,
+                company_id: position.company_id,
+                position: position.position,
+                count: position.count,
+              },
+            });
+          };
         });
-      };
-    });
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
     return res.status(200).json({
-      roster: roster,
+      message: "Roster Created",
     });
   } catch (error) {
     console.error(error);

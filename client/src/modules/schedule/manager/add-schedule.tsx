@@ -658,13 +658,20 @@ const AddSchedule = () => {
             randomIndex,
             1
           )[0];
+          let shift;
+          if(randomCandidate && randomCandidate.preferences){
           const shiftPref =
             randomCandidate.preferences?.[1]?.preference?.split(",");
-          const shift =
+          shift =
             subscription && shiftPref && shiftPref.length > 0
               ? shiftPref[Math.floor(Math.random() * shiftPref.length)]
               : "FULL";
+          }
+          else{
+            shift = "FULL"
+          }
 
+          if(randomCandidate){
           selectedEmployees.push(randomCandidate);
           updatedSchedules.push({
             user_id: randomCandidate.id,
@@ -676,6 +683,7 @@ const AddSchedule = () => {
             created_by: globalState?.user?.fullname || "",
             updated_by: globalState?.user?.fullname || "",
           });
+        }
         }
 
         newState.employees = [
@@ -752,6 +760,7 @@ const AddSchedule = () => {
             onClick={() => {
               autoAssignPersonnel();
             }}
+            disabled = {loading}
           >
             <p>Auto Assign</p>
             <HiUserGroup className="ml-2 my-auto" />
@@ -788,12 +797,11 @@ const AddSchedule = () => {
               min={moment(scheduleDetailsState.start_date).format("yyyy-MM-DD")}
               value={moment(scheduleDetailsState.end_date).format("yyyy-MM-DD")}
               onChange={(e) => {
-                if(scheduleDetailsState.type == "PROJECT"){
+                setSchedulesToDefault();
                 setScheduleDetailsState((prev) => ({
                   ...prev,
                   end_date: new Date(e.target.value),
                 }));
-              }
               }}
             />
           </div>
