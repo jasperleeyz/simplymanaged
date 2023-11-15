@@ -127,6 +127,7 @@ const CreateRosterTemplateModal = (props: IProps) => {
         toast.success("Template create successfully");
         setShowConfirmationModal(false);
         props.setCreateRosterTemplateModal((prev) => false);
+        setSubmitLoading(false)
       })
     }
   }, [submitLoading]);
@@ -144,6 +145,8 @@ const CreateRosterTemplateModal = (props: IProps) => {
       setCodeList(res.data);
     });
   }, []);
+
+  console.log(submitLoading)
 
   return (
     <div>
@@ -301,8 +304,13 @@ const CreateRosterTemplateModal = (props: IProps) => {
               size="sm"
               disabled={submitLoading}
               onClick={() => {
-                setSubmitLoading(true)
-              }}
+                {
+                  if((rosterTemplate.name == "") || (rosterTemplate.no_of_employees == 0))
+                    toast.error("Missing values")
+                  else{
+                    setSubmitLoading(true)
+                  }
+              }}}
             >
               Yes
             </Button>
