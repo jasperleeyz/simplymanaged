@@ -36,6 +36,9 @@ subscriptionRouter.get("/company/:company_id", async (req, res) => {
       where: {
         company_id: Number(req.params.company_id),
       },
+      orderBy: {
+        start_date: 'desc',
+      },
     });
     return res.status(200).json(generateResultJson(subscription));
   } catch (error) {
