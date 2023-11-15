@@ -13,7 +13,6 @@ import CreateRosterTemplateModal from "../../../modules/schedule/manager/create-
 import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
 import { ICompanyCode } from "../../../shared/model/company.model";
 
-
 type IProps = {
   showRosterTemplateModal: boolean;
   setShowRosterTemplateModal: React.Dispatch<React.SetStateAction<boolean>>;
@@ -24,20 +23,32 @@ const ShowRosterTemplateModal = (props: IProps) => {
   const [templateList, setTemplateList] = useState<IRosterTemplate[]>([]);
   const [showConfirmationModal, setShowConfirmationModal] =
     React.useState(false);
-  const [loading, setLoading] =
-    React.useState(false);
+  const [loading, setLoading] = React.useState(false);
   useEffect(() => {
-    if(showConfirmationModal == false){
-    setLoading((prev) => true);
-    getRosterTemplate(globalState?.user?.company_id || 0)
-      .then((res) => {
-        setTemplateList(res.data);
-      })
-      .finally(() => {
-        setLoading((prev) => false);
-      });
+    if (showConfirmationModal == false) {
+      setLoading((prev) => true);
+      getRosterTemplate(globalState?.user?.company_id || 0)
+        .then((res) => {
+          setTemplateList(res.data);
+        })
+        .finally(() => {
+          setLoading((prev) => false);
+        });
     }
   }, [props.showRosterTemplateModal, showConfirmationModal]);
+
+  const [deleteTemplate, setDeleteTemplate] = React.useState(false);
+  useEffect(() => {
+    if (deleteTemplate) {
+      if (selectedTemplate) {
+        deleteRosterTemplate(selectedTemplate).finally(() => {
+          toast.success("Template delete successfully");
+          setShowConfirmationModal(false);
+          setDeleteTemplate(false);
+        });
+      }
+    }
+  }, [deleteTemplate]);
 
   const [selectedTemplate, setSelectedTemplate] = useState<IRosterTemplate>();
   useEffect(() => {
@@ -65,8 +76,12 @@ const ShowRosterTemplateModal = (props: IProps) => {
       });
   }, [selectedTemplate]);
 
-  const [createRosterTemplateModal, setCreateRosterTemplateModal] = React.useState(false);
-  const modalProps = { createRosterTemplateModal, setCreateRosterTemplateModal };
+  const [createRosterTemplateModal, setCreateRosterTemplateModal] =
+    React.useState(false);
+  const modalProps = {
+    createRosterTemplateModal,
+    setCreateRosterTemplateModal,
+  };
 
   const [codeList, setCodeList] = React.useState<ICompanyCode[]>([]);
 
@@ -97,21 +112,21 @@ const ShowRosterTemplateModal = (props: IProps) => {
             ) : (
               <>
                 {templateList.length > 0 ? (
-                    <Select
-                      onChange={(e) => {
-                        const selectedTemplateName = e.target.value;
-                        const selectedTemplateObject = templateList.find(
-                          (template) => template.name === selectedTemplateName
-                        );
-                        setSelectedTemplate(selectedTemplateObject);
-                      }}
-                    >
-                      {templateList.map((template, index) => (
-                        <option key={index} value={template.name}>
-                          {template.name}
-                        </option>
-                      ))}
-                    </Select>
+                  <Select
+                    onChange={(e) => {
+                      const selectedTemplateName = e.target.value;
+                      const selectedTemplateObject = templateList.find(
+                        (template) => template.name === selectedTemplateName
+                      );
+                      setSelectedTemplate(selectedTemplateObject);
+                    }}
+                  >
+                    {templateList.map((template, index) => (
+                      <option key={index} value={template.name}>
+                        {template.name}
+                      </option>
+                    ))}
+                  </Select>
                 ) : (
                   <p>No roster template available</p>
                 )}
@@ -122,11 +137,15 @@ const ShowRosterTemplateModal = (props: IProps) => {
                     <div>
                       <span>
                         Shift Type - {selectedTemplate.roster_type}
-                        {Object.keys(templatePositions).map((position, index) => (
-                          <div key={index}>
-                            {codeList.find((c) => c.code === position)?.description || position} - {templatePositions[position]}
-                          </div>
-                        ))}
+                        {Object.keys(templatePositions).map(
+                          (position, index) => (
+                            <div key={index}>
+                              {codeList.find((c) => c.code === position)
+                                ?.description || position}{" "}
+                              - {templatePositions[position]}
+                            </div>
+                          )
+                        )}
                         No of Employees - {selectedTemplate.no_of_employees}
                       </span>
                     </div>
@@ -134,7 +153,7 @@ const ShowRosterTemplateModal = (props: IProps) => {
                 )}
               </>
             )}
-            </div>
+          </div>
         </Modal.Body>
         <Modal.Footer>
           <div className="w-full flex justify-between items-center">
@@ -180,11 +199,7 @@ const ShowRosterTemplateModal = (props: IProps) => {
               className="w-full mr-3"
               size="sm"
               onClick={() => {
-                if (selectedTemplate) {
-                  deleteRosterTemplate(selectedTemplate);
-                  toast.success("Template delete successfully");
-                  setShowConfirmationModal(false);
-                }
+                setDeleteTemplate(true);
               }}
             >
               Yes
