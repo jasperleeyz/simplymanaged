@@ -375,7 +375,7 @@ const getBody = (company, navigate, industryList) => {
         <div>
           <p className="mt-3 text-md">Subscription Type</p>
           <p className="font-bold text-md">
-            {company?.subscriptions ? company.subscriptions[0].type : "N/A"}
+            {company?.subscriptions ? `${company.subscriptions[0].type} (${company.subscriptions[0].payment_cycle})` : "N/A"}
           </p>
         </div>
         <div>
