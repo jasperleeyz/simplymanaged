@@ -7,7 +7,7 @@ import BackButton from "../../../shared/layout/buttons/back-button";
 import EditButton from "../../../shared/layout/buttons/edit-button";
 import DeleteButton from "../../../shared/layout/buttons/delete-button";
 import LabeledField from "../../../shared/layout/fields/labeled-field";
-import { Avatar, Label } from "flowbite-react";
+import { Avatar, Label, Modal, Button} from "flowbite-react";
 import { capitalizeString } from "../../../configs/utils";
 import { useNavigate } from "react-router-dom";
 import { deleteRoster } from "../../../shared/api/roster.api";
@@ -54,6 +54,46 @@ const ViewSchedule = () => {
       })
     ])
   }, []);
+
+  const [showDeleteModal, setShowDeleteModal] = React.useState(false);
+
+  const deleteModal = () => {
+    
+    return (
+      <Modal show={showDeleteModal} onClose={() => setShowDeleteModal(false)}>
+        <Modal.Header>Confirmation</Modal.Header>
+        <Modal.Body>
+          <div>
+            <p>Delete Roster?</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <div className="w-full md:w-1/2 ms-auto flex">
+            <Button
+              color="success"
+              className="w-full mr-3"
+              size="sm"
+              onClick={() => {
+                setSubmitLoading(true);
+              }}
+              disabled={submitLoading}
+            >
+              Yes
+            </Button>
+            <Button
+              color="failure"
+              className="w-full"
+              size="sm"
+              onClick={() => setShowDeleteModal(false)}
+              disabled={submitLoading}
+            >
+              No
+            </Button>
+          </div>
+        </Modal.Footer>
+      </Modal>
+    );
+  };
 
   const [openModal, setOpenModal] = React.useState(false);
   const modalProps = { openModal, setOpenModal };
@@ -124,7 +164,7 @@ const ViewSchedule = () => {
                         size="sm"
                         onClick={() => {
                           setRosterToDelete(rosteridx);
-                          setSubmitLoading(true);
+                          setShowDeleteModal(true)
                         }}
                       />
                     </div>
@@ -135,6 +175,7 @@ const ViewSchedule = () => {
           </div>
         </div>
       </div>
+      {deleteModal()}
     </div>
   );
 };
