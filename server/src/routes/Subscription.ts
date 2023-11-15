@@ -16,7 +16,7 @@ subscriptionRouter.get("/model/all", async (req, res) => {
   }
 });
 
-/*subscriptionRouter.get("/model/:id", async (req, res) => {
+subscriptionRouter.get("/model/:id", async (req, res) => {
   try {
     const subscription_model = await prisma.subscriptionModel.findUnique({
       where: {
@@ -29,9 +29,8 @@ subscriptionRouter.get("/model/all", async (req, res) => {
     return res.status(400).send("Error retrieving subscription details");
   }
 });
-*/
 
-subscriptionRouter.get("/model/:company_id", async (req, res) => {
+subscriptionRouter.get("/company/:company_id", async (req, res) => {
   try {
     const subscription = await prisma.subscription.findFirst({
       where: {
