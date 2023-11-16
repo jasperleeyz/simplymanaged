@@ -146,8 +146,6 @@ const CreateRosterTemplateModal = (props: IProps) => {
     });
   }, []);
 
-  console.log(submitLoading)
-
   return (
     <div>
       <Modal

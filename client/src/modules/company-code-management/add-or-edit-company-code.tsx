@@ -100,7 +100,6 @@ const AddOrEditCompanyCode = () => {
         initialValues={initialValues}
         enableReinitialize
         onSubmit={async (values, { setSubmitting }) => {
-          console.log(values);
           setSubmitting(true);
           try {
             await createUpdateCompanyCode(values).then(() => {

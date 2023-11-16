@@ -59,7 +59,6 @@ export const getRosterById = async (companyId: number, rosterId: number): Promis
   };
 
   export const deleteRoster = async (rosterTemplate: IRoster): Promise<any> => {
-    console.log(JSON.stringify(rosterTemplate))
     return await fetch(`/roster/delete/roster`, {
       method: "DELETE",
       body: JSON.stringify(rosterTemplate),
