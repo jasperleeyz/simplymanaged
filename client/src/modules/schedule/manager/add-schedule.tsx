@@ -41,6 +41,7 @@ import {
 } from "../../../shared/api/subscription.api";
 import { ICompanyCode } from "../../../shared/model/company.model";
 import { getAllCompanyCodes } from "../../../shared/api/company-code.api";
+import { count } from "console";
 
 const customTableTheme: CustomFlowbiteTheme["table"] = {
   root: {
@@ -516,6 +517,16 @@ const AddSchedule = () => {
 
   const submitModal = () => {
     // Get all unique positions from employees
+    let totalEmployees = 0;
+
+    // Iterate through the array of counts
+    if(scheduleDetailsState.positions){
+      for (let i = 0; i < scheduleDetailsState.positions.length; i++) {
+          // Access the count property of each element in the array and add it to totalEmployees
+          totalEmployees += scheduleDetailsState?.positions[i].count;
+      }
+    }
+    const numOfEmployees = [...new Set(scheduleDetailsState.positions)]
     const uniquePositions = [
       ...new Set(
         scheduleDetailsState.employees &&
@@ -531,6 +542,12 @@ const AddSchedule = () => {
           (employee) => employee.position === position
         ).length,
     }));
+
+    let numofEmp = 0
+    for (let i = 0; i < positionCounts.length; i++) {
+      numofEmp += positionCounts[i]?.count || 0;
+  }
+
     const positionMessages = positionCounts.map(
       ({ position, count }) => `${count} ${position}`
     );
@@ -552,9 +569,17 @@ const AddSchedule = () => {
               color="success"
               className="w-full mr-3"
               size="sm"
-              onClick={() => {
-                setSubmitLoading(true);
-              }}
+              onClick={() => {{
+                if(scheduleDetailsState.type == "PROJECT"){
+                  if(totalEmployees != numofEmp)
+                    toast.error("Employees not filled for Roster Project")
+                  else 
+                    setSubmitLoading(true);
+                }
+                else{
+                  setSubmitLoading(true);
+                  }
+              }}}
               disabled={submitLoading}
             >
               Yes
